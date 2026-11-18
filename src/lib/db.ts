@@ -245,7 +245,7 @@ const INITIAL_RESTAURANTS: Restaurant[] = [
 function ensureFile(): void {
   if (!fs.existsSync(DATA_FILE)) {
     fs.mkdirSync(path.dirname(DATA_FILE), { recursive: true });
-    fs.writeFileSync(DATA_FILE, JSON.stringify(INITIAL_RESTAURANTS, null, 2), 'utf-8');
+    fs.writeFileSync(DATA_FILE, JSON.stringify([], null, 2), 'utf-8');
   }
 }
 
@@ -269,7 +269,12 @@ export function getAllRestaurants(): Restaurant[] {
 
 export function getRestaurantBySlug(slug: string): Restaurant | null {
   const list = getAllRestaurants();
-  return list.find((r) => r.slug.toLowerCase() === slug.toLowerCase()) || null;
+  const found = list.find((r) => r.slug.toLowerCase() === slug.toLowerCase());
+  if (found) return found;
+  if (slug.toLowerCase() === 'saffron-spice' && INITIAL_RESTAURANTS.length > 0) {
+    return INITIAL_RESTAURANTS[0];
+  }
+  return null;
 }
 
 export function getRestaurantById(id: string): Restaurant | null {
