@@ -14,6 +14,7 @@ export async function POST(req: NextRequest) {
       tagline,
       location,
       googleReviewUrl,
+      customDishes,
     } = await req.json();
 
     if (!email || !tempPass || !restaurantName || !phone || !adminPin) {
@@ -41,6 +42,7 @@ export async function POST(req: NextRequest) {
       tagline: tagline || 'Delightful Dining & Hospitality',
       location: location || '',
       googleReviewUrl: googleReviewUrl || '',
+      customDishes,
     });
 
     // Mark invite as completed

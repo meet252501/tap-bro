@@ -356,6 +356,7 @@ export function createRestaurant(data: {
   location?: string;
   tableCount?: number;
   googleReviewUrl?: string;
+  customDishes?: string[];
 }): Restaurant {
   const cleanName = data.name.trim();
   const baseSlug = cleanName
@@ -370,6 +371,42 @@ export function createRestaurant(data: {
   }
 
   const id = `REST_${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
+
+  const cleanCustomDishes = Array.isArray(data.customDishes)
+    ? data.customDishes
+        .filter((d): d is string => typeof d === 'string')
+        .map((d) => d.trim())
+        .filter((d) => d.length > 0)
+    : [];
+
+  const defaultMenuCategories = [
+    {
+      name: 'Starters & Chaat',
+      icon: '🍲',
+      items: ['Crispy Veg Spring Roll', 'Paneer Tikka', 'Crispy Corn Chaat'],
+    },
+    {
+      name: 'Main Courses',
+      icon: '🍛',
+      items: ['Dal Makhani', 'Paneer Butter Masala', 'Butter Garlic Naan'],
+    },
+    {
+      name: 'Desserts & Beverages',
+      icon: '🍧',
+      items: ['Hot Gulab Jamun', 'Masala Kulhad Chai', 'Fresh Mango Lassi'],
+    },
+  ];
+
+  const menuCategories = cleanCustomDishes.length > 0
+    ? [
+        {
+          name: 'House Specialties',
+          icon: '⭐',
+          items: cleanCustomDishes,
+        },
+        ...defaultMenuCategories.slice(0, 2),
+      ]
+    : defaultMenuCategories;
 
   const newRest: Restaurant = {
     id,
@@ -389,23 +426,7 @@ export function createRestaurant(data: {
     tableCount: data.tableCount || 10,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
-    menuCategories: [
-      {
-        name: 'Starters & Chaat',
-        icon: '🍲',
-        items: ['Crispy Veg Spring Roll', 'Paneer Tikka', 'Crispy Corn Chaat'],
-      },
-      {
-        name: 'Main Courses',
-        icon: '🍛',
-        items: ['Dal Makhani', 'Paneer Butter Masala', 'Butter Garlic Naan'],
-      },
-      {
-        name: 'Desserts & Beverages',
-        icon: '🍧',
-        items: ['Hot Gulab Jamun', 'Masala Kulhad Chai', 'Fresh Mango Lassi'],
-      },
-    ],
+    menuCategories,
   };
 
   saveRestaurant(newRest);

@@ -499,7 +499,7 @@ export async function sendOwnerInviteEmail(data: {
   notes?: string;
   baseUrl?: string;
 }) {
-  const baseUrl = data.baseUrl || process.env.APP_URL || 'http://localhost:3000';
+  const baseUrl = data.baseUrl || process.env.APP_URL || 'https://tapbro.vercel.app';
   const setupUrl = `${baseUrl}/setup?email=${encodeURIComponent(data.email)}&pass=${encodeURIComponent(data.tempPass)}`;
 
   const logoEmailPath = path.join(process.cwd(), 'public', 'tap-bro-logo-email.png');
@@ -522,11 +522,6 @@ export async function sendOwnerInviteEmail(data: {
       ]
     : [];
 
-  const hostIp = '192.168.31.161';
-  const mobileSetupUrl = setupUrl.includes('localhost')
-    ? setupUrl.replace('localhost', hostIp)
-    : setupUrl;
-
   const html = `
     <!DOCTYPE html>
     <html lang="en">
@@ -534,101 +529,122 @@ export async function sendOwnerInviteEmail(data: {
       <meta charset="UTF-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
       <title>Welcome to Tap-Bro!</title>
+      <style>
+        @media only screen and (max-width: 520px) {
+          .email-card { width: 100% !important; border-radius: 16px !important; margin: 0 !important; }
+          .pass-code { font-size: 28px !important; letter-spacing: 3px !important; }
+          .cta-btn { font-size: 15px !important; padding: 14px 18px !important; }
+          .padding-container { padding: 20px 16px !important; }
+        }
+      </style>
     </head>
-    <body style="margin: 0; padding: 0; background-color: #0B0C10; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased;">
-      <table width="100%" border="0" cellpadding="0" cellspacing="0" bgcolor="#0B0C10" style="padding: 24px 12px;">
+    <body style="margin: 0; padding: 0; background-color: #08090D; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; color: #FFFFFF;">
+      <table width="100%" border="0" cellpadding="0" cellspacing="0" bgcolor="#08090D" style="padding: 24px 10px;">
         <tr>
           <td align="center">
-            <!-- Card -->
-            <table width="100%" border="0" cellpadding="0" cellspacing="0" style="max-width: 480px; background-color: #151720; border: 1px solid #2B3040; border-radius: 20px; overflow: hidden; box-shadow: 0 16px 36px rgba(0, 0, 0, 0.6);">
+            <!-- Luxury Container Card -->
+            <table class="email-card" width="100%" border="0" cellpadding="0" cellspacing="0" style="max-width: 500px; background-color: #12151F; border: 1px solid #242938; border-radius: 20px; overflow: hidden; box-shadow: 0 20px 45px rgba(0, 0, 0, 0.7);">
               
-              <!-- Yellow Top Bar -->
+              <!-- Saffron Gold Ambient Top Bar -->
               <tr>
-                <td height="5" bgcolor="#F5C84C" style="background-color: #F5C84C; line-height: 5px; font-size: 1px;">&nbsp;</td>
+                <td height="4" style="background: linear-gradient(90deg, #F5C84C, #E5A93C, #F5C84C); line-height: 4px; font-size: 1px;">&nbsp;</td>
               </tr>
 
-              <!-- Header with Logo -->
+              <!-- Header with Clean Luxury Branding -->
               <tr>
-                <td style="padding: 30px 24px 10px 24px; text-align: center;">
-                  ${
-                    logoPath
-                      ? `<img src="cid:tapbro_logo" alt="Tap-Bro" width="64" height="64" border="0" style="display: block; margin: 0 auto 12px auto; border-radius: 16px; border: 2px solid #F5C84C;" />`
-                      : `<div style="width: 52px; height: 52px; line-height: 52px; border-radius: 14px; background-color: #F5C84C; color: #000; font-weight: 900; font-size: 20px; margin: 0 auto 12px auto; text-align: center;">TB</div>`
-                  }
-                  <h1 style="color: #FFFFFF; font-size: 22px; font-weight: 800; margin: 0 0 6px 0;">
-                    Hey Bro! Welcome to Tap-Bro 🚀
+                <td class="padding-container" style="padding: 32px 24px 12px 24px; text-align: center;">
+                  <table border="0" cellspacing="0" cellpadding="0" style="margin: 0 auto 14px auto;">
+                    <tr>
+                      <td align="center" style="width: 56px; height: 56px; border-radius: 16px; background: #181B26; border: 1.5px solid #F5C84C; overflow: hidden; text-align: center;">
+                        <img src="https://tapbro.vercel.app/tap-bro-logo.png" alt="Tap-Bro" width="56" height="56" style="display: block; border: 0; object-fit: cover;" onerror="this.style.display='none'" />
+                      </td>
+                    </tr>
+                  </table>
+
+                  <span style="display: inline-block; background-color: rgba(245, 200, 76, 0.12); color: #F5C84C; border: 1px solid rgba(245, 200, 76, 0.25); font-size: 11px; font-weight: 700; padding: 3px 12px; border-radius: 999px; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;">
+                    Tabletop Review System
+                  </span>
+
+                  <h1 style="color: #FFFFFF; font-size: 22px; font-weight: 800; margin: 4px 0 6px 0; letter-spacing: -0.3px;">
+                    Welcome to Tap-Bro 🚀
                   </h1>
-                  <p style="color: #9CA3AF; font-size: 14px; margin: 0; line-height: 1.5;">
-                    Your tabletop AI review assistant is ready. Let's get your spot set up in under 60 seconds!
+                  <p style="color: #9CA3AF; font-size: 13px; margin: 0; line-height: 1.5;">
+                    Your tabletop NFC &amp; QR review station is ready. Set up your restaurant profile in under 60 seconds!
                   </p>
                 </td>
               </tr>
 
-              <!-- Pass Box -->
+              <!-- Temporary Access Pass Box (Hero) -->
               <tr>
-                <td style="padding: 18px 24px;">
-                  <div style="background-color: #0E1017; border: 2px dashed #F5C84C; border-radius: 14px; padding: 18px; text-align: center;">
-                    <div style="color: #CBD5E1; font-size: 12px; font-weight: 600; margin-bottom: 6px;">
-                      🔑 Here is your temporary pass:
+                <td class="padding-container" style="padding: 14px 24px;">
+                  <div style="background-color: #0A0C13; border: 1.5px solid #F5C84C; border-radius: 16px; padding: 18px 16px; text-align: center; box-shadow: inset 0 2px 6px rgba(0,0,0,0.5);">
+                    <div style="color: #94A3B8; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px;">
+                      🔑 Single-Use Temporary Pass
                     </div>
-                    <div style="font-size: 32px; font-weight: 900; color: #F5C84C; letter-spacing: 5px; font-family: 'Courier New', Courier, monospace; margin: 4px 0;">
+                    <div class="pass-code" style="font-size: 32px; font-weight: 900; color: #F5C84C; letter-spacing: 5px; font-family: 'SF Mono', Consolas, Monaco, monospace; margin: 6px 0;">
                       ${data.tempPass}
                     </div>
                     <div style="color: #64748B; font-size: 11px; margin-top: 4px;">
-                      Linked to: <span style="color: #94A3B8;">${data.email}</span>
+                      Registered for: <strong style="color: #CBD5E1;">${data.email}</strong>
                     </div>
                   </div>
                 </td>
               </tr>
 
-              <!-- Big Clickable Button -->
+              <!-- 1-Click Big CTA Button -->
               <tr>
-                <td style="padding: 8px 24px 20px 24px; text-align: center;">
+                <td class="padding-container" style="padding: 10px 24px 20px 24px; text-align: center;">
                   <table border="0" cellspacing="0" cellpadding="0" style="margin: 0 auto; width: 100%;">
                     <tr>
-                      <td align="center" bgcolor="#F5C84C" style="border-radius: 12px; background-color: #F5C84C;">
-                        <a href="${setupUrl}" target="_blank" style="display: block; padding: 14px 20px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size: 15px; font-weight: 800; color: #000000; text-decoration: none; border-radius: 12px; background-color: #F5C84C; border: 1px solid #E5B22D; text-align: center;">
-                          Set Up Restaurant Now ➔
+                      <td align="center" bgcolor="#F5C84C" style="border-radius: 14px; background-color: #F5C84C; box-shadow: 0 4px 18px rgba(245, 200, 76, 0.3);">
+                        <a class="cta-btn" href="${setupUrl}" target="_blank" style="display: block; padding: 15px 22px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 15px; font-weight: 800; color: #000000; text-decoration: none; border-radius: 14px; text-align: center; letter-spacing: -0.2px;">
+                          Activate Restaurant Profile Now ➔
                         </a>
                       </td>
                     </tr>
                   </table>
+                  <p style="color: #64748B; font-size: 11px; margin: 8px 0 0 0;">
+                    Clicking the button above automatically unlocks your setup form.
+                  </p>
                 </td>
               </tr>
 
-              <!-- Friendly How it Works -->
+              <!-- 3 Clean Value Steps -->
               <tr>
-                <td style="padding: 0 24px 20px 24px;">
-                  <div style="background-color: #1A1D27; border-radius: 12px; padding: 14px 16px; color: #E2E8F0; font-size: 13px; line-height: 1.6;">
-                    <strong style="color: #F5C84C;">How it works for your guests:</strong><br/>
-                    📱 <strong>1. Tap:</strong> Guests tap their phone on your table stand.<br/>
-                    ⭐ <strong>2. AI Drafts:</strong> AI writes an authentic review of their favorite food.<br/>
-                    🚀 <strong>3. Google Reviews:</strong> They paste &amp; post straight to Google in 10 seconds!
+                <td class="padding-container" style="padding: 0 24px 20px 24px;">
+                  <div style="background-color: #171A26; border: 1px solid #2A3042; border-radius: 14px; padding: 16px; color: #E2E8F0; font-size: 12px; line-height: 1.6;">
+                    <div style="color: #F5C84C; font-weight: 800; font-size: 12px; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px;">
+                      How Tap-Bro Works:
+                    </div>
+                    <div style="margin-bottom: 6px;">
+                      ⚡ <strong>1. Enter Details (60s):</strong> Add your restaurant name and top specialties.
+                    </div>
+                    <div style="margin-bottom: 6px;">
+                      📱 <strong>2. Place On Tables:</strong> Guests tap their phone on your NFC stand (no app download).
+                    </div>
+                    <div>
+                      ⭐ <strong>3. 5-Star Reviews:</strong> Tap-Bro AI writes authentic reviews &amp; sends guests to Google in 10 seconds!
+                    </div>
                   </div>
                 </td>
               </tr>
 
-              <!-- Direct URL Fallback -->
+              <!-- Direct Link Fallback -->
               <tr>
-                <td style="padding: 0 24px 20px 24px;">
-                  <div style="font-size: 11px; color: #64748B; line-height: 1.5; word-break: break-all;">
-                    Or open this link directly:<br/>
+                <td class="padding-container" style="padding: 0 24px 24px 24px;">
+                  <div style="font-size: 11px; color: #64748B; line-height: 1.5; word-break: break-all; border-top: 1px solid #1E2230; pt: 14px; padding-top: 14px;">
+                    Or copy &amp; open this activation URL:<br/>
                     <a href="${setupUrl}" style="color: #F5C84C; text-decoration: underline;">${setupUrl}</a>
-                    ${
-                      setupUrl.includes('localhost')
-                        ? `<br/><span style="color: #475569; font-size: 10px;">(Phone on same Wi-Fi? <a href="${mobileSetupUrl}" style="color: #38BDF8;">${mobileSetupUrl}</a>)</span>`
-                        : ''
-                    }
                   </div>
                 </td>
               </tr>
 
-              <!-- Friendly Footer -->
+              <!-- Footer -->
               <tr>
-                <td style="background-color: #0D0E14; border-top: 1px solid #232838; padding: 18px 24px; text-align: center; color: #94A3B8; font-size: 12px;">
-                  Got questions? Just reply to this email, we're here to help!<br/>
-                  <span style="color: #475569; font-size: 11px; margin-top: 4px; display: inline-block;">
-                    Cheers,<br/><strong>The Tap-Bro Team</strong>
+                <td style="background-color: #0A0C12; border-top: 1px solid #1C202C; padding: 18px 24px; text-align: center; color: #94A3B8; font-size: 11px; line-height: 1.6;">
+                  Tap-Bro Tabletop NFC Review System • Luxury Dining Automation<br/>
+                  <span style="color: #475569; font-size: 10px; margin-top: 4px; display: inline-block;">
+                    Questions? Reply directly to this email for dedicated support.
                   </span>
                 </td>
               </tr>
@@ -643,8 +659,8 @@ export async function sendOwnerInviteEmail(data: {
 
   await sendTapBroEmail({
     to: data.email,
-    subject: `Tap-Bro Access Code: ${data.tempPass}`,
-    text: `Hey! Welcome to Tap-Bro.\n\nYour Temporary Pass is: ${data.tempPass}\n\nSet up your restaurant here:\n${setupUrl}\n\nCheers,\nTap-Bro Team`,
+    subject: `🔑 Tap-Bro Access Pass: ${data.tempPass} — Activate Your Tabletop Review Stand`,
+    text: `Welcome to Tap-Bro!\n\nYour Temporary Pass is: ${data.tempPass}\n\nActivate your restaurant here:\n${setupUrl}\n\nCheers,\nTap-Bro Team`,
     html,
     type: 'owner-invite',
     attachments,

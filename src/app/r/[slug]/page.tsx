@@ -16,6 +16,7 @@ import {
   GenderGrammar,
   ReviewDraftRequest,
   ReviewDraftResponse,
+  MultiReviewDrafts,
 } from '@/types/review';
 import { UtensilsCrossed, AlertTriangle, ArrowLeft } from 'lucide-react';
 
@@ -38,6 +39,7 @@ export default function RestaurantDinerPage() {
   const [tone, setTone] = useState<ReviewTone>('flavorful');
   const [genderGrammar, setGenderGrammar] = useState<GenderGrammar>('neutral');
   const [draftText, setDraftText] = useState<string>('');
+  const [draftsBundle, setDraftsBundle] = useState<MultiReviewDrafts | null>(null);
   const [isGenerating, setIsGenerating] = useState<boolean>(false);
   const [draftSource, setDraftSource] = useState<'ai' | 'fallback' | null>(null);
 
@@ -78,7 +80,8 @@ export default function RestaurantDinerPage() {
   const generateDraft = async (
     targetLocale: ReviewLanguage = locale,
     targetTone: ReviewTone = tone,
-    targetGender: GenderGrammar = genderGrammar
+    targetGender: GenderGrammar = genderGrammar,
+    forceRefresh: boolean = false
   ) => {
     if (!restaurant) return;
     setIsGenerating(true);
@@ -106,6 +109,9 @@ export default function RestaurantDinerPage() {
       const data: ReviewDraftResponse = await res.json();
       setDraftText(data.draft);
       setDraftSource(data.source);
+      if (data.drafts) {
+        setDraftsBundle(data.drafts);
+      }
     } catch (err) {
       const dishesStr = selectedDishes.length > 0 ? selectedDishes.join(', ') : 'great dishes';
       setDraftText(
@@ -128,19 +134,28 @@ export default function RestaurantDinerPage() {
     generateDraft(locale, tone, genderGrammar);
   };
 
+  // 1-call multi-draft architecture: Instant 0ms switch without network requests!
   const handleLocaleChange = (newLocale: ReviewLanguage) => {
     setLocale(newLocale);
-    generateDraft(newLocale, tone, genderGrammar);
+    if (draftsBundle && draftsBundle[newLocale]?.[tone]) {
+      setDraftText(draftsBundle[newLocale][tone]);
+    } else {
+      generateDraft(newLocale, tone, genderGrammar);
+    }
   };
 
   const handleToneChange = (newTone: ReviewTone) => {
     setTone(newTone);
-    generateDraft(locale, newTone, genderGrammar);
+    if (draftsBundle && draftsBundle[locale]?.[newTone]) {
+      setDraftText(draftsBundle[locale][newTone]);
+    } else {
+      generateDraft(locale, newTone, genderGrammar);
+    }
   };
 
   const handleGenderGrammarChange = (newGrammar: GenderGrammar) => {
     setGenderGrammar(newGrammar);
-    generateDraft(locale, tone, newGrammar);
+    generateDraft(locale, tone, newGrammar, true);
   };
 
   if (loading) {
@@ -178,7 +193,7 @@ export default function RestaurantDinerPage() {
   }
 
   return (
-    <div className="min-h-screen bg-page flex flex-col justify-between selection:bg-amber-400 selection:text-page relative overflow-hidden">
+    <div className="min-h-[100dvh] bg-page flex flex-col justify-between selection:bg-amber-400 selection:text-page relative overflow-x-hidden">
       {/* Ambient background glow */}
       <div className="ambient-bg pointer-events-none fixed inset-0 z-0" />
 
@@ -226,7 +241,7 @@ export default function RestaurantDinerPage() {
               onLocaleChange={handleLocaleChange}
               onToneChange={handleToneChange}
               onGenderGrammarChange={handleGenderGrammarChange}
-              onRegenerate={() => generateDraft(locale, tone, genderGrammar)}
+              onRegenerate={() => generateDraft(locale, tone, genderGrammar, true)}
               onBack={() => setCurrentStep(2)}
             />
           )}

@@ -1,10 +1,17 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
-import { ReviewDraftRequest, ReviewDraftResponse } from '@/types/review';
+import {
+  ReviewDraftRequest,
+  ReviewDraftResponse,
+  MultiReviewDrafts,
+  MultiToneDrafts,
+  ReviewTone,
+} from '@/types/review';
 import { AIProviderType } from '@/types/restaurant';
 
 /**
  * High-variety Zero-Cost Linguistic Engine.
- * 100% free, unlimited, no token fees, instant latency (<5ms).
+ * Supports all 4 tones: flavorful, concise, hospitality, constructive across English & Hinglish.
+ * 100% free, unlimited, no token fees, instant latency (<1ms).
  */
 export function generateZeroCostReview(req: ReviewDraftRequest): string {
   const { locale, tone, ratings, selectedDishes, customerNotes, restaurantName = 'The Restaurant' } = req;
@@ -22,6 +29,28 @@ export function generateZeroCostReview(req: ReviewDraftRequest): string {
 
   if (isHinglish) {
     if (overall >= 4) {
+      if (tone === 'concise') {
+        const shortDishes = dishes ? ` ${dishes} bohot badhiya tha.` : '';
+        return `${restaurantName} me visit karke bohot maza aaya.${shortDishes} Fast service and top quality. Highly recommended!`;
+      }
+
+      if (tone === 'hospitality') {
+        const staffPraise = service >= 4
+          ? 'Staff ka behavior bohot warm aur polite tha, unhone har cheez ka dhyan rakha.'
+          : 'Staff attentive tha aur unki hospitality bohot pasand aayi.';
+        const shortDishes = dishes ? ` Khane me ${dishes} bhi lajawab tha.` : '';
+        return `${restaurantName} ki hospitality sach me dil jeetne wali hai. ${staffPraise}${shortDishes} Family ke sath dining ke liye perfect spot hai.`;
+      }
+
+      if (tone === 'constructive') {
+        const foodPart = dishes ? `${dishes} ka taste bohot achha tha.` : 'Food quality overall kaafi achhi thi.';
+        const notePart = service > 0 && service <= 3
+          ? 'Bas peak hours me service thodi si fast ho sakti hai.'
+          : 'Thoda seating management aur behtar ho jaye toh 10/10 experience banega.';
+        return `${restaurantName} ka experience pleasant raha. ${foodPart} ${notePart} Definite recommendation for food lovers!`;
+      }
+
+      // Default: 'flavorful'
       const openings = [
         `${restaurantName} me khana khane ka experience sach me shandar raha.`,
         `Aaj ${restaurantName} me visit kiya aur bohot accha laga.`,
@@ -60,6 +89,10 @@ export function generateZeroCostReview(req: ReviewDraftRequest): string {
         .filter(Boolean)
         .join(' ');
     } else if (overall <= 2) {
+      if (tone === 'concise') {
+        const dishesPart = dishes ? ` ${dishes} was disappointing.` : '';
+        return `Visited ${restaurantName} but service and food didn't meet expectations.${dishesPart} Management needs to review quality.`;
+      }
       return [
         `${restaurantName} me visit karke hamari expectation meet nahi hui.`,
         dishes ? `Humne ${dishes} try kiya par taste theek nahi tha.` : '',
@@ -88,6 +121,25 @@ export function generateZeroCostReview(req: ReviewDraftRequest): string {
 
   // English generator
   if (overall >= 4) {
+    if (tone === 'concise') {
+      const dishesPart = dishes ? ` The ${dishes} was super fresh and tasty.` : '';
+      return `Great experience at ${restaurantName}!${dishesPart} Attentive staff and nice ambiance. Definitely coming back!`;
+    }
+
+    if (tone === 'hospitality') {
+      const dishesPart = dishes ? ` Paired with the delicious ${dishes}, our visit was truly memorable.` : '';
+      return `Outstanding hospitality at ${restaurantName}! From the moment we walked in, the staff made us feel warmly welcomed and looked after every detail.${dishesPart} Exemplary customer service!`;
+    }
+
+    if (tone === 'constructive') {
+      const dishesPart = dishes ? `The food, especially the ${dishes}, was thoroughly enjoyable.` : 'The culinary spread was delightful.';
+      const constructivePart = service > 0 && service <= 3
+        ? 'Service was polite though a little slow during peak rush.'
+        : 'A bit of fine-tuning on order pacing would make it a flawless 5-star experience.';
+      return `Had a pleasant visit to ${restaurantName}. ${dishesPart} ${constructivePart} Still well worth a visit and recommended!`;
+    }
+
+    // Default: 'flavorful'
     const openings = [
       `Had a wonderful dining experience at ${restaurantName}.`,
       `Really enjoyed our recent visit to ${restaurantName}.`,
@@ -128,21 +180,21 @@ export function generateZeroCostReview(req: ReviewDraftRequest): string {
       .join(' ');
   } else if (overall <= 2) {
     return [
-      `Visited ${restaurantName}, but unfortunately the experience was disappointing.`,
-      dishes ? `We tried the ${dishes}, but the taste fell below expectations.` : '',
-      service > 0 && service <= 2 ? `The service was delayed and disorganized.` : '',
+      `Visited ${restaurantName}, but unfortunately the experience fell below expectations.`,
+      dishes ? `We tried the ${dishes}, but the flavor and preparation were lacking.` : '',
+      service > 0 && service <= 2 ? `The service was delayed and uncoordinated.` : '',
       notes ? `${notes}.` : '',
-      `Sharing this feedback constructively so the team can work on improvements.`,
+      `Sharing this feedback constructively so management can make necessary improvements.`,
     ]
       .filter(Boolean)
       .join(' ');
   } else {
     return [
-      `An average dining experience at ${restaurantName}.`,
-      dishes ? `We ordered the ${dishes}; the taste was decent but not memorable.` : '',
-      service >= 4 ? `The service was polite and responsive.` : '',
+      `An average dining visit to ${restaurantName}.`,
+      dishes ? `We ordered the ${dishes}; the taste was decent but not particularly memorable.` : '',
+      service >= 4 ? `The staff was polite and responsive.` : '',
       notes ? `${notes}.` : '',
-      `An okay visit with room for improvement in overall consistency.`,
+      `An okay meal overall with scope for improvement in taste consistency.`,
     ]
       .filter(Boolean)
       .join(' ');
@@ -150,9 +202,30 @@ export function generateZeroCostReview(req: ReviewDraftRequest): string {
 }
 
 /**
- * Call NVIDIA NIM API with user's provided key.
+ * Generate a complete multi-tone, multi-language bundle zero-cost in <1ms.
  */
-async function callNvidiaAI(req: ReviewDraftRequest, apiKey: string): Promise<string | null> {
+export function generateZeroCostReviewBundle(req: ReviewDraftRequest): MultiReviewDrafts {
+  const tones: ReviewTone[] = ['flavorful', 'concise', 'hospitality', 'constructive'];
+
+  const en: Record<string, string> = {};
+  const hinglish: Record<string, string> = {};
+
+  for (const t of tones) {
+    en[t] = generateZeroCostReview({ ...req, locale: 'en', tone: t });
+    hinglish[t] = generateZeroCostReview({ ...req, locale: 'hinglish', tone: t });
+  }
+
+  return {
+    en: en as unknown as MultiToneDrafts,
+    hinglish: hinglish as unknown as MultiToneDrafts,
+  };
+}
+
+/**
+ * Single-call batch generation with NVIDIA NIM.
+ * Asks the AI for both English & Hinglish across all 4 tones in one structured JSON payload.
+ */
+async function callNvidiaAIBundle(req: ReviewDraftRequest, apiKey: string): Promise<MultiReviewDrafts | null> {
   const modelName = process.env.NVIDIA_MODEL || 'minimaxai/minimax-m3.1-flash';
 
   const dishes = req.selectedDishes.length > 0 ? req.selectedDishes.join(', ') : 'None specified';
@@ -167,59 +240,111 @@ async function callNvidiaAI(req: ReviewDraftRequest, apiKey: string): Promise<st
     .join(', ');
 
   const systemInstruction = `You are Tap-Bro's polite AI review assistant for restaurant diners.
-Convert the diner's actual meal details into a natural, first-person Google Review draft (2-3 sentences).
+Generate realistic, first-person Google Review drafts (2-3 sentences each) based on the diner's actual meal.
 
 RESTAURANT NAME: ${req.restaurantName || 'The Restaurant'}
 RATINGS: ${ratingsSummary}
 DISHES ORDERED & TRIED: ${dishes}
 DINER NOTES: ${notes}
-TARGET LANGUAGE: ${req.locale === 'hinglish' ? 'Hinglish (conversational Romanized Hindi, e.g. "Taste bohot achha tha, especially Dal Makhani ekdum lajawab thi")' : 'English'}
-TONE DESIRED: ${req.tone}
+
+Generate a strictly valid JSON object containing 8 review variations:
+- "en": English reviews across 4 tones ("flavorful", "concise", "hospitality", "constructive")
+- "hinglish": Conversational Romanized Hindi/Hinglish reviews across the same 4 tones
+
+TONE DEFINITIONS:
+- flavorful: Highlights mouth-watering taste, culinary flavors, and textures of the dishes.
+- concise: Punchy, short 2 sentences, quick read.
+- hospitality: Highlights the warm welcome, polite staff, and hospitable service.
+- constructive: Balanced and honest; points out positives while kindly noting areas for improvement if ratings were low.
 
 RULES:
 1. ONLY mention the dishes listed above. DO NOT invent unlisted items.
-2. If rating is low (1 or 2 stars), reflect constructive disappointment without false praise.
-3. No quotation marks around output.
-4. Output ONLY the drafted review text.`;
+2. Return ONLY raw JSON in the exact schema below. No markdown fences, no commentary.
+
+SCHEMA:
+{
+  "en": {
+    "flavorful": "...",
+    "concise": "...",
+    "hospitality": "...",
+    "constructive": "..."
+  },
+  "hinglish": {
+    "flavorful": "...",
+    "concise": "...",
+    "hospitality": "...",
+    "constructive": "..."
+  }
+}`;
 
   const payload = {
     model: modelName,
     messages: [
       { role: 'user', content: systemInstruction },
     ],
-    max_tokens: 1024,
-    temperature: 0.5,
+    max_tokens: 1200,
+    temperature: 0.4,
   };
 
-  const response = await fetch('https://integrate.api.nvidia.com/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${apiKey}`,
-    },
-    body: JSON.stringify(payload),
-  });
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 6000); // 6s timeout to keep diner UI ultra snappy
 
-  if (!response.ok) {
-    const errText = await response.text();
-    console.warn(`NVIDIA NIM API responded with ${response.status}:`, errText);
+  try {
+    const response = await fetch('https://integrate.api.nvidia.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify(payload),
+      signal: controller.signal,
+    });
+
+    clearTimeout(timeoutId);
+
+    if (!response.ok) {
+      const errText = await response.text();
+      console.warn(`NVIDIA NIM API responded with ${response.status}:`, errText);
+      return null;
+    }
+
+    const json = await response.json();
+    let text = json.choices?.[0]?.message?.content?.trim();
+    if (!text) return null;
+
+    // Remove markdown code blocks if AI wrapped them
+    if (text.includes('```json')) {
+      text = text.replace(/```json\s*/i, '').replace(/```\s*$/, '').trim();
+    } else if (text.includes('```')) {
+      text = text.replace(/```\s*/g, '').trim();
+    }
+
+    const parsed = JSON.parse(text);
+    if (parsed.en?.flavorful && parsed.hinglish?.flavorful) {
+      return parsed as MultiReviewDrafts;
+    }
+    return null;
+  } catch (err: any) {
+    clearTimeout(timeoutId);
+    console.warn('NVIDIA NIM single-call batch error or timeout:', err.message);
     return null;
   }
-
-  const json = await response.json();
-  const text = json.choices?.[0]?.message?.content?.trim();
-  return text ? text.replace(/^["']|["']$/g, '') : null;
 }
 
 /**
- * Universal AI Caller supporting NVIDIA NIM, Gemini, Groq, and Zero-Cost.
+ * Universal AI Caller supporting Single-Call All Tones & Languages.
+ * Always returns the active draft AND the full pre-generated bundle!
  */
 export async function generateUniversalReview(
   req: ReviewDraftRequest,
   provider: AIProviderType = 'nvidia',
   customKey?: string
 ): Promise<ReviewDraftResponse> {
-  // 1. Check NVIDIA NIM (Enabled by default with user's key)
+  const fallbackBundle = generateZeroCostReviewBundle(req);
+  const activeLocale = req.locale === 'hinglish' ? 'hinglish' : 'en';
+  const activeTone = req.tone || 'flavorful';
+
+  // 1. Check NVIDIA NIM
   const nvidiaKey =
     customKey?.startsWith('nvapi-')
       ? customKey
@@ -227,56 +352,28 @@ export async function generateUniversalReview(
 
   if ((provider === 'nvidia' || !provider) && nvidiaKey) {
     try {
-      const draft = await callNvidiaAI(req, nvidiaKey);
-      if (draft) {
+      const aiBundle = await callNvidiaAIBundle(req, nvidiaKey);
+      if (aiBundle) {
+        const activeDraft =
+          aiBundle[activeLocale]?.[activeTone] ||
+          fallbackBundle[activeLocale][activeTone];
+
         return {
-          draft,
+          draft: activeDraft,
+          drafts: aiBundle,
           locale: req.locale,
           source: 'ai',
         };
       }
     } catch (err) {
-      console.warn('NVIDIA NIM call failed, proceeding to fallback:', err);
+      console.warn('NVIDIA NIM call failed, proceeding to instant zero-cost fallback:', err);
     }
   }
 
-  // 2. Check Gemini Free Tier
-  const geminiKey =
-    customKey && !customKey.startsWith('nvapi-')
-      ? customKey
-      : process.env.GEMINI_API_KEY;
-
-  if (provider === 'free-gemini' && geminiKey && geminiKey !== 'your_gemini_api_key_here') {
-    try {
-      const genAI = new GoogleGenerativeAI(geminiKey);
-      const model = genAI.getGenerativeModel({
-        model: 'gemini-1.5-flash',
-        generationConfig: {
-          temperature: 0.5,
-          maxOutputTokens: 250,
-        },
-      });
-
-      const dishes = req.selectedDishes.length > 0 ? req.selectedDishes.join(', ') : 'None specified';
-      const prompt = `Write a first-person review for ${req.restaurantName || 'The Restaurant'}. Dishes tried: ${dishes}. Ratings: overall ${req.ratings.overall || 4}/5. Language: ${req.locale === 'hinglish' ? 'Hinglish' : 'English'}. No quotes. 2-3 sentences.`;
-
-      const result = await model.generateContent(prompt);
-      const text = result.response.text()?.trim().replace(/^["']|["']$/g, '');
-      if (text) {
-        return {
-          draft: text,
-          locale: req.locale,
-          source: 'ai',
-        };
-      }
-    } catch (err) {
-      console.warn('Gemini API call failed:', err);
-    }
-  }
-
-  // 3. Guaranteed Zero-Cost Engine Fallback
+  // 2. Guaranteed Zero-Cost Engine Fallback (Instant <1ms)
   return {
-    draft: generateZeroCostReview(req),
+    draft: fallbackBundle[activeLocale][activeTone],
+    drafts: fallbackBundle,
     locale: req.locale,
     source: 'fallback',
   };

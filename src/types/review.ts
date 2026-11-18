@@ -21,8 +21,21 @@ export interface ReviewDraftRequest {
   restaurantName?: string;
 }
 
+export interface MultiToneDrafts {
+  flavorful: string;
+  concise: string;
+  hospitality: string;
+  constructive: string;
+}
+
+export interface MultiReviewDrafts {
+  en: MultiToneDrafts;
+  hinglish: MultiToneDrafts;
+}
+
 export interface ReviewDraftResponse {
   draft: string;
+  drafts?: MultiReviewDrafts;
   locale: ReviewLanguage;
   source: 'ai' | 'fallback';
 }

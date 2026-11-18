@@ -12,6 +12,10 @@ import {
   SlidersHorizontal,
   ShieldCheck,
   HelpCircle,
+  Flame,
+  Zap,
+  HeartHandshake,
+  Scale,
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import {
@@ -53,89 +57,102 @@ export const StepDraft: React.FC<StepDraftProps> = ({
   onBack,
 }) => {
   const [copied, setCopied] = useState(false);
-  const [googleOpened, setGoogleOpened] = useState(false);
+  const [copiedAndOpened, setCopiedAndOpened] = useState(false);
 
-  const handleCopy = async () => {
-    if (!draftText.trim()) return;
+  const triggerConfetti = () => {
+    confetti({
+      particleCount: 60,
+      spread: 70,
+      origin: { y: 0.75 },
+      colors: ['#F5C84C', '#E5A93C', '#10B981', '#FFFFFF'],
+    });
+  };
 
+  const copyToClipboard = async (): Promise<boolean> => {
+    if (!draftText.trim()) return false;
     try {
       await navigator.clipboard.writeText(draftText);
-      setCopied(true);
-
-      // Trigger celebratory confetti
-      confetti({
-        particleCount: 50,
-        spread: 60,
-        origin: { y: 0.7 },
-        colors: ['#F5C84C', '#E5A93C', '#10B981', '#FFFFFF'],
-      });
-
-      setTimeout(() => setCopied(false), 3500);
-    } catch (err) {
-      console.warn('Clipboard write failed; falling back to manual copy prompt:', err);
-      // Select the textarea so user can manual copy
+      triggerConfetti();
+      return true;
+    } catch {
       const el = document.getElementById('reviewDraftTextarea') as HTMLTextAreaElement | null;
       if (el) {
         el.focus();
         el.select();
       }
+      return false;
     }
   };
 
-  const handleOpenGoogle = () => {
+  const handleCopyOnly = async () => {
+    const success = await copyToClipboard();
+    if (success) {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 3000);
+    }
+  };
+
+  const handleCopyAndOpenGoogle = async () => {
+    await copyToClipboard();
+    setCopiedAndOpened(true);
+
     if (config.googleReviewUrl) {
-      window.open(config.googleReviewUrl, '_blank', 'noopener,noreferrer');
-      setGoogleOpened(true);
-      setTimeout(() => setGoogleOpened(false), 5000);
+      setTimeout(() => {
+        window.open(config.googleReviewUrl, '_blank', 'noopener,noreferrer');
+      }, 300);
     }
+
+    setTimeout(() => setCopiedAndOpened(false), 4000);
   };
 
-  const toneOptions: { id: ReviewTone; label: string; desc: string }[] = [
-    { id: 'flavorful', label: 'Foodie & Flavorful', desc: 'Focus on taste & textures' },
-    { id: 'concise', label: 'Quick & Crisp', desc: 'Short, punchy 2-3 sentences' },
-    { id: 'hospitality', label: 'Warm & Gracious', desc: 'Highlights hospitality & service' },
-    { id: 'constructive', label: 'Balanced & Honest', desc: 'Equitable pros & suggestions' },
+  const toneOptions: { id: ReviewTone; label: string; desc: string; icon: React.ElementType }[] = [
+    { id: 'flavorful', label: 'Foodie', desc: 'Flavors & tastes', icon: Flame },
+    { id: 'concise', label: 'Crisp', desc: 'Short & punchy', icon: Zap },
+    { id: 'hospitality', label: 'Hospitality', desc: 'Warm staff & care', icon: HeartHandshake },
+    { id: 'constructive', label: 'Balanced', desc: 'Honest & helpful', icon: Scale },
   ];
 
   return (
-    <div className="space-y-6 animate-fade-in">
-      {/* Step Header */}
-      <div className="rounded-2xl border border-amber-500/20 bg-surface-card/90 p-5 backdrop-blur-sm shadow-lg">
+    <div className="space-y-4 sm:space-y-5 animate-fade-in pb-10">
+      {/* Top Banner */}
+      <div className="rounded-2xl border border-amber-500/20 bg-gradient-to-b from-surface-card to-surface-card/80 p-4 sm:p-5 backdrop-blur-md shadow-xl relative overflow-hidden">
         <div className="flex items-center justify-between">
-          <span className="text-xs font-semibold uppercase tracking-wider text-amber-400">
+          <span className="text-[11px] font-bold uppercase tracking-wider text-amber-400">
             Step 3 of 3 • Review Draft
           </span>
-          {source && (
-            <span className="inline-flex items-center gap-1 rounded-full bg-surface-raised border border-border px-2 py-0.5 text-[10px] text-text-secondary">
-              <Sparkles className="h-2.5 w-2.5 text-amber-400" />
-              {source === 'ai' ? 'Gemini AI Powered' : 'Smart Draft Engine'}
-            </span>
-          )}
+          <span className="inline-flex items-center gap-1 rounded-full bg-amber-400/10 border border-amber-400/20 px-2.5 py-0.5 text-[10px] font-medium text-amber-300">
+            <Sparkles className="h-2.5 w-2.5 text-amber-400" />
+            {source === 'ai' ? 'Tap-Bro AI' : 'Smart Draft Engine'}
+          </span>
         </div>
-        <h2 className="mt-1 text-lg font-bold text-white sm:text-xl">
+        <h2 className="mt-1.5 text-base sm:text-lg font-extrabold text-white">
           Your Personal Review Draft
         </h2>
-        <p className="mt-1 text-xs text-text-secondary sm:text-sm">
-          Review, customize, and edit the wording below. You are in full control of your review before posting.
+        <p className="mt-0.5 text-xs text-text-secondary leading-relaxed">
+          Switch language or tone instantly below. You can also edit any words before posting.
         </p>
       </div>
 
-      {/* Language & Tone Preferences */}
-      <div className="rounded-2xl border border-border bg-surface-card/60 p-4 space-y-4">
-        {/* Language Selection */}
+      {/* Instant Segmented Controls: Language & Tone */}
+      <div className="rounded-2xl border border-border/80 bg-surface-card/70 p-3.5 sm:p-4 space-y-3.5 backdrop-blur-sm shadow-md">
+        {/* Language Segmented Pill */}
         <div>
-          <label className="flex items-center gap-1.5 text-xs font-semibold text-white mb-2">
-            <Globe className="h-3.5 w-3.5 text-amber-400" />
-            <span>Review Language</span>
-          </label>
-          <div className="grid grid-cols-2 gap-2">
+          <div className="flex items-center justify-between mb-1.5">
+            <span className="flex items-center gap-1.5 text-[11px] font-semibold text-zinc-300 uppercase tracking-wide">
+              <Globe className="h-3 w-3 text-amber-400" />
+              <span>Language</span>
+            </span>
+            <span className="text-[10px] text-zinc-500 font-mono">1-tap switch</span>
+          </div>
+
+          <div className="grid grid-cols-2 gap-1.5 p-1 rounded-xl bg-surface border border-border/60">
             <button
               type="button"
               onClick={() => onLocaleChange('en')}
-              className={`flex items-center justify-center gap-2 rounded-xl py-2 px-3 text-xs font-medium border transition-all ${
+              className={`flex items-center justify-center gap-1.5 rounded-lg py-2 px-3 text-xs font-semibold transition-all duration-150 active:scale-95 ${
                 locale === 'en'
-                  ? 'bg-amber-400/15 border-amber-400 text-amber-300 font-semibold shadow-sm'
-                  : 'bg-surface-raised border-border text-text-secondary hover:text-white'
+                  ? 'bg-amber-400 text-page shadow-sm shadow-amber-400/20 font-bold'
+                  : 'text-zinc-400 hover:text-white'
               }`}
             >
               <span>🇬🇧 English</span>
@@ -143,58 +160,69 @@ export const StepDraft: React.FC<StepDraftProps> = ({
             <button
               type="button"
               onClick={() => onLocaleChange('hinglish')}
-              className={`flex items-center justify-center gap-2 rounded-xl py-2 px-3 text-xs font-medium border transition-all ${
+              className={`flex items-center justify-center gap-1.5 rounded-lg py-2 px-3 text-xs font-semibold transition-all duration-150 active:scale-95 ${
                 locale === 'hinglish'
-                  ? 'bg-amber-400/15 border-amber-400 text-amber-300 font-semibold shadow-sm'
-                  : 'bg-surface-raised border-border text-text-secondary hover:text-white'
+                  ? 'bg-amber-400 text-page shadow-sm shadow-amber-400/20 font-bold'
+                  : 'text-zinc-400 hover:text-white'
               }`}
             >
-              <span>🇮🇳 Hinglish (Conversational)</span>
+              <span>🇮🇳 Hinglish</span>
             </button>
           </div>
         </div>
 
-        {/* Tone Selection */}
+        {/* Tone Selector: 4 Instant Tactile Chips */}
         <div>
-          <label className="flex items-center gap-1.5 text-xs font-semibold text-white mb-2">
-            <SlidersHorizontal className="h-3.5 w-3.5 text-amber-400" />
-            <span>Writing Tone</span>
-          </label>
-          <div className="grid grid-cols-2 gap-2">
-            {toneOptions.map((opt) => (
-              <button
-                key={opt.id}
-                type="button"
-                onClick={() => onToneChange(opt.id)}
-                className={`flex flex-col items-start rounded-xl p-2.5 text-left border transition-all ${
-                  tone === opt.id
-                    ? 'bg-amber-400/15 border-amber-400 text-amber-300 font-semibold shadow-sm'
-                    : 'bg-surface-raised border-border text-zinc-400 hover:text-zinc-200'
-                }`}
-              >
-                <span className="text-xs font-medium">{opt.label}</span>
-                <span className="text-[10px] text-text-secondary mt-0.5">{opt.desc}</span>
-              </button>
-            ))}
+          <div className="flex items-center justify-between mb-1.5">
+            <span className="flex items-center gap-1.5 text-[11px] font-semibold text-zinc-300 uppercase tracking-wide">
+              <SlidersHorizontal className="h-3 w-3 text-amber-400" />
+              <span>Tone Style</span>
+            </span>
+            <span className="text-[10px] text-amber-400/80">Instant switch (0ms)</span>
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+            {toneOptions.map((opt) => {
+              const Icon = opt.icon;
+              const isSelected = tone === opt.id;
+              return (
+                <button
+                  key={opt.id}
+                  type="button"
+                  onClick={() => onToneChange(opt.id)}
+                  className={`flex flex-col items-start rounded-xl p-2.5 text-left border transition-all duration-150 active:scale-[0.97] ${
+                    isSelected
+                      ? 'bg-amber-400/15 border-amber-400 text-amber-300 ring-1 ring-amber-400/30 shadow-sm'
+                      : 'bg-surface border-border/70 text-zinc-400 hover:text-zinc-200 hover:border-zinc-700'
+                  }`}
+                >
+                  <div className="flex items-center gap-1.5 mb-0.5">
+                    <Icon className={`h-3.5 w-3.5 ${isSelected ? 'text-amber-400' : 'text-zinc-500'}`} />
+                    <span className="text-xs font-bold leading-none">{opt.label}</span>
+                  </div>
+                  <span className="text-[10px] text-text-secondary leading-tight line-clamp-1">
+                    {opt.desc}
+                  </span>
+                </button>
+              );
+            })}
           </div>
         </div>
 
-        {/* Hinglish Gender Grammar (Neutral, Masculine, Feminine per PRD) */}
+        {/* Hinglish Verb Agreement (Only when Hinglish active) */}
         {locale === 'hinglish' && (
-          <div className="pt-2 border-t border-border/40">
-            <span className="text-[11px] text-text-secondary font-medium block mb-1.5">
-              Hindi verb agreement (Optional):
-            </span>
-            <div className="flex gap-2">
+          <div className="pt-2 border-t border-border/40 flex items-center justify-between">
+            <span className="text-[11px] text-zinc-400">Hindi grammar:</span>
+            <div className="flex gap-1.5">
               {(['neutral', 'masculine', 'feminine'] as GenderGrammar[]).map((g) => (
                 <button
                   key={g}
                   type="button"
                   onClick={() => onGenderGrammarChange(g)}
-                  className={`rounded-lg px-2.5 py-1 text-[11px] capitalize border transition ${
+                  className={`rounded-lg px-2.5 py-1 text-[10px] font-medium capitalize border transition ${
                     genderGrammar === g
-                      ? 'bg-amber-400/20 border-amber-400 text-amber-300 font-semibold'
-                      : 'bg-surface border-border text-text-secondary hover:text-white'
+                      ? 'bg-amber-400/20 border-amber-400 text-amber-300 font-bold'
+                      : 'bg-surface border-border/60 text-zinc-400 hover:text-white'
                   }`}
                 >
                   {g}
@@ -205,22 +233,22 @@ export const StepDraft: React.FC<StepDraftProps> = ({
         )}
       </div>
 
-      {/* Draft Text Editor Card */}
+      {/* Editable Draft Area */}
       <div className="rounded-2xl border border-border bg-surface-card p-4 space-y-3 shadow-xl relative">
         <div className="flex items-center justify-between">
           <label htmlFor="reviewDraftTextarea" className="text-xs font-semibold text-white flex items-center gap-1.5">
             <Sparkles className="h-3.5 w-3.5 text-amber-400" />
-            <span>Editable Review Draft</span>
+            <span>Tap Below to Edit Review</span>
           </label>
 
           <button
             type="button"
             onClick={onRegenerate}
             disabled={isGenerating}
-            className="flex items-center gap-1 text-[11px] font-medium text-amber-400 hover:text-amber-300 transition disabled:opacity-50"
+            className="flex items-center gap-1 text-[11px] font-semibold text-amber-400 hover:text-amber-300 transition active:scale-95 disabled:opacity-50"
           >
             <RefreshCw className={`h-3 w-3 ${isGenerating ? 'animate-spin' : ''}`} />
-            <span>{isGenerating ? 'Regenerating...' : 'Regenerate Draft'}</span>
+            <span>{isGenerating ? 'Refreshing...' : 'New Drafts'}</span>
           </button>
         </div>
 
@@ -231,7 +259,7 @@ export const StepDraft: React.FC<StepDraftProps> = ({
               <Sparkles className="h-4 w-4 text-amber-400 absolute inset-0 m-auto animate-pulse" />
             </div>
             <p className="text-xs font-medium text-amber-300">
-              Crafting your culinary review draft...
+              Generating review variations for you...
             </p>
           </div>
         ) : (
@@ -240,92 +268,98 @@ export const StepDraft: React.FC<StepDraftProps> = ({
             rows={5}
             value={draftText}
             onChange={(e) => onDraftTextChange(e.target.value)}
-            className="w-full rounded-xl border border-border/80 bg-surface px-3.5 py-3 text-xs sm:text-sm text-white placeholder-zinc-500 leading-relaxed focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400 transition"
+            className="w-full rounded-xl border border-border/80 bg-surface px-3.5 py-3 text-[15px] sm:text-sm text-white placeholder-zinc-500 leading-relaxed focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400 transition"
             placeholder="Your draft will appear here..."
           />
         )}
 
-        <div className="flex items-center justify-between text-[11px] text-text-secondary pt-1">
+        <div className="flex items-center justify-between text-[11px] text-text-secondary pt-0.5">
           <span>{draftText.length} characters</span>
-          <span className="flex items-center gap-1 text-emerald-400/90">
+          <span className="flex items-center gap-1 text-emerald-400 font-medium">
             <ShieldCheck className="h-3 w-3" />
-            <span>Ready to copy & edit</span>
+            <span>Ready to post</span>
           </span>
         </div>
       </div>
 
-      {/* Post & Action Guide Card */}
-      <div className="rounded-2xl border border-amber-500/20 bg-amber-500/5 p-4 space-y-3">
-        <h3 className="text-xs font-semibold text-amber-300 flex items-center gap-1.5 uppercase tracking-wide">
-          <HelpCircle className="h-3.5 w-3.5" />
-          <span>How to post your review on Google</span>
-        </h3>
-        <ol className="text-xs text-zinc-300 space-y-1.5 list-decimal list-inside leading-relaxed">
-          <li>
-            Click <strong className="text-white">Copy Review</strong> to save the text to your clipboard.
-          </li>
-          <li>
-            Click <strong className="text-white">Open Google Reviews</strong> to launch the official Google page.
-          </li>
-          <li>
-            Paste your draft, rate your stars, and tap <strong className="text-white">Post</strong>.
-          </li>
-        </ol>
-      </div>
-
-      {/* Primary Action Buttons */}
+      {/* Prominent Mobile-First CTA Action Buttons */}
       <div className="space-y-2.5 pt-1">
-        {/* Copy Button */}
+        {/* Super Button: 1-Tap Copy & Open Google Reviews */}
         <button
           type="button"
-          onClick={handleCopy}
+          onClick={handleCopyAndOpenGoogle}
           disabled={!draftText.trim() || isGenerating}
-          className={`flex w-full items-center justify-center gap-2 rounded-xl py-3.5 px-6 font-semibold transition-all active:scale-[0.99] shadow-lg ${
-            copied
+          className={`flex w-full items-center justify-center gap-2.5 rounded-2xl py-4 px-6 font-extrabold text-sm sm:text-base transition-all duration-150 active:scale-[0.98] shadow-xl ${
+            copiedAndOpened
               ? 'bg-emerald-500 text-white shadow-emerald-500/20'
-              : 'bg-gradient-to-r from-amber-400 to-amber-500 text-page shadow-amber-500/20 hover:from-amber-300 hover:to-amber-400'
+              : 'bg-gradient-to-r from-amber-400 via-amber-400 to-amber-500 text-page shadow-amber-500/25 hover:from-amber-300 hover:to-amber-400'
           }`}
         >
-          {copied ? (
+          {copiedAndOpened ? (
             <>
-              <Check className="h-4 w-4 stroke-[3]" />
-              <span>Review Copied to Clipboard! 🎉</span>
+              <Check className="h-5 w-5 stroke-[3]" />
+              <span>Copied! Opening Google Reviews...</span>
             </>
           ) : (
             <>
-              <Copy className="h-4 w-4" />
-              <span>Copy Review Text</span>
+              <Sparkles className="h-5 w-5 fill-current" />
+              <span>Copy & Open Google Reviews 🚀</span>
             </>
           )}
         </button>
 
-        {/* Open Google Reviews Button */}
-        <button
-          type="button"
-          onClick={handleOpenGoogle}
-          className="flex w-full items-center justify-center gap-2 rounded-xl border border-border bg-surface-raised py-3.5 px-6 font-semibold text-white transition hover:border-amber-400/50 hover:bg-surface-highlight active:scale-[0.99]"
-        >
-          <ExternalLink className="h-4 w-4 text-amber-400" />
-          <span>{googleOpened ? 'Google Reviews Opened in New Tab' : 'Open Google Reviews'}</span>
-        </button>
+        {/* Secondary: Copy Only */}
+        <div className="grid grid-cols-2 gap-2">
+          <button
+            type="button"
+            onClick={handleCopyOnly}
+            disabled={!draftText.trim() || isGenerating}
+            className={`flex items-center justify-center gap-1.5 rounded-xl border py-2.5 px-3 text-xs font-semibold transition active:scale-95 ${
+              copied
+                ? 'border-emerald-500 bg-emerald-500/10 text-emerald-400'
+                : 'border-border bg-surface-raised text-zinc-300 hover:text-white hover:border-amber-400/50'
+            }`}
+          >
+            {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5 text-amber-400" />}
+            <span>{copied ? 'Copied!' : 'Copy Text Only'}</span>
+          </button>
 
-        {/* Back Button */}
+          <button
+            type="button"
+            onClick={() => {
+              if (config.googleReviewUrl) {
+                window.open(config.googleReviewUrl, '_blank', 'noopener,noreferrer');
+              }
+            }}
+            className="flex items-center justify-center gap-1.5 rounded-xl border border-border bg-surface-raised py-2.5 px-3 text-xs font-semibold text-zinc-300 hover:text-white hover:border-amber-400/50 transition active:scale-95"
+          >
+            <ExternalLink className="h-3.5 w-3.5 text-amber-400" />
+            <span>Open Google Only</span>
+          </button>
+        </div>
+
+        {/* Back Link */}
         <button
           type="button"
           onClick={onBack}
-          className="flex w-full items-center justify-center gap-1.5 py-2 text-xs font-medium text-text-secondary hover:text-white transition"
+          className="flex w-full items-center justify-center gap-1 py-2 text-xs font-medium text-text-secondary hover:text-white transition"
         >
           <ChevronLeft className="h-3.5 w-3.5" />
           <span>Back to edit dishes or ratings</span>
         </button>
       </div>
 
-      {/* Ethical Transparency Disclaimer */}
-      <div className="pt-2 text-center text-[11px] text-zinc-500 leading-normal">
-        <p>
-          Honesty First: Review AI provides suggested wording based solely on your visit details.
-          Reviews are submitted by you directly on Google Reviews.
-        </p>
+      {/* How to Post Card */}
+      <div className="rounded-xl border border-amber-500/15 bg-amber-500/5 p-3.5 space-y-2 text-xs">
+        <h3 className="font-bold text-amber-300 flex items-center gap-1.5 uppercase tracking-wide text-[11px]">
+          <HelpCircle className="h-3.5 w-3.5" />
+          <span>How to post your review in 10 seconds</span>
+        </h3>
+        <ol className="text-zinc-300 space-y-1 list-decimal list-inside leading-relaxed text-[11px]">
+          <li>Tap <strong className="text-white">Copy &amp; Open Google Reviews</strong> above.</li>
+          <li>Google will open. Tap your star rating (e.g. 5★).</li>
+          <li>Paste your copied review text and tap <strong className="text-white">Post</strong>. Done! 🎉</li>
+        </ol>
       </div>
     </div>
   );

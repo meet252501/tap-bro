@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { ChevronLeft, Sparkles, Plus, Check, Utensils, MessageSquare, AlertCircle } from 'lucide-react';
+import { ChevronLeft, Sparkles, Plus, Check, Utensils, MessageSquare } from 'lucide-react';
 import { RestaurantConfig } from '@/types/review';
 
 interface StepDishesProps {
@@ -45,27 +45,31 @@ export const StepDishes: React.FC<StepDishesProps> = ({
   };
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="space-y-4 sm:space-y-5 animate-fade-in pb-8">
       {/* Intro Banner */}
-      <div className="rounded-2xl border border-border bg-surface-card/90 p-5 backdrop-blur-sm shadow-lg">
-        <div className="flex items-center gap-2 text-amber-400">
-          <Utensils className="h-4 w-4" />
-          <span className="text-xs font-semibold uppercase tracking-wider">Step 2 of 3</span>
+      <div className="rounded-2xl border border-amber-500/20 bg-gradient-to-b from-surface-card to-surface-card/80 p-4 sm:p-5 backdrop-blur-md shadow-xl relative overflow-hidden">
+        <div className="flex items-center justify-between">
+          <span className="text-[11px] font-bold uppercase tracking-wider text-amber-400">
+            Step 2 of 3 • Select Dishes
+          </span>
+          <span className="text-[10px] text-amber-300 font-bold bg-amber-400/10 px-2 py-0.5 rounded-full border border-amber-400/20">
+            {selectedDishes.length} {selectedDishes.length === 1 ? 'dish' : 'dishes'} picked
+          </span>
         </div>
-        <h2 className="mt-1 text-lg font-bold text-white sm:text-xl">
-          What did you try during your visit?
+        <h2 className="mt-1 text-base sm:text-lg font-extrabold text-white">
+          What did you taste today?
         </h2>
-        <p className="mt-1 text-xs text-text-secondary sm:text-sm">
-          Select items you ordered so your draft specifically mentions what you actually experienced.
+        <p className="mt-0.5 text-xs text-text-secondary leading-relaxed">
+          Tap the dishes you ordered so Tap-Bro AI crafts an authentic review.
         </p>
       </div>
 
       {/* Menu Categories & Chips */}
-      <div className="space-y-5">
+      <div className="space-y-3.5">
         {config.menuCategories.map((category) => (
-          <div key={category.name} className="rounded-2xl border border-border/80 bg-surface-card/50 p-4">
-            <h3 className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-amber-400/90 mb-3">
-              <span className="text-base">{category.icon}</span>
+          <div key={category.name} className="rounded-2xl border border-border/80 bg-surface-card/70 p-3.5 sm:p-4 shadow-sm">
+            <h3 className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-amber-400/90 mb-2.5">
+              <span className="text-sm">{category.icon}</span>
               <span>{category.name}</span>
             </h3>
 
@@ -77,14 +81,18 @@ export const StepDishes: React.FC<StepDishesProps> = ({
                     key={dish}
                     type="button"
                     onClick={() => toggleDish(dish)}
-                    className={`chip-item flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-medium transition-all ${
+                    className={`chip-item flex items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-semibold transition-all duration-150 active:scale-95 ${
                       isSelected
-                        ? 'bg-amber-400 text-page font-semibold shadow-sm shadow-amber-400/30 ring-1 ring-amber-300'
-                        : 'bg-surface-raised text-zinc-300 border border-border hover:border-amber-400/40 hover:text-white'
+                        ? 'bg-amber-400 text-page font-bold shadow-md shadow-amber-400/25 ring-1 ring-amber-300'
+                        : 'bg-surface text-zinc-300 border border-border/70 hover:border-amber-400/50 hover:text-white'
                     }`}
                     aria-pressed={isSelected}
                   >
-                    {isSelected && <Check className="h-3.5 w-3.5 stroke-[3]" />}
+                    {isSelected ? (
+                      <Check className="h-3.5 w-3.5 stroke-[3] text-page" />
+                    ) : (
+                      <Plus className="h-3.5 w-3.5 text-zinc-500" />
+                    )}
                     <span>{dish}</span>
                   </button>
                 );
@@ -94,110 +102,85 @@ export const StepDishes: React.FC<StepDishesProps> = ({
         ))}
 
         {/* Custom Dish Adder */}
-        <div className="rounded-2xl border border-dashed border-border/80 bg-surface-card/30 p-4">
+        <div className="rounded-2xl border border-dashed border-border/90 bg-surface-card/40 p-3.5">
           {!showAddCustom ? (
             <button
               type="button"
               onClick={() => setShowAddCustom(true)}
-              className="flex items-center gap-2 text-xs font-medium text-amber-400 hover:text-amber-300 transition"
+              className="flex w-full items-center justify-center gap-2 text-xs font-semibold text-amber-400 hover:text-amber-300 py-1 transition"
             >
               <Plus className="h-4 w-4" />
-              <span>Didn&apos;t see what you had? Add a custom item</span>
+              <span>Ordered something not listed? Add custom dish</span>
             </button>
           ) : (
-            <form onSubmit={handleAddCustomDish} className="flex gap-2">
-              <input
-                type="text"
-                value={customDishInput}
-                onChange={(e) => setCustomDishInput(e.target.value)}
-                placeholder="e.g. Samosa Chaat, Masala Soda..."
-                className="flex-1 rounded-xl border border-border bg-surface px-3 py-2 text-xs text-white placeholder-zinc-500 focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400"
-                autoFocus
-              />
-              <button
-                type="submit"
-                className="rounded-xl bg-amber-400 px-4 py-2 text-xs font-semibold text-page hover:bg-amber-300 transition"
-              >
-                Add
-              </button>
-              <button
-                type="button"
-                onClick={() => setShowAddCustom(false)}
-                className="rounded-xl border border-border px-3 py-2 text-xs text-text-secondary hover:text-white"
-              >
-                Cancel
-              </button>
+            <form onSubmit={handleAddCustomDish} className="space-y-2.5">
+              <label className="block text-xs font-medium text-zinc-300">
+                Add unlisted item:
+              </label>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={customDishInput}
+                  onChange={(e) => setCustomDishInput(e.target.value)}
+                  placeholder="e.g. Sizzling Brownie, Iced Tea"
+                  className="flex-1 rounded-xl border border-border bg-surface px-3 py-2 text-[15px] sm:text-xs text-white placeholder-zinc-500 focus:border-amber-400 focus:outline-none"
+                  autoFocus
+                />
+                <button
+                  type="submit"
+                  disabled={!customDishInput.trim()}
+                  className="rounded-xl bg-amber-400 px-3.5 py-2 text-xs font-bold text-page hover:bg-amber-300 disabled:opacity-50"
+                >
+                  Add
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowAddCustom(false)}
+                  className="rounded-xl border border-border px-3 py-2 text-xs text-zinc-400 hover:text-white"
+                >
+                  Cancel
+                </button>
+              </div>
             </form>
           )}
-
-          {/* List of custom-added items not in main categories */}
-          {selectedDishes.filter(
-            (d) => !config.menuCategories.some((cat) => cat.items.includes(d))
-          ).length > 0 && (
-            <div className="mt-3 flex flex-wrap gap-2 pt-2 border-t border-border/40">
-              <span className="text-[11px] text-text-secondary self-center">Added items:</span>
-              {selectedDishes
-                .filter((d) => !config.menuCategories.some((cat) => cat.items.includes(d)))
-                .map((dish) => (
-                  <button
-                    key={dish}
-                    type="button"
-                    onClick={() => toggleDish(dish)}
-                    className="flex items-center gap-1 rounded-full bg-amber-400 text-page px-3 py-1 text-xs font-semibold"
-                  >
-                    <span>{dish}</span>
-                    <span className="text-[10px] ml-1 opacity-70">✕</span>
-                  </button>
-                ))}
-            </div>
-          )}
         </div>
-      </div>
 
-      {/* Customer Free-text Detail Box */}
-      <div className="rounded-2xl border border-border bg-surface-card/60 p-4 space-y-2">
-        <div className="flex items-center justify-between">
-          <label htmlFor="customerNotes" className="flex items-center gap-2 text-xs font-semibold text-white">
+        {/* Optional Diner Notes */}
+        <div className="rounded-2xl border border-border/80 bg-surface-card/70 p-3.5 sm:p-4">
+          <label htmlFor="customerNotes" className="flex items-center gap-1.5 text-xs font-bold text-white mb-1.5">
             <MessageSquare className="h-3.5 w-3.5 text-amber-400" />
-            <span>Specific compliments or suggestions (Optional)</span>
+            <span>Special Highlights or Memories (Optional)</span>
           </label>
-          <span className="text-[11px] text-text-secondary">
-            {customerNotes.length}/500
-          </span>
+          <input
+            id="customerNotes"
+            type="text"
+            value={customerNotes}
+            onChange={(e) => onNotesChange(e.target.value)}
+            placeholder="e.g. Celebrated birthday, server Rahul was great, rooftop view"
+            maxLength={180}
+            className="w-full rounded-xl border border-border/80 bg-surface px-3.5 py-2.5 text-[15px] sm:text-xs text-white placeholder-zinc-500 focus:border-amber-400 focus:outline-none"
+          />
         </div>
-        <textarea
-          id="customerNotes"
-          rows={3}
-          maxLength={500}
-          value={customerNotes}
-          onChange={(e) => onNotesChange(e.target.value)}
-          placeholder="e.g. The green chutney was perfectly spiced! The table was ready on time, but wait time for breads was slightly high."
-          className="w-full rounded-xl border border-border bg-surface px-3.5 py-2.5 text-xs sm:text-sm text-white placeholder-zinc-500 focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400"
-        />
-        <p className="flex items-center gap-1.5 text-[11px] text-text-secondary">
-          <AlertCircle className="h-3 w-3 text-amber-400/70 shrink-0" />
-          <span>Honest praise and constructive feedback are both welcome. Avoid sharing personal phone numbers or private data.</span>
-        </p>
       </div>
 
-      {/* Navigation Buttons */}
-      <div className="flex items-center gap-3 pt-2">
+      {/* Action Buttons */}
+      <div className="space-y-2 pt-1">
         <button
           type="button"
-          onClick={onBack}
-          className="flex items-center justify-center gap-1.5 rounded-xl border border-border bg-surface-raised py-3.5 px-4 text-xs font-semibold text-text-secondary hover:text-white hover:bg-surface-highlight transition active:scale-[0.99]"
+          onClick={onNext}
+          className="flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-amber-400 to-amber-500 py-4 px-6 font-extrabold text-sm sm:text-base text-page shadow-xl shadow-amber-500/20 transition-all duration-150 hover:from-amber-300 hover:to-amber-400 active:scale-[0.98]"
         >
-          <ChevronLeft className="h-4 w-4" />
-          <span>Back</span>
+          <Sparkles className="h-4 w-4 fill-current" />
+          <span>Generate AI Review Draft ➔</span>
         </button>
 
         <button
           type="button"
-          onClick={onNext}
-          className="flex-1 flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-amber-400 to-amber-500 py-3.5 px-6 text-xs sm:text-sm font-semibold text-page shadow-lg shadow-amber-500/20 hover:from-amber-300 hover:to-amber-400 transition active:scale-[0.99]"
+          onClick={onBack}
+          className="flex w-full items-center justify-center gap-1 py-2 text-xs font-medium text-text-secondary hover:text-white transition"
         >
-          <Sparkles className="h-4 w-4" />
-          <span>Generate Review Draft</span>
+          <ChevronLeft className="h-3.5 w-3.5" />
+          <span>Back to star ratings</span>
         </button>
       </div>
     </div>
