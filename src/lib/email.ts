@@ -659,7 +659,7 @@ export async function sendOwnerInviteEmail(data: {
 
   await sendTapBroEmail({
     to: data.email,
-    subject: `🔑 Tap-Bro Access Pass: ${data.tempPass} — Activate Your Tabletop Review Stand`,
+    subject: `Tap-Bro Restaurant Setup Code: ${data.tempPass}`,
     text: `Welcome to Tap-Bro!\n\nYour Temporary Pass is: ${data.tempPass}\n\nActivate your restaurant here:\n${setupUrl}\n\nCheers,\nTap-Bro Team`,
     html,
     type: 'owner-invite',
