@@ -1,0 +1,56 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #0B0C10;
+  --foreground: #F8F9FA;
+}
+
+body {
+  background-color: #0B0C10;
+  color: #F8F9FA;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Custom scrollbar for mobile luxury feel */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #111319;
+}
+::-webkit-scrollbar-thumb {
+  background: #2D313F;
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #F5C84C;
+}
+
+/* Star glow transition */
+.star-btn {
+  transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1), color 0.15s ease;
+}
+.star-btn:active {
+  transform: scale(1.25);
+}
+
+/* Chip selection bounce */
+.chip-item {
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.chip-item:hover {
+  transform: translateY(-1px);
+}
+.chip-item:active {
+  transform: scale(0.96);
+}
+
+/* Ambient glow background */
+.ambient-bg {
+  background: radial-gradient(circle at 50% 0%, rgba(245, 200, 76, 0.08) 0%, rgba(11, 12, 16, 0) 70%);
+}
