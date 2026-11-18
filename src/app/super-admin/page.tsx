@@ -194,13 +194,14 @@ export default function SuperAdminPage() {
         });
         setTargetEmail('');
         setInviteNotes('');
+        setInviting(false);
         fetchOverview(adminPin);
       } else {
         alert(data.error || 'Failed to dispatch invite');
+        setInviting(false);
       }
     } catch (err: any) {
       alert(err.message || 'Error sending invite');
-    } finally {
       setInviting(false);
     }
   };
@@ -644,9 +645,26 @@ export default function SuperAdminPage() {
                 </div>
               </div>
 
-              <div className="flex items-center gap-1.5 text-[11px] text-zinc-400 italic">
-                <Clock className="h-3 w-3 text-amber-400 animate-spin" />
-                <span>Waiting for restaurant owner to complete registration... (this station will automatically reset when they register in the database)</span>
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pt-2.5 border-t border-emerald-500/20 text-xs">
+                <div className="flex items-center gap-1.5 text-emerald-300 font-semibold">
+                  <CheckCircle2 className="h-4 w-4 text-emerald-400 shrink-0" />
+                  <span>
+                    Email delivered! You do not need to wait here.
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-[11px] text-zinc-400">
+                    Owner can activate whenever they open their email.
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setDispatchedInvite(null)}
+                    className="rounded-xl bg-gradient-to-r from-amber-400 to-amber-500 px-3 py-1 text-xs font-bold text-page shadow-sm hover:from-amber-300 hover:to-amber-400 transition flex items-center gap-1 shrink-0"
+                  >
+                    <Plus className="h-3.5 w-3.5" />
+                    <span>Send Another Invite</span>
+                  </button>
+                </div>
               </div>
             </div>
           )}
