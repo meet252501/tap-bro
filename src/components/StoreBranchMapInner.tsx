@@ -25,9 +25,13 @@ export const StoreBranchMapInner: React.FC<StoreBranchMapInnerProps> = ({
     if (!mapContainerRef.current) return;
     if (mapInstanceRef.current) return; // Prevent double initialization
 
-    // Center on first branch or India center (Gujarat / Western region)
-    const initialLat = branches[0]?.lat || 23.0225;
-    const initialLng = branches[0]?.lng || 72.5714;
+    const isIndiaCoord = (lat: number, lng: number) =>
+      !isNaN(lat) && !isNaN(lng) && lat >= 8.0 && lat <= 36.0 && lng >= 68.0 && lng <= 97.5;
+
+    // Center on first branch in Gujarat/India or Ahmedabad default hub
+    const firstBranch = branches.find((b) => isIndiaCoord(b.lat, b.lng));
+    const initialLat = firstBranch?.lat || 23.0225;
+    const initialLng = firstBranch?.lng || 72.5714;
 
     const map = L.map(mapContainerRef.current, {
       center: [initialLat, initialLng],
@@ -77,7 +81,12 @@ export const StoreBranchMapInner: React.FC<StoreBranchMapInnerProps> = ({
 
     const bounds = L.latLngBounds([]);
 
+    const isIndiaCoord = (lat: number, lng: number) =>
+      !isNaN(lat) && !isNaN(lng) && lat >= 8.0 && lat <= 36.0 && lng >= 68.0 && lng <= 97.5;
+
     branches.forEach((branch, idx) => {
+      if (!isIndiaCoord(branch.lat, branch.lng)) return; // Strictly skip any non-India coordinate
+
       const isSelected =
         selectedBranch?.name === branch.name && selectedBranch?.address === branch.address;
 
