@@ -96,10 +96,14 @@ async function runSecurityAudit() {
   console.log(`\n${colors.bold}[2/5] Testing Brute-Force Rate Limiting (/api/admin/login)...${colors.reset}`);
   try {
     let throttled = false;
+    const attackerIp = '198.51.100.25';
     for (let i = 1; i <= 8; i++) {
       const res = await fetch(`${TARGET_URL}/api/admin/login`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'x-forwarded-for': attackerIp
+        },
         body: JSON.stringify({ phone: '9999999999', pinOrId: '9999' })
       });
       if (res.status === 429) {
@@ -122,10 +126,14 @@ async function runSecurityAudit() {
   console.log(`\n${colors.bold}[3/5] Testing AI Quota Exhaustion Defense (/api/review-draft)...${colors.reset}`);
   try {
     let aiThrottled = false;
+    const aiAttackerIp = '198.51.100.26';
     for (let i = 1; i <= 18; i++) {
       const res = await fetch(`${TARGET_URL}/api/review-draft`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'x-forwarded-for': aiAttackerIp
+        },
         body: JSON.stringify({ slug: 'audit-test', dishes: ['Tacos'], vibe: 'fun', rating: 5 })
       });
       if (res.status === 429) {
