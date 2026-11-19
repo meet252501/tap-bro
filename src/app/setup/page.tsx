@@ -76,25 +76,13 @@ function SetupContent() {
     if (urlToken) setToken(urlToken);
   }, [searchParams]);
 
-  // Initial branch seed for default brands (e.g. Karnavati) on initial load
-  useEffect(() => {
-    // Perform an initial quick lookup for popular brand locations if search empty
-    const initialQuery = 'Karnavati';
-    fetch(`/api/places/autocomplete?input=${encodeURIComponent(initialQuery)}`)
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.success && Array.isArray(data.predictions) && data.predictions.length > 0) {
-          setPredictions(data.predictions);
-        }
-      })
-      .catch(() => {});
-  }, []);
-
-  // Fetch branches and locations on map when user types
+  // Clear pre-fills when search input is empty
   useEffect(() => {
     if (isLocked) return;
 
     if (!searchInput.trim() || searchInput.trim().length < 2) {
+      setPredictions([]);
+      setSelectedBranch(null);
       return;
     }
 

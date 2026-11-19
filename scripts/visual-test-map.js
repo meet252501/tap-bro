@@ -2,7 +2,7 @@ const { chromium } = require('playwright');
 const path = require('path');
 
 const ARTIFACT_DIR = path.resolve('C:/Users/Meet Sutariya/.gemini/antigravity/brain/3610ed57-98d7-46e7-be59-421186d757d3');
-const TARGET_URL = 'http://localhost:3000';
+const TARGET_URL = 'https://tapbro.vercel.app';
 
 async function run() {
   console.log('🚀 Running Visual Test for Store Branch Map on:', TARGET_URL);
