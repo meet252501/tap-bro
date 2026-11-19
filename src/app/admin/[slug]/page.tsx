@@ -458,10 +458,10 @@ function RestaurantAdminDashboardContent() {
 
           <div className="rounded-2xl border border-zinc-800 bg-[#121216] p-3 text-center">
             <span className="text-[10px] font-semibold text-zinc-400 uppercase tracking-wider block">
-              Tables
+              Hardware
             </span>
-            <p className="text-lg font-bold text-white mt-0.5">
-              {tableCount} Stands
+            <p className="text-lg font-bold text-emerald-400 mt-0.5">
+              1 NFC Stand
             </p>
           </div>
 
@@ -802,14 +802,14 @@ function RestaurantAdminDashboardContent() {
           </div>
         )}
 
-        {/* Tab 4: Pre-Configured Tabletop Hardware & Stands */}
+        {/* Tab 4: Official NFC Stand & QR Station */}
         {activeTab === 'stands' && (
           <div className="space-y-4 animate-fade-in">
             <div className="rounded-2xl border border-zinc-800 bg-[#121216] p-5 space-y-4 shadow-sm">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold text-zinc-300 uppercase tracking-wider flex items-center gap-1.5">
                   <Radio className="h-4 w-4" />
-                  <span>Tabletop Hardware Stands</span>
+                  <span>Official NFC Review Stand</span>
                 </span>
                 <span className="rounded-full bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-0.5 text-[10px] font-semibold text-emerald-400">
                   Pre-Programmed
@@ -817,16 +817,16 @@ function RestaurantAdminDashboardContent() {
               </div>
 
               <div>
-                <h2 className="text-sm font-bold text-white">{name} Table Stands</h2>
+                <h2 className="text-sm font-bold text-white">{name} Counter Stand</h2>
                 <p className="text-xs text-zinc-400 mt-1 leading-relaxed">
-                  Your physical tabletop NFC acrylic stands and QR plates are pre-configured and shipped directly by the Tap-Bro hardware team. Guests simply tap their phone at their table!
+                  Your physical Tap-Bro NFC acrylic stand is pre-configured for your business. Place it on your billing counter or main table for customers to tap!
                 </p>
               </div>
 
               {/* Station URL Bar */}
               <div className="rounded-xl bg-[#0A0A0C] p-3 border border-zinc-800 space-y-1.5">
                 <span className="text-[11px] text-zinc-400 font-medium block">
-                  Tabletop Station URL:
+                  Stand Diner Link:
                 </span>
                 <div className="flex items-center gap-2">
                   <input
@@ -866,20 +866,15 @@ function RestaurantAdminDashboardContent() {
                 </button>
               </div>
 
-              {/* Table Count Setting */}
+              {/* Hardware Status */}
               <div className="pt-2 border-t border-zinc-800 flex items-center justify-between">
                 <div>
-                  <span className="text-xs font-semibold text-white block">Active Table Stands</span>
-                  <p className="text-[11px] text-zinc-400">Total dining tables deployed</p>
+                  <span className="text-xs font-semibold text-white block">Hardware Stand</span>
+                  <p className="text-[11px] text-zinc-400">1 Official NFC Stand Issued</p>
                 </div>
-                <input
-                  type="number"
-                  min={1}
-                  max={200}
-                  value={tableCount}
-                  onChange={(e) => setTableCount(Number(e.target.value))}
-                  className="w-16 rounded-xl border border-zinc-800 bg-[#0A0A0C] px-2.5 py-2 text-sm text-white text-center font-bold focus:border-zinc-500 focus:outline-none"
-                />
+                <span className="rounded-full bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1 text-[11px] font-semibold text-emerald-400">
+                  Active &amp; Ready
+                </span>
               </div>
 
               <button
@@ -937,7 +932,7 @@ function RestaurantAdminDashboardContent() {
             { id: 'reviews', label: 'Reviews', icon: MessageSquare },
             { id: 'menu', label: 'Menu', icon: Utensils },
             { id: 'profile', label: 'Profile', icon: Store },
-            { id: 'stands', label: 'Stands', icon: Radio },
+            { id: 'stands', label: 'Stand', icon: Radio },
             { id: 'staff', label: 'Staff Script', icon: BookOpen },
           ].map((tab) => {
             const Icon = tab.icon;
