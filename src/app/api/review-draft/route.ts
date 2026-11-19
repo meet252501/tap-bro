@@ -2,9 +2,20 @@ import { NextRequest, NextResponse } from 'next/server';
 import { ReviewDraftRequest } from '@/types/review';
 import { generateUniversalReview } from '@/lib/aiProvider';
 import { getRestaurantBySlug, incrementReviewCount } from '@/lib/db';
+import { checkRateLimit, getClientIp } from '@/lib/rateLimit';
 
 export async function POST(req: NextRequest) {
   try {
+    const ip = getClientIp(req);
+    // Defense: Rate limit max 15 review requests per minute per IP to protect AI token quota
+    const rateCheck = checkRateLimit(`review-draft:${ip}`, 15, 60);
+    if (!rateCheck.allowed) {
+      return NextResponse.json(
+        { error: `AI request limit reached. Please wait ${rateCheck.resetSeconds}s before generating another draft.` },
+        { status: 429 }
+      );
+    }
+
     const body = await req.json();
 
     const {

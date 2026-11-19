@@ -1,8 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { authenticateAdmin } from '@/lib/db';
+import { checkRateLimit, getClientIp } from '@/lib/rateLimit';
 
 export async function POST(req: NextRequest) {
   try {
+    const ip = getClientIp(req);
+    // Rate limit: max 6 attempts per 5 minutes per IP
+    const rateCheck = checkRateLimit(`admin-login:${ip}`, 6, 300);
+    if (!rateCheck.allowed) {
+      return NextResponse.json(
+        { error: `Too many login attempts. Please wait ${rateCheck.resetSeconds}s before trying again.` },
+        { status: 429 }
+      );
+    }
+
     const { phone, pinOrId } = await req.json();
 
     if (!phone || !pinOrId) {

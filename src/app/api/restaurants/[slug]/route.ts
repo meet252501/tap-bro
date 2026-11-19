@@ -56,10 +56,12 @@ export async function PUT(
 
     saveRestaurant(restaurant);
 
+    const { adminPin: _pin, customApiKey: _key, ...safeRestaurant } = restaurant;
+
     return NextResponse.json({
       success: true,
       message: 'Restaurant updated successfully',
-      restaurant,
+      restaurant: safeRestaurant,
     });
   } catch (error: any) {
     return NextResponse.json({ error: error.message || 'Error updating restaurant' }, { status: 500 });
