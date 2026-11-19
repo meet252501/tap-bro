@@ -19,6 +19,8 @@ import {
   X,
   HelpCircle,
   ExternalLink,
+  Search,
+  Copy,
 } from 'lucide-react';
 
 function SetupContent() {
@@ -409,7 +411,7 @@ function SetupContent() {
               )}
             </div>
 
-            {/* Google Review URL with Dead-Simple 15s Helper */}
+            {/* Google Review URL with Dead-Simple 1-Tap Search & Paste */}
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <label className="text-xs font-semibold text-zinc-300 flex items-center gap-1.5">
@@ -422,21 +424,55 @@ function SetupContent() {
                   className="text-[11px] text-zinc-400 hover:text-white flex items-center gap-1 transition"
                 >
                   <HelpCircle className="h-3.5 w-3.5" />
-                  <span>Where do I find this?</span>
+                  <span>Quick Guide</span>
                 </button>
               </div>
 
-              {/* Step-by-Step Visual Guide for Confused Shop Owners */}
+              {/* 1-Tap Google Search & Quick Paste Helper */}
+              <div className="flex flex-wrap items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    const name = restaurantName.trim();
+                    const query = encodeURIComponent(name ? `${name} restaurant` : 'my restaurant');
+                    window.open(`https://www.google.com/maps/search/?api=1&query=${query}`, '_blank');
+                  }}
+                  className="flex items-center gap-1.5 rounded-lg border border-zinc-700 bg-zinc-900/90 px-3 py-1.5 text-xs font-medium text-zinc-300 hover:text-white hover:bg-zinc-800 transition active:scale-95"
+                >
+                  <Search className="h-3.5 w-3.5 text-zinc-400" />
+                  <span>
+                    1-Tap: Find &quot;{restaurantName.trim() || 'My Business'}&quot; on Maps
+                  </span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={async () => {
+                    try {
+                      const text = await navigator.clipboard.readText();
+                      if (text && (text.startsWith('http://') || text.startsWith('https://'))) {
+                        setGoogleReviewUrl(text.trim());
+                      }
+                    } catch {}
+                  }}
+                  className="flex items-center gap-1.5 rounded-lg border border-zinc-700 bg-zinc-900/90 px-3 py-1.5 text-xs font-medium text-zinc-300 hover:text-white hover:bg-zinc-800 transition active:scale-95"
+                >
+                  <Copy className="h-3.5 w-3.5 text-zinc-400" />
+                  <span>Paste Copied Link</span>
+                </button>
+              </div>
+
+              {/* Step-by-Step Visual Guide for Shop Owners */}
               {showGoogleHelp && (
                 <div className="rounded-xl border border-zinc-700 bg-[#0A0A0C] p-3 text-xs space-y-2 animate-fade-in">
-                  <p className="font-semibold text-white">How to get your Google Review link in 3 steps:</p>
+                  <p className="font-semibold text-white">How to connect in 10 seconds:</p>
                   <ol className="list-decimal list-inside space-y-1 text-zinc-400 text-[11px] leading-relaxed">
-                    <li>Open <strong>Google Maps</strong> or search your restaurant name on Google.</li>
-                    <li>On your restaurant profile, tap the button that says <strong>&quot;Ask for reviews&quot;</strong> or <strong>&quot;Get more reviews&quot;</strong>.</li>
-                    <li>Copy the short link Google gives you (looks like <span className="font-mono text-zinc-200">https://g.page/r/.../review</span>) and paste it below!</li>
+                    <li>Tap <strong>&quot;1-Tap: Find on Maps&quot;</strong> above to open your store on Google Maps.</li>
+                    <li>On your store card, tap <strong>&quot;Share&quot;</strong> (or <strong>&quot;Ask for reviews&quot;</strong>) and tap <strong>Copy Link</strong>.</li>
+                    <li>Come back here and tap <strong>&quot;Paste Copied Link&quot;</strong>. Done!</li>
                   </ol>
                   <p className="text-[10px] text-zinc-500 pt-1 border-t border-zinc-800">
-                    💡 When diners tap this, it opens Google with 5 stars ready so they paste their AI review with 1 tap.
+                    💡 Accepts any Google link: Google Maps share link, g.page short link, or Place ID review link.
                   </p>
                 </div>
               )}
@@ -447,8 +483,8 @@ function SetupContent() {
                   autoComplete="off"
                   value={googleReviewUrl}
                   onChange={(e) => setGoogleReviewUrl(e.target.value)}
-                  placeholder="https://g.page/r/your-restaurant/review"
-                  className="flex-1 rounded-xl border border-zinc-800 bg-[#0A0A0C] px-3.5 py-3 text-base sm:text-sm text-white focus:border-zinc-500 focus:outline-none font-mono placeholder-zinc-500"
+                  placeholder="Paste any Google Maps link (e.g. https://maps.app.goo.gl/...)"
+                  className="flex-1 rounded-xl border border-zinc-800 bg-[#0A0A0C] px-3.5 py-3 text-xs sm:text-sm text-white focus:border-zinc-500 focus:outline-none font-mono placeholder-zinc-500"
                 />
                 {googleReviewUrl && (
                   <button
@@ -462,8 +498,16 @@ function SetupContent() {
                   </button>
                 )}
               </div>
+
+              {googleReviewUrl && (
+                <p className="text-[11px] text-emerald-400 flex items-center gap-1">
+                  <CheckCircle2 className="h-3.5 w-3.5" />
+                  <span>Google Link Connected! Tap &quot;Test Link&quot; to verify.</span>
+                </p>
+              )}
+
               <p className="text-[11px] text-zinc-500">
-                Optional: You can also add or update this anytime in your manager dashboard.
+                Optional: You can also skip this and add or update it anytime later in your manager dashboard.
               </p>
             </div>
 

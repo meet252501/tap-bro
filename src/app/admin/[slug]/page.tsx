@@ -28,6 +28,7 @@ import {
   Star,
   Clock,
   Send,
+  Search,
 } from 'lucide-react';
 import { Restaurant, AIProviderType, DinerReviewRecord } from '@/types/restaurant';
 import { DishCategory, ReviewLanguage, ReviewTone } from '@/types/review';
@@ -749,20 +750,54 @@ function RestaurantAdminDashboardContent() {
                     className="text-[11px] text-zinc-400 hover:text-white flex items-center gap-1 transition"
                   >
                     <HelpCircle className="h-3.5 w-3.5" />
-                    <span>How to find this?</span>
+                    <span>Quick Guide</span>
+                  </button>
+                </div>
+
+                {/* 1-Tap Google Search & Quick Paste Helper */}
+                <div className="flex flex-wrap items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const businessName = (name || restaurant?.name || '').trim();
+                      const query = encodeURIComponent(businessName ? `${businessName} restaurant` : 'my restaurant');
+                      window.open(`https://www.google.com/maps/search/?api=1&query=${query}`, '_blank');
+                    }}
+                    className="flex items-center gap-1.5 rounded-lg border border-zinc-700 bg-zinc-900/90 px-3 py-1.5 text-xs font-medium text-zinc-300 hover:text-white hover:bg-zinc-800 transition active:scale-95"
+                  >
+                    <Search className="h-3.5 w-3.5 text-zinc-400" />
+                    <span>
+                      1-Tap: Find &quot;{(name || restaurant?.name || 'My Business').trim()}&quot; on Maps
+                    </span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      try {
+                        const text = await navigator.clipboard.readText();
+                        if (text && (text.startsWith('http://') || text.startsWith('https://'))) {
+                          setGoogleReviewUrl(text.trim());
+                        }
+                      } catch {}
+                    }}
+                    className="flex items-center gap-1.5 rounded-lg border border-zinc-700 bg-zinc-900/90 px-3 py-1.5 text-xs font-medium text-zinc-300 hover:text-white hover:bg-zinc-800 transition active:scale-95"
+                  >
+                    <Copy className="h-3.5 w-3.5 text-zinc-400" />
+                    <span>Paste Copied Link</span>
                   </button>
                 </div>
 
                 {showGoogleHelp && (
                   <div className="rounded-xl border border-zinc-700 bg-[#0A0A0C] p-3 text-xs space-y-2 animate-fade-in">
-                    <p className="font-semibold text-white">How to connect your Google Reviews in 15 seconds:</p>
+                    <p className="font-semibold text-white">How to connect your Google Reviews in 10 seconds:</p>
                     <ol className="list-decimal list-inside space-y-1 text-zinc-400 text-[11px] leading-relaxed">
-                      <li>Search your restaurant name on <strong>Google Maps</strong> or Google.</li>
-                      <li>On your business card, tap <strong>&quot;Ask for reviews&quot;</strong> (or &quot;Get more reviews&quot;).</li>
-                      <li>Copy the short link (looks like <span className="font-mono text-zinc-200">https://g.page/r/.../review</span>) and paste below!</li>
+                      <li>Tap <strong>&quot;1-Tap: Find on Maps&quot;</strong> above to open your store on Google Maps.</li>
+                      <li>On your business card, tap <strong>&quot;Share&quot;</strong> (or <strong>&quot;Ask for reviews&quot;</strong>) and tap <strong>Copy Link</strong>.</li>
+                      <li>Come back here and tap <strong>&quot;Paste Copied Link&quot;</strong>. Done!</li>
                     </ol>
                     <p className="text-[10px] text-zinc-500 pt-1 border-t border-zinc-800">
-                      When diners finish drafting their review, 1 tap opens Google with 5 stars selected so they paste and publish!
+                      💡 Accepts any Google link: Google Maps share link, g.page short link, or Place ID review link.
                     </p>
                   </div>
                 )}
@@ -772,8 +807,8 @@ function RestaurantAdminDashboardContent() {
                     type="url"
                     value={googleReviewUrl}
                     onChange={(e) => setGoogleReviewUrl(e.target.value)}
-                    placeholder="https://g.page/r/your-restaurant/review"
-                    className="flex-1 rounded-xl border border-zinc-800 bg-[#0A0A0C] px-3.5 py-2.5 text-base sm:text-xs text-white focus:border-zinc-500 focus:outline-none font-mono transition-all placeholder-zinc-500"
+                    placeholder="Paste any Google Maps link (e.g. https://maps.app.goo.gl/...)"
+                    className="flex-1 rounded-xl border border-zinc-800 bg-[#0A0A0C] px-3.5 py-2.5 text-xs sm:text-xs text-white focus:border-zinc-500 focus:outline-none font-mono transition-all placeholder-zinc-500"
                   />
                   {googleReviewUrl && (
                     <button
@@ -786,6 +821,13 @@ function RestaurantAdminDashboardContent() {
                     </button>
                   )}
                 </div>
+
+                {googleReviewUrl && (
+                  <p className="text-[11px] text-emerald-400 flex items-center gap-1">
+                    <Check className="h-3.5 w-3.5" />
+                    <span>Google Link Connected! Tap &quot;Test&quot; to verify.</span>
+                  </p>
+                )}
               </div>
 
               <div className="pt-2">
