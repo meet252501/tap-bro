@@ -29,9 +29,14 @@ import {
   Clock,
   Send,
   Search,
+  BarChart3,
+  Calendar,
+  TrendingUp,
+  CheckCircle2,
 } from 'lucide-react';
 import { Restaurant, AIProviderType, DinerReviewRecord } from '@/types/restaurant';
 import { DishCategory, ReviewLanguage, ReviewTone } from '@/types/review';
+import { computeReviewAnalytics } from '@/lib/analytics';
 
 function RestaurantAdminDashboardContent() {
   const params = useParams();
@@ -68,6 +73,33 @@ function RestaurantAdminDashboardContent() {
   const [simTone, setSimTone] = useState<ReviewTone>('flavorful');
   const [simDraft, setSimDraft] = useState('');
   const [simulating, setSimulating] = useState(false);
+
+  // Review Analytics & 30-Day Retention Cycle State
+  const [chartPeriod, setChartPeriod] = useState<'day' | 'week' | 'month'>('day');
+  const [isResettingCycle, setIsResettingCycle] = useState(false);
+  const [cycleResetMessage, setCycleResetMessage] = useState<string | null>(null);
+
+  const handleTriggerMonthlyReset = async () => {
+    if (!window.confirm('This will email the 30-day performance report to your registered email, archive review counts, and reset the cycle to Day 1 with clean storage. Continue?')) {
+      return;
+    }
+    setIsResettingCycle(true);
+    setCycleResetMessage(null);
+    try {
+      const res = await fetch(`/api/restaurants/${slug}/monthly-report`, { method: 'POST' });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setCycleResetMessage(data.message || 'Report sent and cycle reset!');
+        setTimeout(() => window.location.reload(), 1500);
+      } else {
+        setCycleResetMessage(data.error || 'Failed to trigger monthly report');
+      }
+    } catch {
+      setCycleResetMessage('Network error triggering report');
+    } finally {
+      setIsResettingCycle(false);
+    }
+  };
 
   // Auth & Access Gate State
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
@@ -477,18 +509,152 @@ function RestaurantAdminDashboardContent() {
           </div>
         </div>
 
+        {/* 30-Day Retention Cycle & Monthly Email Report Tracker Card */}
+        {(() => {
+          const analytics = computeReviewAnalytics(reviewsList, restaurant.cycleStartDate);
+          const cyclePercent = Math.min(100, Math.round((analytics.currentCycleDay / 30) * 100));
+
+          return (
+            <div className="rounded-2xl border border-zinc-800 bg-[#121216] p-4 space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Calendar className="h-4 w-4 text-zinc-400" />
+                  <span className="text-xs font-bold text-white">30-Day Retention Cycle</span>
+                </div>
+                <span className="rounded-full bg-zinc-800 border border-zinc-700 px-2.5 py-0.5 text-[10px] font-bold text-white font-mono">
+                  Day {analytics.currentCycleDay} of 30
+                </span>
+              </div>
+
+              {/* Cycle Progress Bar */}
+              <div className="w-full h-2 rounded-full bg-zinc-800 overflow-hidden">
+                <div
+                  className="h-full bg-white transition-all duration-300 rounded-full"
+                  style={{ width: `${cyclePercent}%` }}
+                />
+              </div>
+
+              <div className="flex items-center justify-between text-[11px] text-zinc-400">
+                <span>Month Progress</span>
+                <span className="font-mono text-zinc-300">{cyclePercent}% complete</span>
+              </div>
+
+              {cycleResetMessage && (
+                <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-2.5 text-[11px] text-emerald-300 flex items-center gap-2">
+                  <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400 shrink-0" />
+                  <span>{cycleResetMessage}</span>
+                </div>
+              )}
+
+              <p className="text-[10px] text-zinc-400 leading-relaxed border-t border-zinc-800/80 pt-2">
+                💡 <strong>Data Retention Policy:</strong> When the 30-day month completes, your performance report is automatically emailed to <strong>{restaurant.email || 'your registered email'}</strong> and the counter restarts from Day 1 to ensure lean, scalable database storage.
+              </p>
+
+              <button
+                type="button"
+                onClick={handleTriggerMonthlyReset}
+                disabled={isResettingCycle}
+                className="w-full flex items-center justify-center gap-1.5 rounded-xl border border-zinc-700 bg-zinc-850 py-2 px-3 text-xs font-semibold text-zinc-200 hover:text-white hover:bg-zinc-800 transition active:scale-95 disabled:opacity-50"
+              >
+                <Send className="h-3.5 w-3.5" />
+                <span>{isResettingCycle ? 'Dispatching Report...' : 'Email Monthly Report & Reset to Day 1'}</span>
+              </button>
+            </div>
+          );
+        })()}
+
         {/* Tab 1: Reviews & Real Data Chat Feed (Primary) */}
         {activeTab === 'reviews' && (
           <div className="space-y-4 animate-fade-in">
+            {/* Interactive Review Analytics Chart (Day, Week, Month) */}
+            {(() => {
+              const analytics = computeReviewAnalytics(reviewsList, restaurant.cycleStartDate);
+              const activeBars =
+                chartPeriod === 'day'
+                  ? analytics.dayWise
+                  : chartPeriod === 'week'
+                  ? analytics.weekWise
+                  : analytics.monthWise;
+              const maxCount = Math.max(1, ...activeBars.map((b) => b.count));
+
+              return (
+                <div className="rounded-2xl border border-zinc-800 bg-[#121216] p-4 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-1.5">
+                      <BarChart3 className="h-4 w-4 text-zinc-400" />
+                      <h3 className="text-xs font-bold text-white">Review Volume Trends</h3>
+                    </div>
+
+                    {/* Chart Period Switcher */}
+                    <div className="flex rounded-lg bg-[#0A0A0C] border border-zinc-800 p-0.5">
+                      {(['day', 'week', 'month'] as const).map((p) => (
+                        <button
+                          key={p}
+                          type="button"
+                          onClick={() => setChartPeriod(p)}
+                          className={`rounded-md px-2.5 py-1 text-[10px] font-bold capitalize transition ${
+                            chartPeriod === p
+                              ? 'bg-white text-black'
+                              : 'text-zinc-400 hover:text-white'
+                          }`}
+                        >
+                          {p}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Visual Bar Chart */}
+                  <div className="pt-2">
+                    <div className="flex items-end justify-between gap-1.5 h-28 px-1 pb-1 border-b border-zinc-800">
+                      {activeBars.map((bar, idx) => {
+                        const barHeightPercent = Math.max(12, Math.round((bar.count / maxCount) * 100));
+                        return (
+                          <div key={idx} className="flex-1 flex flex-col items-center gap-1 group">
+                            <span className="text-[9px] font-mono text-zinc-400">
+                              {bar.count}
+                            </span>
+                            <div className="w-full flex items-end justify-center h-20">
+                              <div
+                                style={{ height: `${barHeightPercent}%` }}
+                                className={`w-full max-w-[28px] rounded-t-md transition-all duration-300 ${
+                                  bar.isCurrent
+                                    ? 'bg-white shadow-[0_0_12px_rgba(255,255,255,0.4)]'
+                                    : 'bg-zinc-700 hover:bg-zinc-600'
+                                }`}
+                              />
+                            </div>
+                            <span className={`text-[9px] font-medium tracking-tight truncate ${
+                              bar.isCurrent ? 'text-white font-bold' : 'text-zinc-500'
+                            }`}>
+                              {bar.label}
+                            </span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between text-[10px] text-zinc-400 pt-0.5">
+                    <span className="flex items-center gap-1">
+                      <TrendingUp className="h-3 w-3 text-emerald-400" />
+                      <span>{reviewsList.length} verified reviews posted</span>
+                    </span>
+                    <span className="font-mono text-zinc-300">Filtered: {chartPeriod.toUpperCase()}</span>
+                  </div>
+                </div>
+              );
+            })()}
+
             {/* Live Feed Header */}
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between pt-1">
               <div>
                 <h2 className="text-sm font-bold text-white flex items-center gap-1.5">
                   <MessageSquare className="h-4 w-4 text-zinc-400" />
-                  <span>Diner Review Activity</span>
+                  <span>Verified Google Reviews Feed</span>
                 </h2>
                 <p className="text-[11px] text-zinc-400">
-                  Real reviews drafted at your tabletop stands
+                  Only reviews confirmed &amp; posted to Google appear here
                 </p>
               </div>
               <button
@@ -527,13 +693,18 @@ function RestaurantAdminDashboardContent() {
                     className="rounded-2xl border border-zinc-800 bg-[#121216] p-4 space-y-2.5 shadow-sm"
                   >
                     <div className="flex items-center justify-between text-xs">
-                      <div className="flex items-center gap-1">
-                        {[...Array(rev.overallRating || 5)].map((_, i) => (
-                          <Star key={i} className="h-3.5 w-3.5 text-amber-400 fill-amber-400" />
-                        ))}
-                        <span className="text-[11px] font-bold text-white ml-1">5.0</span>
+                      <div className="flex items-center gap-1.5">
+                        <div className="flex items-center gap-0.5">
+                          {[...Array(rev.overallRating || 5)].map((_, i) => (
+                            <Star key={i} className="h-3 w-3 text-amber-400 fill-amber-400" />
+                          ))}
+                        </div>
+                        <span className="text-[10px] font-semibold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-full flex items-center gap-1">
+                          <CheckCircle2 className="h-2.5 w-2.5" />
+                          <span>Posted to Google</span>
+                        </span>
                       </div>
-                      <div className="flex items-center gap-1 text-[10px] text-zinc-400">
+                      <div className="flex items-center gap-1 text-[10px] text-zinc-400 font-mono">
                         <Clock className="h-3 w-3" />
                         <span>{new Date(rev.timestamp).toLocaleDateString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
                       </div>

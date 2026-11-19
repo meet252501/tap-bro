@@ -231,6 +231,9 @@ export default function RestaurantDinerPage() {
           {currentStep === 3 && (
             <StepDraft
               config={restaurant}
+              restaurantSlug={slug}
+              selectedDishes={selectedDishes}
+              ratings={ratings}
               draftText={draftText}
               isGenerating={isGenerating}
               locale={locale}

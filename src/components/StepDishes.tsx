@@ -164,8 +164,8 @@ export const StepDishes: React.FC<StepDishesProps> = ({
         </div>
       </div>
 
-      {/* Action Buttons */}
-      <div className="space-y-2.5 pt-2">
+      {/* Sticky Mobile-First Action Buttons */}
+      <div className="sticky bottom-0 z-20 bg-[#0A0A0C]/95 backdrop-blur-xl border-t border-zinc-800/80 -mx-4 px-4 py-3 space-y-2">
         <button
           type="button"
           onClick={onNext}
@@ -178,7 +178,7 @@ export const StepDishes: React.FC<StepDishesProps> = ({
         <button
           type="button"
           onClick={onBack}
-          className="flex w-full items-center justify-center gap-1 py-2 text-xs font-medium text-zinc-400 hover:text-white transition"
+          className="flex w-full items-center justify-center gap-1 py-1 text-xs font-medium text-zinc-400 hover:text-white transition"
         >
           <ChevronLeft className="h-3.5 w-3.5" />
           <span>Back to star ratings</span>

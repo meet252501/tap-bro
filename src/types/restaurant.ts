@@ -11,6 +11,7 @@ export interface DinerReviewRecord {
   reviewDraft: string;
   tone: string;
   locale: string;
+  postedToGoogle?: boolean;
 }
 
 export interface Restaurant {
@@ -32,6 +33,9 @@ export interface Restaurant {
   createdAt: string;
   updatedAt: string;
   reviewsLog?: DinerReviewRecord[];
+  cycleStartDate?: string; // ISO date when current 30-day cycle began
+  lastMonthlyReportSentAt?: string; // ISO date of last dispatched monthly report
+  monthlyArchivedCount?: number; // Total reviews recorded in past archived months
 }
 
 export interface BusinessInvite {

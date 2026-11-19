@@ -82,15 +82,9 @@ export async function POST(req: NextRequest) {
 
     const result = await generateUniversalReview(draftRequest, aiProvider, customKey);
 
-    if (targetSlug && typeof targetSlug === 'string' && result?.draft) {
-      await recordDinerReview(targetSlug, {
-        ratings: cleanRatings,
-        selectedDishes: cleanDishes,
-        reviewDraft: result.draft,
-        tone: validTone,
-        locale: validLocale,
-      });
-    }
+    // Note: Reviews are NOT recorded at draft generation time.
+    // They are only recorded when the diner actually clicks "Copy & Open Google Reviews",
+    // preventing misleading unposted drafts from showing up in the restaurant's review log.
 
     return NextResponse.json(result, {
       status: 200,

@@ -155,8 +155,8 @@ export const StepRatings: React.FC<StepRatingsProps> = ({ ratings, onChange, onN
         })}
       </div>
 
-      {/* Prominent Action CTA */}
-      <div className="pt-3">
+      {/* Sticky Mobile-First Action CTA */}
+      <div className="sticky bottom-0 z-20 bg-[#0A0A0C]/95 backdrop-blur-xl border-t border-zinc-800/80 -mx-4 px-4 py-3 pt-3">
         <button
           type="button"
           onClick={onNext}
@@ -167,8 +167,8 @@ export const StepRatings: React.FC<StepRatingsProps> = ({ ratings, onChange, onN
         </button>
 
         {!hasAtLeastOneRating && (
-          <p className="mt-2.5 text-center text-[11px] text-zinc-500 font-medium">
-            You can proceed even without rating all categories.
+          <p className="mt-1.5 text-center text-[10px] text-zinc-400 font-medium">
+            Tap stars above or tap continue to proceed.
           </p>
         )}
       </div>

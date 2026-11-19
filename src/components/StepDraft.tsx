@@ -23,10 +23,14 @@ import {
   ReviewLanguage,
   ReviewTone,
   GenderGrammar,
+  ExperienceRatings,
 } from '@/types/review';
 
 interface StepDraftProps {
   config: RestaurantConfig;
+  restaurantSlug?: string;
+  selectedDishes?: string[];
+  ratings?: ExperienceRatings;
   draftText: string;
   isGenerating: boolean;
   locale: ReviewLanguage;
@@ -43,6 +47,9 @@ interface StepDraftProps {
 
 export const StepDraft: React.FC<StepDraftProps> = ({
   config,
+  restaurantSlug,
+  selectedDishes,
+  ratings,
   draftText,
   isGenerating,
   locale,
@@ -95,6 +102,21 @@ export const StepDraft: React.FC<StepDraftProps> = ({
   const handleCopyAndOpenGoogle = async () => {
     await copyToClipboard();
     setCopiedAndOpened(true);
+
+    // Record review as officially confirmed & posted on Google!
+    if (restaurantSlug) {
+      fetch(`/api/restaurants/${restaurantSlug}/post-review`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          reviewDraft: draftText,
+          selectedDishes: selectedDishes || [],
+          ratings: ratings || { overall: 5 },
+          tone,
+          locale,
+        }),
+      }).catch((e) => console.warn('Could not record review post event:', e));
+    }
 
     if (config.googleReviewUrl) {
       setTimeout(() => {
@@ -285,9 +307,21 @@ export const StepDraft: React.FC<StepDraftProps> = ({
         </div>
       </div>
 
-      {/* Prominent Mobile-First CTA Action Buttons */}
-      <div className="space-y-2.5 pt-1">
-        {/* Super Button: 1-Tap Copy & Open Google Reviews (or Copy Review Text if no URL configured) */}
+      {/* How to Post Quick Guide */}
+      <div className="rounded-2xl border border-zinc-800 bg-[#121216] p-3.5 space-y-2 text-xs">
+        <h3 className="font-semibold text-zinc-300 flex items-center gap-1.5 uppercase tracking-wider text-[10px]">
+          <HelpCircle className="h-3 w-3 text-zinc-400" />
+          <span>Post to Google in 2 steps:</span>
+        </h3>
+        <ol className="text-zinc-400 space-y-1 list-decimal list-inside leading-relaxed text-[11px]">
+          <li>Tap <strong className="text-white">Copy &amp; Open Google Reviews</strong> below.</li>
+          <li>Google opens with 5 stars: long-press $\rightarrow$ tap <strong className="text-white">Paste</strong> $\rightarrow$ <strong className="text-white">Post</strong>. Done! 🎉</li>
+        </ol>
+      </div>
+
+      {/* Sticky Mobile-First CTA Action Bar (Always docked at bottom of phone screen) */}
+      <div className="sticky bottom-0 z-30 bg-[#0A0A0C]/95 backdrop-blur-xl border-t border-zinc-800/80 -mx-4 px-4 py-3 space-y-2">
+        {/* Super Button: 1-Tap Copy & Open Google Reviews */}
         <button
           type="button"
           onClick={handleCopyAndOpenGoogle}
@@ -356,24 +390,11 @@ export const StepDraft: React.FC<StepDraftProps> = ({
         <button
           type="button"
           onClick={onBack}
-          className="flex w-full items-center justify-center gap-1 py-2 text-xs font-medium text-zinc-400 hover:text-white transition"
+          className="flex w-full items-center justify-center gap-1 py-1 text-xs font-medium text-zinc-400 hover:text-white transition"
         >
           <ChevronLeft className="h-3.5 w-3.5" />
           <span>Back to edit dishes or ratings</span>
         </button>
-      </div>
-
-      {/* How to Post Card */}
-      <div className="rounded-2xl border border-zinc-800 bg-[#121216] p-4 space-y-2.5 text-xs">
-        <h3 className="font-semibold text-zinc-300 flex items-center gap-1.5 uppercase tracking-wider text-[11px]">
-          <HelpCircle className="h-3.5 w-3.5 text-zinc-400" />
-          <span>How to post your review in 10 seconds</span>
-        </h3>
-        <ol className="text-zinc-400 space-y-1.5 list-decimal list-inside leading-relaxed text-[11px]">
-          <li>Tap <strong className="text-white">Copy &amp; Open Google Reviews</strong> above.</li>
-          <li>Google will open. Tap your star rating (e.g. 5★).</li>
-          <li>Paste your copied review text and tap <strong className="text-white">Post</strong>. Done! 🎉</li>
-        </ol>
       </div>
     </div>
   );

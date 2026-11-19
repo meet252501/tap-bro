@@ -1,6 +1,6 @@
 import fs from 'fs';
 import path from 'path';
-import { Restaurant, BusinessInvite } from '@/types/restaurant';
+import { Restaurant, BusinessInvite, DinerReviewRecord } from '@/types/restaurant';
 import { generateRandomTempPass } from '@/lib/tokens';
 import {
   isDatabaseConfigured,
@@ -501,13 +501,32 @@ export async function recordDinerReview(
     locale: string;
   }
 ): Promise<void> {
+  await recordConfirmedPostedReview(slug, reviewData);
+}
+
+/**
+ * Record a review ONLY when the diner confirms & clicks to post on Google.
+ * Marks postedToGoogle = true and increments verified count.
+ */
+export async function recordConfirmedPostedReview(
+  slug: string,
+  reviewData: {
+    ratings: Record<string, number>;
+    selectedDishes: string[];
+    reviewDraft: string;
+    tone: string;
+    locale: string;
+  }
+): Promise<DinerReviewRecord | null> {
   const rest = await getRestaurantBySlug(slug);
-  if (!rest) return;
+  if (!rest) return null;
+
   rest.totalReviewsGenerated = (rest.totalReviewsGenerated || 0) + 1;
   if (!rest.reviewsLog) rest.reviewsLog = [];
+
   const overall = reviewData.ratings?.overall || 5;
   const reviewId = 'REV_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
-  const reviewRecord = {
+  const reviewRecord: DinerReviewRecord = {
     id: reviewId,
     timestamp: new Date().toISOString(),
     overallRating: overall,
@@ -516,11 +535,19 @@ export async function recordDinerReview(
     reviewDraft: reviewData.reviewDraft,
     tone: reviewData.tone,
     locale: reviewData.locale,
+    postedToGoogle: true,
   };
+
   rest.reviewsLog.unshift(reviewRecord);
-  if (rest.reviewsLog.length > 100) {
-    rest.reviewsLog = rest.reviewsLog.slice(0, 100);
+  if (rest.reviewsLog.length > 200) {
+    rest.reviewsLog = rest.reviewsLog.slice(0, 200);
   }
+
+  // Initialize cycleStartDate if missing
+  if (!rest.cycleStartDate) {
+    rest.cycleStartDate = rest.createdAt || new Date().toISOString();
+  }
+
   await saveRestaurant(rest);
 
   if (isDatabaseConfigured()) {
@@ -528,7 +555,81 @@ export async function recordDinerReview(
       console.error('[db] Error logging review in Postgres audit table:', err);
     });
   }
+
+  return reviewRecord;
 }
+
+/**
+ * Reset 30-day retention cycle: emails summary to owner, archives counts,
+ * and clears raw review draft logs to prevent database bloating.
+ */
+export async function resetRestaurantMonthlyCycle(slug: string): Promise<{
+  success: boolean;
+  message: string;
+  stats?: any;
+}> {
+  const rest = await getRestaurantBySlug(slug);
+  if (!rest) return { success: false, message: 'Restaurant not found' };
+
+  const reviews = rest.reviewsLog || [];
+  const total = reviews.length;
+  const avg =
+    total > 0
+      ? reviews.reduce((acc, r) => acc + (r.overallRating || 5), 0) / total
+      : 5.0;
+
+  const dishCounts: Record<string, number> = {};
+  reviews.forEach((r) => {
+    (r.selectedDishes || []).forEach((d) => {
+      dishCounts[d] = (dishCounts[d] || 0) + 1;
+    });
+  });
+  const topDishes = Object.entries(dishCounts)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 3)
+    .map(([name, count]) => ({ name, count }));
+
+  const topQuote = reviews[0]?.reviewDraft || undefined;
+
+  const cycleDays = rest.cycleStartDate
+    ? Math.max(1, Math.floor((Date.now() - new Date(rest.cycleStartDate).getTime()) / (1000 * 60 * 60 * 24)) + 1)
+    : 30;
+
+  const stats = {
+    totalReviews: total,
+    averageRating: avg,
+    topDishes,
+    topQuote,
+    cycleDays,
+  };
+
+  if (rest.email) {
+    try {
+      const { sendMonthlyReportEmail } = await import('./email');
+      await sendMonthlyReportEmail(rest, stats);
+    } catch (err) {
+      console.error('[db] Error dispatching monthly report email:', err);
+    }
+  }
+
+  // Archive & Clean Data: start counting from Day 1, clear old month logs to free space
+  rest.monthlyArchivedCount = (rest.monthlyArchivedCount || 0) + total;
+  rest.reviewsLog = [];
+  rest.totalReviewsGenerated = 0;
+  rest.cycleStartDate = new Date().toISOString();
+  rest.lastMonthlyReportSentAt = new Date().toISOString();
+  rest.updatedAt = new Date().toISOString();
+
+  await saveRestaurant(rest);
+
+  return {
+    success: true,
+    message: `Monthly report emailed and retention cycle reset to Day 1. Clean storage ready!`,
+    stats,
+  };
+}
+
+export { computeReviewAnalytics } from './analytics';
 
 // ----------------- INVITE MANAGEMENT (Super Admin) -----------------
 

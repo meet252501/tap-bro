@@ -11,7 +11,7 @@ export interface EmailPayload {
   subject: string;
   text: string;
   html: string;
-  type: 'welcome' | 'superadmin-notification' | 'owner-invite' | 'general';
+  type: 'welcome' | 'superadmin-notification' | 'owner-invite' | 'monthly-report' | 'general';
   attachments?: Array<{
     filename: string;
     path?: string;
@@ -870,4 +870,140 @@ export async function sendOnboardingEmails(
       console.warn('Failed to send owner welcome email:', e);
     }
   }
+}
+
+/**
+ * Send 30-day Monthly Review Summary & Data Retention Report to Restaurant Owner
+ */
+export async function sendMonthlyReportEmail(
+  restaurant: { name: string; email?: string; slug: string; id: string },
+  stats: {
+    totalReviews: number;
+    averageRating: number;
+    topDishes: { name: string; count: number }[];
+    topQuote?: string;
+    cycleDays: number;
+  }
+): Promise<{ success: boolean; message: string }> {
+  if (!restaurant.email) {
+    return { success: false, message: 'Restaurant has no registered email' };
+  }
+
+  const adminUrl = resolvePublicBaseUrl() + `/admin/${restaurant.slug}`;
+  const stars = stats.averageRating > 0 ? stats.averageRating.toFixed(1) : '5.0';
+
+  const html = `
+    <!DOCTYPE html>
+    <html lang="en">
+    <body style="margin: 0; padding: 20px 10px; background-color: #0A0A0C; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+      <table width="100%" border="0" cellpadding="0" cellspacing="0" style="max-width: 580px; margin: 0 auto; background: #121216; border: 1px solid #27272A; border-radius: 18px; overflow: hidden;">
+        <tr>
+          <td height="4" style="background: #FFFFFF; line-height: 4px; font-size: 1px;">&nbsp;</td>
+        </tr>
+        <tr>
+          <td style="padding: 28px 28px 16px 28px; text-align: center;">
+            <img src="https://tapbro.vercel.app/tap-bro-logo.png" alt="Tap-Bro" width="60" height="60" style="border-radius: 14px; border: 1px solid #3F3F46; margin: 0 auto 12px; display: block;" />
+            <span style="display: inline-block; background-color: #18181B; color: #FFFFFF; border: 1px solid #3F3F46; font-size: 10px; font-weight: 600; padding: 4px 14px; border-radius: 999px; text-transform: uppercase;">
+              Monthly Review Recap (Day ${stats.cycleDays} of 30)
+            </span>
+            <h1 style="color: #FFFFFF; font-size: 22px; font-weight: 700; margin: 12px 0 6px 0;">
+              ${restaurant.name}
+            </h1>
+            <p style="color: #A1A1AA; font-size: 13px; line-height: 1.5; margin: 0;">
+              Here is your official 30-day Google review performance summary generated from your tabletop NFC stand.
+            </p>
+          </td>
+        </tr>
+
+        <!-- KPI Cards Grid -->
+        <tr>
+          <td style="padding: 10px 28px;">
+            <table width="100%" border="0" cellpadding="0" cellspacing="0">
+              <tr>
+                <td width="48%" style="background-color: #0A0A0C; border: 1px solid #27272A; border-radius: 12px; padding: 16px; text-align: center;">
+                  <span style="color: #71717A; font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Google Reviews Posted</span>
+                  <div style="color: #FFFFFF; font-size: 28px; font-weight: 800; margin-top: 6px;">${stats.totalReviews}</div>
+                </td>
+                <td width="4%">&nbsp;</td>
+                <td width="48%" style="background-color: #0A0A0C; border: 1px solid #27272A; border-radius: 12px; padding: 16px; text-align: center;">
+                  <span style="color: #71717A; font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Average Star Rating</span>
+                  <div style="color: #FFFFFF; font-size: 28px; font-weight: 800; margin-top: 6px;">${stars} ★</div>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+
+        ${stats.topDishes.length > 0 ? `
+        <!-- Top Dishes Section -->
+        <tr>
+          <td style="padding: 12px 28px 0 28px;">
+            <div style="background-color: #0A0A0C; border: 1px solid #27272A; border-radius: 12px; padding: 18px;">
+              <span style="color: #A1A1AA; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Most Praised Signature Dishes</span>
+              <table width="100%" border="0" cellpadding="0" cellspacing="0" style="margin-top: 10px;">
+                ${stats.topDishes.map((dish, i) => `
+                  <tr>
+                    <td style="color: #EDEDED; font-size: 13px; font-weight: 500; padding: 4px 0;">
+                      ${i + 1}. ${dish.name}
+                    </td>
+                    <td align="right" style="color: #A1A1AA; font-size: 12px; font-weight: 600; font-family: monospace;">
+                      ${dish.count} mentions
+                    </td>
+                  </tr>
+                `).join('')}
+              </table>
+            </div>
+          </td>
+        </tr>
+        ` : ''}
+
+        ${stats.topQuote ? `
+        <!-- Highlight Quote -->
+        <tr>
+          <td style="padding: 12px 28px 0 28px;">
+            <div style="background-color: #0A0A0C; border: 1px solid #27272A; border-radius: 12px; padding: 18px;">
+              <span style="color: #A1A1AA; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Guest Feedback Highlight</span>
+              <p style="color: #D4D4D8; font-size: 13px; font-style: italic; line-height: 1.5; margin: 8px 0 0 0;">
+                &quot;${stats.topQuote}&quot;
+              </p>
+            </div>
+          </td>
+        </tr>
+        ` : ''}
+
+        <!-- Cycle Reset Notice -->
+        <tr>
+          <td style="padding: 16px 28px;">
+            <div style="background-color: #18181B; border: 1px solid #3F3F46; border-radius: 12px; padding: 14px; text-align: center; color: #A1A1AA; font-size: 11px; line-height: 1.5;">
+              <strong style="color: #FFFFFF;">Clean Retention Cycle Complete:</strong> Detailed logs from this past month have been archived to keep database storage lightweight and fast. Day counter has reset to <strong>Day 1</strong> for your new 30-day period.
+            </div>
+          </td>
+        </tr>
+
+        <!-- CTA Button -->
+        <tr>
+          <td style="padding: 0 28px 24px 28px; text-align: center;">
+            <a href="${adminUrl}" style="display: block; background: #FFFFFF; color: #0A0A0C; font-weight: 700; text-decoration: none; padding: 14px 24px; border-radius: 12px; font-size: 14px;">
+              Open Manager Dashboard →
+            </a>
+          </td>
+        </tr>
+
+        <tr>
+          <td style="padding: 16px 28px; background: #0A0A0C; border-top: 1px solid #27272A; text-align: center; color: #71717A; font-size: 11px;">
+            Tap-Bro Tabletop NFC Review Assistant • Automated 30-Day Performance Audit
+          </td>
+        </tr>
+      </table>
+    </body>
+    </html>
+  `;
+
+  return sendTapBroEmail({
+    to: restaurant.email,
+    subject: `📊 [Tap-Bro Monthly Report] ${restaurant.name} Review Performance & 30-Day Recap`,
+    text: `Tap-Bro 30-Day Performance Report for ${restaurant.name}\n\nTotal Google Reviews Posted: ${stats.totalReviews}\nAverage Rating: ${stars} ★\n\nDetailed logs archived; Day 1 started for new cycle.\nDashboard: ${adminUrl}`,
+    html,
+    type: 'monthly-report',
+  });
 }
