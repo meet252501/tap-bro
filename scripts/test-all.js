@@ -135,7 +135,7 @@ async function runTests() {
           cuisine: 'North Indian & Mughlai',
           tagline: 'Authentic Royal Flavors',
           location: 'Connaught Place, New Delhi',
-          googleReviewUrl: 'https://search.google.com/local/writereview?placeid=ChIJN1t_tDeuEmsRUsoyG83frY4',
+          googleReviewUrl: '',
           customDishes: ['Butter Chicken Special', 'Mutton Rogan Josh', 'Garlic Naan', 'Dum Biryani'],
         }),
       });

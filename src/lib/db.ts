@@ -470,9 +470,7 @@ export async function createRestaurant(data: {
     phone: data.phone.trim(),
     email: data.email?.trim() || undefined,
     adminPin: data.adminPin.trim() || '1234',
-    googleReviewUrl:
-      data.googleReviewUrl?.trim() ||
-      'https://search.google.com/local/writereview?placeid=ChIJN1t_tDeuEmsRUsoyG83frY4',
+    googleReviewUrl: data.googleReviewUrl?.trim() || '',
     aiProvider: 'nvidia',
     totalReviewsGenerated: 0,
     tableCount: data.tableCount || 10,

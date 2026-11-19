@@ -5,7 +5,7 @@ export const DEFAULT_RESTAURANT_CONFIG: RestaurantConfig = {
   tagline: 'Artisanal Indian Cuisine & Heritage Chaat House',
   cuisine: 'North Indian & Chaat Bistro',
   location: 'Civil Lines, Varanasi / Central Avenue',
-  googleReviewUrl: 'https://search.google.com/local/writereview?placeid=ChIJN1t_tDeuEmsRUsoyG83frY4',
+  googleReviewUrl: '',
   menuCategories: [
     {
       name: 'Signature Chaat & Starters',

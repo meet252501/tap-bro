@@ -287,7 +287,7 @@ export const StepDraft: React.FC<StepDraftProps> = ({
 
       {/* Prominent Mobile-First CTA Action Buttons */}
       <div className="space-y-2.5 pt-1">
-        {/* Super Button: 1-Tap Copy & Open Google Reviews */}
+        {/* Super Button: 1-Tap Copy & Open Google Reviews (or Copy Review Text if no URL configured) */}
         <button
           type="button"
           onClick={handleCopyAndOpenGoogle}
@@ -301,18 +301,27 @@ export const StepDraft: React.FC<StepDraftProps> = ({
           {copiedAndOpened ? (
             <>
               <Check className="h-5 w-5 stroke-[2.5]" />
-              <span>Copied! Opening Google Reviews...</span>
+              <span>{config.googleReviewUrl ? 'Copied! Opening Google Reviews...' : 'Copied to Clipboard!'}</span>
             </>
           ) : (
             <>
-              <Sparkles className="h-5 w-5 fill-current" />
-              <span>Copy & Open Google Reviews 🚀</span>
+              {config.googleReviewUrl ? (
+                <>
+                  <Sparkles className="h-5 w-5 fill-current" />
+                  <span>Copy & Open Google Reviews 🚀</span>
+                </>
+              ) : (
+                <>
+                  <Copy className="h-5 w-5" />
+                  <span>Copy Review Text</span>
+                </>
+              )}
             </>
           )}
         </button>
 
-        {/* Secondary: Copy Only */}
-        <div className="grid grid-cols-2 gap-2">
+        {/* Secondary: Copy Only & Open Google */}
+        <div className={`grid ${config.googleReviewUrl ? 'grid-cols-2' : 'grid-cols-1'} gap-2`}>
           <button
             type="button"
             onClick={handleCopyOnly}
@@ -327,18 +336,20 @@ export const StepDraft: React.FC<StepDraftProps> = ({
             <span>{copied ? 'Copied!' : 'Copy Text Only'}</span>
           </button>
 
-          <button
-            type="button"
-            onClick={() => {
-              if (config.googleReviewUrl) {
-                window.open(config.googleReviewUrl, '_blank', 'noopener,noreferrer');
-              }
-            }}
-            className="flex items-center justify-center gap-1.5 rounded-xl border border-zinc-800 bg-[#18181B] py-2.5 px-3 text-xs font-semibold text-zinc-300 hover:text-white hover:border-zinc-700 transition active:scale-95"
-          >
-            <ExternalLink className="h-3.5 w-3.5 text-zinc-400" />
-            <span>Open Google Only</span>
-          </button>
+          {config.googleReviewUrl && (
+            <button
+              type="button"
+              onClick={() => {
+                if (config.googleReviewUrl) {
+                  window.open(config.googleReviewUrl, '_blank', 'noopener,noreferrer');
+                }
+              }}
+              className="flex items-center justify-center gap-1.5 rounded-xl border border-zinc-800 bg-[#18181B] py-2.5 px-3 text-xs font-semibold text-zinc-300 hover:text-white hover:border-zinc-700 transition active:scale-95"
+            >
+              <ExternalLink className="h-3.5 w-3.5 text-zinc-400" />
+              <span>Open Google Only</span>
+            </button>
+          )}
         </div>
 
         {/* Back Link */}

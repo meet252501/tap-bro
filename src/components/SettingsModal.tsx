@@ -32,7 +32,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
       name: name.trim() || DEFAULT_RESTAURANT_CONFIG.name,
       tagline: tagline.trim() || DEFAULT_RESTAURANT_CONFIG.tagline,
       cuisine: cuisine.trim() || DEFAULT_RESTAURANT_CONFIG.cuisine,
-      googleReviewUrl: googleReviewUrl.trim() || DEFAULT_RESTAURANT_CONFIG.googleReviewUrl,
+      googleReviewUrl: googleReviewUrl.trim(),
     });
     onClose();
   };
@@ -41,7 +41,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
     setName(DEFAULT_RESTAURANT_CONFIG.name);
     setTagline(DEFAULT_RESTAURANT_CONFIG.tagline);
     setCuisine(DEFAULT_RESTAURANT_CONFIG.cuisine);
-    setGoogleReviewUrl(DEFAULT_RESTAURANT_CONFIG.googleReviewUrl);
+    setGoogleReviewUrl('');
   };
 
   return (
