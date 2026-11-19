@@ -1,12 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getInviteByEmailAndTempPass, createRestaurant, markInviteCompleted } from '@/lib/db';
 import { sendOnboardingEmails, resolvePublicBaseUrl } from '@/lib/email';
+import { verifyInviteToken } from '@/lib/tokens';
 
 export async function POST(req: NextRequest) {
   try {
     const {
       email,
       tempPass,
+      token,
       restaurantName,
       phone,
       adminPin,
@@ -24,10 +26,23 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const invite = getInviteByEmailAndTempPass(email, tempPass);
+    let invite = getInviteByEmailAndTempPass(email, tempPass);
+    if (!invite && token) {
+      const tokenResult = verifyInviteToken(token, email, tempPass);
+      if (tokenResult.valid) {
+        invite = {
+          id: `INV_${email.replace(/[^a-zA-Z0-9]/g, '').slice(0, 8).toUpperCase()}`,
+          email: email.trim().toLowerCase(),
+          tempPass: tempPass.trim().toUpperCase(),
+          status: 'pending',
+          createdAt: new Date().toISOString(),
+        };
+      }
+    }
+
     if (!invite) {
       return NextResponse.json(
-        { error: 'Invalid or expired temporary password for this email.' },
+        { error: 'Invalid or expired temporary password for this email. Passes expire after 48 hours.' },
         { status: 403 }
       );
     }

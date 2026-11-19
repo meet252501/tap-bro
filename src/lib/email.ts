@@ -2,6 +2,7 @@ import nodemailer from 'nodemailer';
 import fs from 'fs';
 import path from 'path';
 import { getSuperAdminConfig, getDataFilePath } from '@/lib/db';
+import { createInviteToken } from '@/lib/tokens';
 
 const LOG_FILE = getDataFilePath('sent-emails.json');
 
@@ -596,27 +597,8 @@ export async function sendOwnerInviteEmail(data: {
   baseUrl?: string;
 }) {
   const baseUrl = resolvePublicBaseUrl(data.baseUrl);
-  const setupUrl = `${baseUrl}/setup?email=${encodeURIComponent(data.email)}&pass=${encodeURIComponent(data.tempPass)}`;
-
-  const logoEmailPath = path.join(process.cwd(), 'public', 'tap-bro-logo-email.png');
-  const logoFallbackPath = path.join(process.cwd(), 'public', 'tap-bro-logo.png');
-  const logoPath = fs.existsSync(logoEmailPath)
-    ? logoEmailPath
-    : fs.existsSync(logoFallbackPath)
-    ? logoFallbackPath
-    : null;
-
-  const attachments = logoPath
-    ? [
-        {
-          filename: 'tap-bro-logo.png',
-          path: logoPath,
-          cid: 'tapbro_logo',
-          contentDisposition: 'inline',
-          contentType: 'image/png',
-        },
-      ]
-    : [];
+  const token = createInviteToken(data.email, data.tempPass, 48);
+  const setupUrl = `${baseUrl}/setup?email=${encodeURIComponent(data.email)}&pass=${encodeURIComponent(data.tempPass)}&token=${encodeURIComponent(token)}`;
 
   const html = `
     <!DOCTYPE html>
@@ -653,11 +635,7 @@ export async function sendOwnerInviteEmail(data: {
                   <table border="0" cellspacing="0" cellpadding="0" style="margin: 0 auto 14px auto;">
                     <tr>
                       <td align="center" style="width: 64px; height: 64px; border-radius: 18px; border: 2px solid #F5C84C; overflow: hidden; background-color: #0E1017; box-shadow: 0 4px 18px rgba(245, 200, 76, 0.3);">
-                        ${
-                          logoPath
-                            ? `<img src="cid:tapbro_logo" alt="Tap-Bro" width="64" height="64" border="0" style="display: block; border: 0; object-fit: cover;" onerror="this.src='https://tapbro.vercel.app/tap-bro-logo.png'" />`
-                            : `<img src="https://tapbro.vercel.app/tap-bro-logo.png" alt="Tap-Bro" width="64" height="64" border="0" style="display: block; border: 0; object-fit: cover;" />`
-                        }
+                        <img src="https://tapbro.vercel.app/tap-bro-logo.png" alt="Tap-Bro" width="64" height="64" border="0" style="display: block; border: 0; object-fit: cover;" />
                       </td>
                     </tr>
                   </table>
@@ -752,13 +730,12 @@ export async function sendOwnerInviteEmail(data: {
     </html>
   `;
 
-  await sendTapBroEmail({
+  return await sendTapBroEmail({
     to: data.email,
     subject: `Tap-Bro Access Code: ${data.tempPass}`,
     text: `Hey Bro! Welcome to Tap-Bro 🚀\n\nYour Temporary Pass is: ${data.tempPass}\n\nSet up your restaurant here:\n${setupUrl}\n\nCheers,\nTap-Bro Team`,
     html,
     type: 'owner-invite',
-    attachments,
   });
 }
 
@@ -783,24 +760,6 @@ export async function sendOnboardingEmails(
   const dinerUrl = `${baseUrl}/r/${restaurant.slug}`;
   const adminUrl = `${baseUrl}/admin/${restaurant.slug}`;
 
-  const logoEmailPath = path.join(process.cwd(), 'public', 'tap-bro-logo-email.png');
-  const logoFallbackPath = path.join(process.cwd(), 'public', 'tap-bro-logo.png');
-  const logoPath = fs.existsSync(logoEmailPath)
-    ? logoEmailPath
-    : fs.existsSync(logoFallbackPath)
-    ? logoFallbackPath
-    : null;
-
-  const attachments = logoPath
-    ? [
-        {
-          filename: 'tap-bro-logo.png',
-          path: logoPath,
-          cid: 'tapbro_logo',
-        },
-      ]
-    : [];
-
   // 1. Alert Super Admin
   const superAdminHtml = `
     <!DOCTYPE html>
@@ -812,11 +771,7 @@ export async function sendOnboardingEmails(
         </tr>
         <tr>
           <td style="padding: 24px 28px; text-align: center;">
-            ${
-              logoPath
-                ? `<img src="cid:tapbro_logo" alt="Tap-Bro" width="56" height="56" style="border-radius: 14px; border: 1px solid #10B981; margin: 0 auto 12px;" />`
-                : ''
-            }
+            <img src="https://tapbro.vercel.app/tap-bro-logo.png" alt="Tap-Bro" width="56" height="56" style="border-radius: 14px; border: 1px solid #10B981; margin: 0 auto 12px; display: block;" />
             <span style="display: inline-block; background-color: rgba(16, 185, 129, 0.15); color: #10B981; border: 1px solid rgba(16, 185, 129, 0.3); font-size: 10px; font-weight: 800; padding: 3px 12px; border-radius: 999px; text-transform: uppercase;">
               🎉 Partner Registration Verified
             </span>
@@ -846,7 +801,6 @@ export async function sendOnboardingEmails(
     text: `Restaurant setup completed on Tap-Bro: ${restaurant.name}. Phone: ${restaurant.phone}, Email: ${restaurant.email || 'N/A'}, ID: ${restaurant.id}`,
     html: superAdminHtml,
     type: 'superadmin-notification',
-    attachments,
   });
 
   // 2. Also send welcome congratulations email to the Restaurant Owner if email was provided
@@ -861,11 +815,7 @@ export async function sendOnboardingEmails(
           </tr>
           <tr>
             <td style="padding: 28px 28px 16px 28px; text-align: center;">
-              ${
-                logoPath
-                  ? `<img src="cid:tapbro_logo" alt="Tap-Bro" width="64" height="64" style="border-radius: 16px; border: 1px solid #F5C84C; margin: 0 auto 12px;" />`
-                  : ''
-              }
+              <img src="https://tapbro.vercel.app/tap-bro-logo.png" alt="Tap-Bro" width="64" height="64" style="border-radius: 16px; border: 1px solid #F5C84C; margin: 0 auto 12px; display: block;" />
               <span style="display: inline-block; background-color: rgba(245, 200, 76, 0.15); color: #F5C84C; border: 1px solid rgba(245, 200, 76, 0.3); font-size: 10px; font-weight: 800; padding: 4px 14px; border-radius: 999px; text-transform: uppercase;">
                 🎉 Welcome to Tap-Bro
               </span>
@@ -914,7 +864,6 @@ export async function sendOnboardingEmails(
         text: `Welcome to Tap-Bro! ${restaurant.name} is now live.\n\nDiner Station: ${dinerUrl}\nManager Hub: ${adminUrl}\nPIN: ${restaurant.adminPin}`,
         html: ownerWelcomeHtml,
         type: 'welcome',
-        attachments,
       });
     } catch (e) {
       console.warn('Failed to send owner welcome email:', e);

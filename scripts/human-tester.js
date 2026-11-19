@@ -62,7 +62,7 @@ async function runHumanTester() {
 
     // Look for login fields
     await page.fill('input[type="email"]', 'princesharma9955a@gmail.com');
-    await page.fill('input[placeholder*="prince@777"]', 'prince@777');
+    await page.fill('input[type="password"]', 'prince@777');
     await page.click('button:has-text("Access Super Admin Dashboard")');
 
     // Wait for master dashboard to mount

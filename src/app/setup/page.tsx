@@ -23,6 +23,7 @@ function SetupContent() {
 
   const [email, setEmail] = useState('');
   const [tempPass, setTempPass] = useState('');
+  const [token, setToken] = useState<string | null>(null);
   const [isVerified, setIsVerified] = useState(false);
   const [validating, setValidating] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -44,16 +45,22 @@ function SetupContent() {
   useEffect(() => {
     const urlEmail = searchParams?.get('email');
     const urlPass = searchParams?.get('pass');
+    const urlToken = searchParams?.get('token');
 
     if (urlEmail) setEmail(urlEmail);
     if (urlPass) setTempPass(urlPass);
+    if (urlToken) setToken(urlToken);
 
     if (urlEmail && urlPass) {
       setValidating(true);
       fetch('/api/setup/validate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: urlEmail.trim(), tempPass: urlPass.trim() }),
+        body: JSON.stringify({
+          email: urlEmail.trim(),
+          tempPass: urlPass.trim(),
+          token: urlToken || undefined,
+        }),
       })
         .then((res) => res.json())
         .then((data) => {
@@ -61,7 +68,7 @@ function SetupContent() {
             setIsVerified(true);
             setError(null);
           } else {
-            setError(data.error || 'Temporary pass is invalid or expired');
+            setError(data.error || 'Temporary pass is invalid or expired (valid for 48 hours)');
           }
         })
         .catch(() => setError('Unable to auto-validate temporary pass. Please verify manually.'))
@@ -78,14 +85,18 @@ function SetupContent() {
       const res = await fetch('/api/setup/validate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: email.trim(), tempPass: tempPass.trim() }),
+        body: JSON.stringify({
+          email: email.trim(),
+          tempPass: tempPass.trim(),
+          token: token || undefined,
+        }),
       });
 
       const data = await res.json();
       if (res.ok && data.success) {
         setIsVerified(true);
       } else {
-        setError(data.error || 'Invalid or expired temporary password');
+        setError(data.error || 'Invalid or expired temporary password (valid for 48 hours)');
       }
     } catch (err: any) {
       setError(err.message || 'Validation error');
@@ -119,6 +130,7 @@ function SetupContent() {
         body: JSON.stringify({
           email: email.trim(),
           tempPass: tempPass.trim(),
+          token: token || undefined,
           restaurantName: restaurantName.trim(),
           phone: phone.trim(),
           adminPin: adminPin.trim(),

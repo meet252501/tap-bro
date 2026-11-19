@@ -1,7 +1,7 @@
 {
   "superAdminEmail": "princesharma9955a@gmail.com",
   "superAdminPassword": "prince@777",
-  "emailProvider": "gmail-oauth",
+  "emailProvider": "smtp",
   "resendApiKey": "",
   "resendFrom": "Tap-Bro <onboarding@resend.dev>",
   "smtp": {

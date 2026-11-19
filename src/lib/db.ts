@@ -488,10 +488,13 @@ export function createBusinessInvite(email: string, notes?: string): BusinessInv
   const list = getAllInvites();
   const cleanEmail = email.trim().toLowerCase();
 
-  // Invalidate/remove any previous pending invites for this email to avoid conflicting codes
-  const filteredList = list.filter(
-    (inv) => !(inv.email.toLowerCase() === cleanEmail && inv.status === 'pending')
-  );
+  // Keep all invites valid for 48 hours; do not prematurely delete pending passes
+  const now = Date.now();
+  const activeList = list.filter((inv) => {
+    if (inv.status === 'completed') return true;
+    const created = new Date(inv.createdAt).getTime();
+    return now - created < 48 * 60 * 60 * 1000;
+  });
 
   // Generate a friendly 4-digit temporary password, e.g. "TAP-7492"
   const randNum = Math.floor(1000 + Math.random() * 9000);
@@ -506,8 +509,8 @@ export function createBusinessInvite(email: string, notes?: string): BusinessInv
     createdAt: new Date().toISOString(),
   };
 
-  filteredList.unshift(invite);
-  fs.writeFileSync(INVITES_FILE, JSON.stringify(filteredList, null, 2), 'utf-8');
+  activeList.unshift(invite);
+  fs.writeFileSync(INVITES_FILE, JSON.stringify(activeList, null, 2), 'utf-8');
   return invite;
 }
 
@@ -516,14 +519,26 @@ export function getInviteByEmailAndTempPass(email: string, tempPass: string): Bu
   const cleanEmail = email.trim().toLowerCase();
   const cleanPass = tempPass.trim().toUpperCase();
 
-  return (
-    list.find(
-      (inv) =>
-        inv.email.toLowerCase() === cleanEmail &&
-        inv.tempPass.toUpperCase() === cleanPass &&
-        inv.status === 'pending'
-    ) || null
+  const match = list.find(
+    (inv) =>
+      inv.email.toLowerCase() === cleanEmail &&
+      inv.tempPass.toUpperCase() === cleanPass &&
+      inv.status === 'pending'
   );
+
+  if (!match) return null;
+
+  // 48-hour expiration window
+  const created = new Date(match.createdAt).getTime();
+  if (Date.now() - created > 48 * 60 * 60 * 1000) {
+    match.status = 'expired';
+    try {
+      fs.writeFileSync(INVITES_FILE, JSON.stringify(list, null, 2), 'utf-8');
+    } catch {}
+    return null;
+  }
+
+  return match;
 }
 
 export function markInviteCompleted(inviteId: string, restaurantId: string, restaurantSlug: string) {

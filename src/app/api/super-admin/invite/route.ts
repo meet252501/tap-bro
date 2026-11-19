@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createBusinessInvite, authenticateSuperAdmin } from '@/lib/db';
 import { sendOwnerInviteEmail, resolvePublicBaseUrl } from '@/lib/email';
+import { createInviteToken } from '@/lib/tokens';
 
 export async function POST(req: NextRequest) {
   try {
@@ -26,9 +27,10 @@ export async function POST(req: NextRequest) {
 
     // Create invite with unique temp pass
     const invite = createBusinessInvite(targetEmail, notes);
+    const token = createInviteToken(invite.email, invite.tempPass, 48);
 
     // Send invitation email with temporary password
-    await sendOwnerInviteEmail({
+    const emailResult = await sendOwnerInviteEmail({
       email: invite.email,
       tempPass: invite.tempPass,
       notes: invite.notes,
@@ -37,8 +39,11 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      message: `Invitation with temporary password dispatched to ${invite.email}`,
-      invite,
+      message: emailResult?.message || `Invitation dispatched to ${invite.email}`,
+      invite: {
+        ...invite,
+        token,
+      },
     });
   } catch (error: any) {
     return NextResponse.json({ error: error.message || 'Invite error' }, { status: 500 });

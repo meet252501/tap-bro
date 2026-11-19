@@ -33,8 +33,8 @@ import { Restaurant, BusinessInvite } from '@/types/restaurant';
 
 export default function SuperAdminPage() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [adminEmail, setAdminEmail] = useState('princesharma9955a@gmail.com');
-  const [adminPin, setAdminPin] = useState('prince@777');
+  const [adminEmail, setAdminEmail] = useState('');
+  const [adminPin, setAdminPin] = useState('');
   const [authError, setAuthError] = useState<string | null>(null);
 
   // Dashboard Data
@@ -50,7 +50,7 @@ export default function SuperAdminPage() {
   const [inviteNotes, setInviteNotes] = useState('');
   const [inviting, setInviting] = useState(false);
   const [copiedLink, setCopiedLink] = useState<string | null>(null);
-  const [dispatchedInvite, setDispatchedInvite] = useState<{ email: string; tempPass: string } | null>(null);
+  const [dispatchedInvite, setDispatchedInvite] = useState<{ email: string; tempPass: string; token?: string } | null>(null);
   const [registeredNotice, setRegisteredNotice] = useState<{ email: string; restaurantName: string } | null>(null);
 
   // Password Change State
@@ -202,6 +202,7 @@ export default function SuperAdminPage() {
         setDispatchedInvite({
           email: targetEmail.trim(),
           tempPass: data.invite.tempPass,
+          token: data.invite.token,
         });
         setTargetEmail('');
         setInviteNotes('');
@@ -399,8 +400,10 @@ export default function SuperAdminPage() {
     return 'https://tapbro.vercel.app';
   };
 
-  const copySetupLink = (email: string, tempPass: string) => {
-    const url = `${getPublicBaseUrl()}/setup?email=${encodeURIComponent(email)}&pass=${encodeURIComponent(tempPass)}`;
+  const copySetupLink = (email: string, tempPass: string, token?: string) => {
+    const url = `${getPublicBaseUrl()}/setup?email=${encodeURIComponent(email)}&pass=${encodeURIComponent(tempPass)}${
+      token ? `&token=${encodeURIComponent(token)}` : ''
+    }`;
     navigator.clipboard.writeText(url);
     setCopiedLink(tempPass);
     setTimeout(() => setCopiedLink(null), 3000);
@@ -437,6 +440,7 @@ export default function SuperAdminPage() {
                 <input
                   type="email"
                   required
+                  placeholder="admin@tapbro.com"
                   value={adminEmail}
                   onChange={(e) => setAdminEmail(e.target.value)}
                   className="w-full rounded-xl border border-border bg-surface pl-10 pr-3.5 py-2.5 text-xs text-white focus:border-amber-400 focus:outline-none"
@@ -453,15 +457,12 @@ export default function SuperAdminPage() {
                 <input
                   type="password"
                   required
-                  placeholder="e.g. prince@777"
+                  placeholder="••••••••••••"
                   value={adminPin}
                   onChange={(e) => setAdminPin(e.target.value)}
                   className="w-full rounded-xl border border-border bg-surface pl-10 pr-3.5 py-2.5 text-xs text-white focus:border-amber-400 focus:outline-none font-mono"
                 />
               </div>
-              <p className="text-[11px] text-zinc-400 mt-1">
-                Hard-saved master password: <span className="text-amber-400 font-bold font-mono">prince@777</span>
-              </p>
             </div>
 
             <button
@@ -622,7 +623,9 @@ export default function SuperAdminPage() {
                   <span className="text-amber-400">
                     {`${getPublicBaseUrl()}/setup?email=${encodeURIComponent(
                       dispatchedInvite.email
-                    )}&pass=${encodeURIComponent(dispatchedInvite.tempPass)}`}
+                    )}&pass=${encodeURIComponent(dispatchedInvite.tempPass)}${
+                      dispatchedInvite.token ? `&token=${encodeURIComponent(dispatchedInvite.token)}` : ''
+                    }`}
                   </span>
                 </div>
 
@@ -630,11 +633,11 @@ export default function SuperAdminPage() {
                   {/* WhatsApp Button */}
                   <a
                     href={`https://wa.me/?text=${encodeURIComponent(
-                      `Hello! Welcome to Tap-Bro. Here is your digital restaurant onboarding link:\n${getPublicBaseUrl()}/setup?email=${encodeURIComponent(
+                      `Hello! Welcome to Tap-Bro. Here is your digital restaurant onboarding link (valid for 48 hours):\n${getPublicBaseUrl()}/setup?email=${encodeURIComponent(
                         dispatchedInvite.email
-                      )}&pass=${encodeURIComponent(dispatchedInvite.tempPass)}\nTemporary Pass: ${
-                        dispatchedInvite.tempPass
-                      }`
+                      )}&pass=${encodeURIComponent(dispatchedInvite.tempPass)}${
+                        dispatchedInvite.token ? `&token=${encodeURIComponent(dispatchedInvite.token)}` : ''
+                      }\nTemporary Pass: ${dispatchedInvite.tempPass}`
                     )}`}
                     target="_blank"
                     rel="noreferrer"
@@ -648,7 +651,13 @@ export default function SuperAdminPage() {
                   {/* Copy Link Button */}
                   <button
                     type="button"
-                    onClick={() => copySetupLink(dispatchedInvite.email, dispatchedInvite.tempPass)}
+                    onClick={() =>
+                      copySetupLink(
+                        dispatchedInvite.email,
+                        dispatchedInvite.tempPass,
+                        dispatchedInvite.token
+                      )
+                    }
                     className="inline-flex items-center gap-1.5 rounded-xl bg-surface-raised border border-border px-3 py-1.5 text-xs font-semibold text-amber-400 hover:text-white transition"
                   >
                     {copiedLink === dispatchedInvite.tempPass ? (
