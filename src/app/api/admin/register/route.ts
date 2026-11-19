@@ -13,7 +13,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const restaurant = createRestaurant({
+    const restaurant = await createRestaurant({
       name,
       phone,
       email,

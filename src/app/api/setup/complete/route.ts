@@ -29,7 +29,7 @@ export async function POST(req: NextRequest) {
     const cleanEmail = email.trim().toLowerCase();
     const cleanPass = tempPass.trim().toUpperCase();
 
-    let invite = getInviteByEmailAndTempPass(cleanEmail, cleanPass);
+    let invite = await getInviteByEmailAndTempPass(cleanEmail, cleanPass);
     if (!invite && token) {
       const tokenResult = verifyInviteToken(token, cleanEmail, cleanPass);
       if (tokenResult.valid) {
@@ -61,7 +61,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Create the restaurant
-    const newRestaurant = createRestaurant({
+    const newRestaurant = await createRestaurant({
       name: restaurantName,
       phone,
       email,
@@ -74,7 +74,7 @@ export async function POST(req: NextRequest) {
     });
 
     // Mark invite as completed
-    markInviteCompleted(invite.id, newRestaurant.id, newRestaurant.slug);
+    await markInviteCompleted(invite.id, newRestaurant.id, newRestaurant.slug);
 
     // Send confirmation alert
     try {

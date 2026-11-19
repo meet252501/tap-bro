@@ -2,6 +2,20 @@ import fs from 'fs';
 import path from 'path';
 import { Restaurant, BusinessInvite } from '@/types/restaurant';
 import { getDeterministicPass, isValidPassForEmail } from '@/lib/tokens';
+import {
+  isDatabaseConfigured,
+  pgGetAllRestaurants,
+  pgGetRestaurantBySlug,
+  pgGetRestaurantById,
+  pgSaveRestaurant,
+  pgDeleteRestaurant,
+  pgGetAllInvites,
+  pgSaveInvite,
+  pgDeleteInvite,
+  pgGetConfig,
+  pgSaveConfig,
+  pgRecordReview,
+} from '@/lib/postgres';
 
 export function getDataFilePath(filename: string): string {
   const standardPath = path.join(process.cwd(), 'data', filename);
@@ -98,10 +112,32 @@ export function getSuperAdminConfig(): SuperAdminConfig {
   return cfg;
 }
 
+export async function getSuperAdminConfigAsync(): Promise<SuperAdminConfig> {
+  if (isDatabaseConfigured()) {
+    try {
+      const dbConfig = await pgGetConfig<SuperAdminConfig>('superadmin-config');
+      if (dbConfig && dbConfig.superAdminPassword) {
+        // Cache to local file
+        try {
+          fs.mkdirSync(path.dirname(CONFIG_FILE), { recursive: true });
+          fs.writeFileSync(CONFIG_FILE, JSON.stringify(dbConfig, null, 2), 'utf-8');
+        } catch {}
+        return dbConfig;
+      }
+    } catch {}
+  }
+  return getSuperAdminConfig();
+}
+
 export function saveSuperAdminConfig(cfg: SuperAdminConfig): boolean {
   try {
     fs.mkdirSync(path.dirname(CONFIG_FILE), { recursive: true });
     fs.writeFileSync(CONFIG_FILE, JSON.stringify(cfg, null, 2), 'utf-8');
+    if (isDatabaseConfigured()) {
+      pgSaveConfig('superadmin-config', cfg).catch((err) => {
+        console.error('Async Postgres config save error:', err);
+      });
+    }
     return true;
   } catch (err) {
     console.error('Failed to save super admin config:', err);
@@ -109,15 +145,19 @@ export function saveSuperAdminConfig(cfg: SuperAdminConfig): boolean {
   }
 }
 
-export function updateSuperAdminPassword(newPassword: string): boolean {
-  const cfg = getSuperAdminConfig();
+export async function updateSuperAdminPassword(newPassword: string): Promise<boolean> {
+  const cfg = await getSuperAdminConfigAsync();
   cfg.superAdminPassword = newPassword.trim();
   cfg.updatedAt = new Date().toISOString();
-  return saveSuperAdminConfig(cfg);
+  saveSuperAdminConfig(cfg);
+  if (isDatabaseConfigured()) {
+    await pgSaveConfig('superadmin-config', cfg);
+  }
+  return true;
 }
 
-export function updateSuperAdminEmailConfig(data: Partial<SuperAdminConfig>): boolean {
-  const cfg = getSuperAdminConfig();
+export async function updateSuperAdminEmailConfig(data: Partial<SuperAdminConfig>): Promise<boolean> {
+  const cfg = await getSuperAdminConfigAsync();
   if (data.emailProvider) cfg.emailProvider = data.emailProvider;
   if (data.resendApiKey !== undefined) cfg.resendApiKey = data.resendApiKey.trim();
   if (data.resendFrom !== undefined) cfg.resendFrom = data.resendFrom.trim();
@@ -144,18 +184,22 @@ export function updateSuperAdminEmailConfig(data: Partial<SuperAdminConfig>): bo
     };
   }
   cfg.updatedAt = new Date().toISOString();
-  return saveSuperAdminConfig(cfg);
+  saveSuperAdminConfig(cfg);
+  if (isDatabaseConfigured()) {
+    await pgSaveConfig('superadmin-config', cfg);
+  }
+  return true;
 }
 
-export function updateSuperAdminSMTP(smtpData: {
+export async function updateSuperAdminSMTP(smtpData: {
   host: string;
   port: number;
   user: string;
   pass: string;
   from?: string;
   secure?: boolean;
-}): boolean {
-  const cfg = getSuperAdminConfig();
+}): Promise<boolean> {
+  const cfg = await getSuperAdminConfigAsync();
   cfg.smtp = {
     host: smtpData.host.trim(),
     port: Number(smtpData.port) || 587,
@@ -165,10 +209,12 @@ export function updateSuperAdminSMTP(smtpData: {
     secure: smtpData.secure || Number(smtpData.port) === 465,
   };
   cfg.updatedAt = new Date().toISOString();
-  return saveSuperAdminConfig(cfg);
+  saveSuperAdminConfig(cfg);
+  if (isDatabaseConfigured()) {
+    await pgSaveConfig('superadmin-config', cfg);
+  }
+  return true;
 }
-
-const INITIAL_RESTAURANTS: Restaurant[] = [];
 
 function ensureFile(): void {
   if (!fs.existsSync(DATA_FILE)) {
@@ -184,32 +230,100 @@ function ensureInvitesFile(): void {
   }
 }
 
-export function getAllRestaurants(): Restaurant[] {
+function getLocalRestaurants(): Restaurant[] {
   ensureFile();
   try {
     const content = fs.readFileSync(DATA_FILE, 'utf-8');
     return JSON.parse(content) as Restaurant[];
   } catch (err) {
     console.error('Error reading restaurants file:', err);
-    return INITIAL_RESTAURANTS;
+    return [];
   }
 }
 
-export function getRestaurantBySlug(slug: string): Restaurant | null {
-  const list = getAllRestaurants();
-  return list.find((r) => r.slug.toLowerCase() === slug.toLowerCase()) || null;
+function saveLocalRestaurants(list: Restaurant[]): boolean {
+  ensureFile();
+  try {
+    fs.writeFileSync(DATA_FILE, JSON.stringify(list, null, 2), 'utf-8');
+    return true;
+  } catch (err) {
+    console.error('Error writing restaurants file:', err);
+    return false;
+  }
 }
 
-export function getRestaurantById(id: string): Restaurant | null {
-  const list = getAllRestaurants();
-  return list.find((r) => r.id === id) || null;
+function getLocalInvites(): BusinessInvite[] {
+  ensureInvitesFile();
+  try {
+    return JSON.parse(fs.readFileSync(INVITES_FILE, 'utf-8')) as BusinessInvite[];
+  } catch {
+    return [];
+  }
 }
 
-export function authenticateAdmin(phoneOrEmail: string, pinOrId: string): Restaurant | null {
+function saveLocalInvites(list: BusinessInvite[]): boolean {
+  ensureInvitesFile();
+  try {
+    fs.writeFileSync(INVITES_FILE, JSON.stringify(list, null, 2), 'utf-8');
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+// ----------------- RESTAURANTS CRUD (Postgres primary + JSON fallback) -----------------
+
+export async function getAllRestaurants(): Promise<Restaurant[]> {
+  if (isDatabaseConfigured()) {
+    try {
+      const dbList = await pgGetAllRestaurants();
+      if (Array.isArray(dbList)) {
+        // Sync local cache
+        saveLocalRestaurants(dbList);
+        return dbList;
+      }
+    } catch (err) {
+      console.error('[db] Error fetching restaurants from Postgres, falling back to local file:', err);
+    }
+  }
+  return getLocalRestaurants();
+}
+
+export async function getRestaurantBySlug(slug: string): Promise<Restaurant | null> {
+  const cleanSlug = slug.trim().toLowerCase();
+  if (isDatabaseConfigured()) {
+    try {
+      const rest = await pgGetRestaurantBySlug(cleanSlug);
+      if (rest) return rest;
+    } catch (err) {
+      console.error('[db] Error fetching restaurant by slug from Postgres:', err);
+    }
+  }
+  const localList = getLocalRestaurants();
+  return localList.find((r) => r.slug.toLowerCase() === cleanSlug) || null;
+}
+
+export async function getRestaurantById(id: string): Promise<Restaurant | null> {
+  const cleanId = id.trim();
+  if (isDatabaseConfigured()) {
+    try {
+      const rest = await pgGetRestaurantById(cleanId);
+      if (rest) return rest;
+    } catch (err) {
+      console.error('[db] Error fetching restaurant by id from Postgres:', err);
+    }
+  }
+  const localList = getLocalRestaurants();
+  return localList.find((r) => r.id === cleanId) || null;
+}
+
+export async function authenticateAdmin(phoneOrEmail: string, pinOrId: string): Promise<Restaurant | null> {
   const cleanInput = phoneOrEmail.trim().toLowerCase();
   const cleanPhone = phoneOrEmail.replace(/\D/g, '');
   const cleanPass = pinOrId.trim();
-  const list = getAllRestaurants();
+  const list = await getAllRestaurants();
+
+  const inviteMatch = await getInviteByEmailAndTempPass(cleanInput, cleanPass);
 
   return (
     list.find((r) => {
@@ -217,7 +331,7 @@ export function authenticateAdmin(phoneOrEmail: string, pinOrId: string): Restau
       const matchEmail = r.email && r.email.toLowerCase() === cleanInput;
       const matchSlug = r.slug && r.slug.toLowerCase() === cleanInput;
       const matchPin = r.adminPin === cleanPass || r.id === cleanPass;
-      const matchTempPass = Boolean(matchEmail && (isValidPassForEmail(cleanInput, cleanPass) || getInviteByEmailAndTempPass(cleanInput, cleanPass) !== null));
+      const matchTempPass = Boolean(matchEmail && (isValidPassForEmail(cleanInput, cleanPass) || inviteMatch !== null));
       return (matchPhone || matchEmail || matchSlug) && (matchPin || matchTempPass);
     }) || null
   );
@@ -232,15 +346,14 @@ export function authenticateSuperAdmin(email: string, pinOrPass: string): boolea
   const currentPass = cfg.superAdminPassword?.trim() || 'prince@777';
   const envPass = process.env.SUPER_ADMIN_PASSWORD?.trim() || 'prince@777';
 
-  // Support current active password, hard-saved 'prince@777', and legacy pins for fallback
   const validPins = [currentPass, envPass, 'prince@777', '9955', 'admin123', 'tapbro2026', 'prince9955'];
 
   return cleanEmail === superAdminEmail && validPins.includes(inputPass);
 }
 
-export function saveRestaurant(updated: Restaurant): boolean {
-  ensureFile();
-  const list = getAllRestaurants();
+export async function saveRestaurant(updated: Restaurant): Promise<boolean> {
+  // 1. Update local cache
+  const list = getLocalRestaurants();
   const index = list.findIndex((r) => r.id === updated.id);
 
   if (index >= 0) {
@@ -251,33 +364,43 @@ export function saveRestaurant(updated: Restaurant): boolean {
   } else {
     list.push({
       ...updated,
-      createdAt: new Date().toISOString(),
+      createdAt: updated.createdAt || new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     });
   }
+  saveLocalRestaurants(list);
 
-  try {
-    fs.writeFileSync(DATA_FILE, JSON.stringify(list, null, 2), 'utf-8');
-    return true;
-  } catch (err) {
-    console.error('Error saving restaurant:', err);
-    return false;
+  // 2. Persist to Postgres
+  if (isDatabaseConfigured()) {
+    try {
+      return await pgSaveRestaurant(updated);
+    } catch (err) {
+      console.error('[db] Error saving restaurant to Postgres:', err);
+    }
   }
+
+  return true;
 }
 
-export function deleteRestaurant(id: string): boolean {
-  ensureFile();
-  const list = getAllRestaurants();
+export async function deleteRestaurant(id: string): Promise<boolean> {
+  // 1. Remove from local file
+  const list = getLocalRestaurants();
   const filtered = list.filter((r) => r.id !== id && r.slug !== id);
-  try {
-    fs.writeFileSync(DATA_FILE, JSON.stringify(filtered, null, 2), 'utf-8');
-    return true;
-  } catch {
-    return false;
+  saveLocalRestaurants(filtered);
+
+  // 2. Remove from Postgres
+  if (isDatabaseConfigured()) {
+    try {
+      return await pgDeleteRestaurant(id);
+    } catch (err) {
+      console.error('[db] Error deleting restaurant from Postgres:', err);
+    }
   }
+
+  return true;
 }
 
-export function createRestaurant(data: {
+export async function createRestaurant(data: {
   name: string;
   phone: string;
   adminPin: string;
@@ -288,7 +411,7 @@ export function createRestaurant(data: {
   tableCount?: number;
   googleReviewUrl?: string;
   customDishes?: string[];
-}): Restaurant {
+}): Promise<Restaurant> {
   const cleanName = data.name.trim();
   const baseSlug = cleanName
     .toLowerCase()
@@ -297,7 +420,7 @@ export function createRestaurant(data: {
 
   let slug = baseSlug || 'restaurant';
   let counter = 1;
-  while (getRestaurantBySlug(slug)) {
+  while (await getRestaurantBySlug(slug)) {
     slug = `${baseSlug}-${counter++}`;
   }
 
@@ -360,19 +483,19 @@ export function createRestaurant(data: {
     menuCategories,
   };
 
-  saveRestaurant(newRest);
+  await saveRestaurant(newRest);
   return newRest;
 }
 
-export function incrementReviewCount(slug: string): void {
-  const rest = getRestaurantBySlug(slug);
+export async function incrementReviewCount(slug: string): Promise<void> {
+  const rest = await getRestaurantBySlug(slug);
   if (rest) {
     rest.totalReviewsGenerated = (rest.totalReviewsGenerated || 0) + 1;
-    saveRestaurant(rest);
+    await saveRestaurant(rest);
   }
 }
 
-export function recordDinerReview(
+export async function recordDinerReview(
   slug: string,
   reviewData: {
     ratings: Record<string, number>;
@@ -381,14 +504,15 @@ export function recordDinerReview(
     tone: string;
     locale: string;
   }
-): void {
-  const rest = getRestaurantBySlug(slug);
+): Promise<void> {
+  const rest = await getRestaurantBySlug(slug);
   if (!rest) return;
   rest.totalReviewsGenerated = (rest.totalReviewsGenerated || 0) + 1;
   if (!rest.reviewsLog) rest.reviewsLog = [];
   const overall = reviewData.ratings?.overall || 5;
-  rest.reviewsLog.unshift({
-    id: 'REV_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+  const reviewId = 'REV_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+  const reviewRecord = {
+    id: reviewId,
     timestamp: new Date().toISOString(),
     overallRating: overall,
     ratings: reviewData.ratings,
@@ -396,27 +520,39 @@ export function recordDinerReview(
     reviewDraft: reviewData.reviewDraft,
     tone: reviewData.tone,
     locale: reviewData.locale,
-  });
+  };
+  rest.reviewsLog.unshift(reviewRecord);
   if (rest.reviewsLog.length > 100) {
     rest.reviewsLog = rest.reviewsLog.slice(0, 100);
   }
-  saveRestaurant(rest);
+  await saveRestaurant(rest);
+
+  if (isDatabaseConfigured()) {
+    pgRecordReview(slug, reviewRecord).catch((err) => {
+      console.error('[db] Error logging review in Postgres audit table:', err);
+    });
+  }
 }
 
 // ----------------- INVITE MANAGEMENT (Super Admin) -----------------
 
-export function getAllInvites(): BusinessInvite[] {
-  ensureInvitesFile();
-  try {
-    return JSON.parse(fs.readFileSync(INVITES_FILE, 'utf-8')) as BusinessInvite[];
-  } catch {
-    return [];
+export async function getAllInvites(): Promise<BusinessInvite[]> {
+  if (isDatabaseConfigured()) {
+    try {
+      const dbList = await pgGetAllInvites();
+      if (Array.isArray(dbList)) {
+        saveLocalInvites(dbList);
+        return dbList;
+      }
+    } catch (err) {
+      console.error('[db] Error fetching invites from Postgres:', err);
+    }
   }
+  return getLocalInvites();
 }
 
-export function createBusinessInvite(email: string, notes?: string): BusinessInvite {
-  ensureInvitesFile();
-  const list = getAllInvites();
+export async function createBusinessInvite(email: string, notes?: string): Promise<BusinessInvite> {
+  const list = await getAllInvites();
   const cleanEmail = email.trim().toLowerCase();
 
   // Keep all invites valid for 48 hours; do not prematurely delete pending passes
@@ -440,12 +576,21 @@ export function createBusinessInvite(email: string, notes?: string): BusinessInv
   };
 
   activeList.unshift(invite);
-  fs.writeFileSync(INVITES_FILE, JSON.stringify(activeList, null, 2), 'utf-8');
+  saveLocalInvites(activeList);
+
+  if (isDatabaseConfigured()) {
+    try {
+      await pgSaveInvite(invite);
+    } catch (err) {
+      console.error('[db] Error saving invite to Postgres:', err);
+    }
+  }
+
   return invite;
 }
 
-export function getInviteByEmailAndTempPass(email: string, tempPass: string): BusinessInvite | null {
-  const list = getAllInvites();
+export async function getInviteByEmailAndTempPass(email: string, tempPass: string): Promise<BusinessInvite | null> {
+  const list = await getAllInvites();
   const cleanEmail = email.trim().toLowerCase();
   const cleanPass = tempPass.trim().toUpperCase();
 
@@ -461,9 +606,10 @@ export function getInviteByEmailAndTempPass(email: string, tempPass: string): Bu
     const created = new Date(match.createdAt).getTime();
     if (Date.now() - created > 48 * 60 * 60 * 1000) {
       match.status = 'expired';
-      try {
-        fs.writeFileSync(INVITES_FILE, JSON.stringify(list, null, 2), 'utf-8');
-      } catch {}
+      saveLocalInvites(list);
+      if (isDatabaseConfigured()) {
+        pgSaveInvite(match).catch(() => {});
+      }
       return null;
     }
     return match;
@@ -484,9 +630,8 @@ export function getInviteByEmailAndTempPass(email: string, tempPass: string): Bu
   return null;
 }
 
-export function markInviteCompleted(inviteId: string, restaurantId: string, restaurantSlug: string) {
-  ensureInvitesFile();
-  const list = getAllInvites();
+export async function markInviteCompleted(inviteId: string, restaurantId: string, restaurantSlug: string): Promise<void> {
+  const list = await getAllInvites();
   const index = list.findIndex((i) => i.id === inviteId);
 
   if (index >= 0) {
@@ -494,18 +639,30 @@ export function markInviteCompleted(inviteId: string, restaurantId: string, rest
     list[index].restaurantId = restaurantId;
     list[index].restaurantSlug = restaurantSlug;
     list[index].completedAt = new Date().toISOString();
-    fs.writeFileSync(INVITES_FILE, JSON.stringify(list, null, 2), 'utf-8');
+    saveLocalInvites(list);
+
+    if (isDatabaseConfigured()) {
+      try {
+        await pgSaveInvite(list[index]);
+      } catch (err) {
+        console.error('[db] Error updating completed invite in Postgres:', err);
+      }
+    }
   }
 }
 
-export function deleteInvite(inviteId: string): boolean {
-  ensureInvitesFile();
-  const list = getAllInvites();
+export async function deleteInvite(inviteId: string): Promise<boolean> {
+  const list = await getAllInvites();
   const filtered = list.filter((i) => i.id !== inviteId);
-  try {
-    fs.writeFileSync(INVITES_FILE, JSON.stringify(filtered, null, 2), 'utf-8');
-    return true;
-  } catch {
-    return false;
+  saveLocalInvites(filtered);
+
+  if (isDatabaseConfigured()) {
+    try {
+      return await pgDeleteInvite(inviteId);
+    } catch (err) {
+      console.error('[db] Error deleting invite from Postgres:', err);
+    }
   }
+
+  return true;
 }

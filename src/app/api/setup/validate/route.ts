@@ -60,8 +60,8 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    // 3. Check local database record (backwards compatibility)
-    const invite = getInviteByEmailAndTempPass(cleanEmail, cleanPass);
+    // 3. Check database record
+    const invite = await getInviteByEmailAndTempPass(cleanEmail, cleanPass);
 
     if (!invite) {
       recordFailedAttempt(limitKey);

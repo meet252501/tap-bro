@@ -13,7 +13,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Restaurant ID required' }, { status: 400 });
     }
 
-    const success = deleteRestaurant(restaurantId);
+    const success = await deleteRestaurant(restaurantId);
 
     return NextResponse.json({
       success,

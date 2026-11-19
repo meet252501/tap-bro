@@ -25,12 +25,12 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const restaurant = authenticateAdmin(phone, pinOrId);
+    const restaurant = await authenticateAdmin(phone, pinOrId);
 
     if (!restaurant) {
       // Check if user has an authorized pending invite with this email and temporary pass
       const cleanEmail = phone.trim().toLowerCase();
-      const invite = getInviteByEmailAndTempPass(cleanEmail, pinOrId.trim());
+      const invite = await getInviteByEmailAndTempPass(cleanEmail, pinOrId.trim());
       if (invite) {
         resetRateLimit(limitKey);
         return NextResponse.json({

@@ -26,7 +26,7 @@ export async function POST(req: NextRequest) {
     const baseUrl = resolvePublicBaseUrl(requestUrl);
 
     // Create invite with unique temp pass
-    const invite = createBusinessInvite(targetEmail, notes);
+    const invite = await createBusinessInvite(targetEmail, notes);
     const token = createInviteToken(invite.email, invite.tempPass, 48);
 
     // Send invitation email with temporary password

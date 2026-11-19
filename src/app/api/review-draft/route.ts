@@ -33,7 +33,7 @@ export async function POST(req: NextRequest) {
     const targetSlug = (restaurantSlug || body.slug);
     let matchedRest = null;
     if (targetSlug && typeof targetSlug === 'string') {
-      matchedRest = getRestaurantBySlug(targetSlug);
+      matchedRest = await getRestaurantBySlug(targetSlug);
     }
 
     const validLocale = locale === 'hinglish' ? 'hinglish' : 'en';
@@ -83,7 +83,7 @@ export async function POST(req: NextRequest) {
     const result = await generateUniversalReview(draftRequest, aiProvider, customKey);
 
     if (targetSlug && typeof targetSlug === 'string' && result?.draft) {
-      recordDinerReview(targetSlug, {
+      await recordDinerReview(targetSlug, {
         ratings: cleanRatings,
         selectedDishes: cleanDishes,
         reviewDraft: result.draft,

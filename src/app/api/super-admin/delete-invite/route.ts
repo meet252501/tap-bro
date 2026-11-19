@@ -13,7 +13,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Invite ID required' }, { status: 400 });
     }
 
-    const success = deleteInvite(inviteId);
+    const success = await deleteInvite(inviteId);
 
     return NextResponse.json({
       success,

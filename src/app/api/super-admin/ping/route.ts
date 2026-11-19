@@ -5,8 +5,8 @@ import { getAllRestaurants, getAllInvites } from '@/lib/db';
 export async function POST(req: NextRequest) {
   try {
     const superAdmin = process.env.SUPER_ADMIN_EMAIL || 'princesharma9955a@gmail.com';
-    const restaurants = getAllRestaurants();
-    const invites = getAllInvites();
+    const restaurants = await getAllRestaurants();
+    const invites = await getAllInvites();
     const timestamp = new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' });
 
     const host = req.headers.get('x-forwarded-host') || req.headers.get('host') || '';

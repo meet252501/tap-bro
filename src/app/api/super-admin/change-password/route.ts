@@ -13,7 +13,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Current password does not match' }, { status: 401 });
     }
 
-    const success = updateSuperAdminPassword(newPassword.trim());
+    const success = await updateSuperAdminPassword(newPassword.trim());
 
     if (success) {
       return NextResponse.json({

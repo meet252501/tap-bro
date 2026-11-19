@@ -7,7 +7,7 @@ export async function GET(
   { params }: { params: { slug: string } }
 ) {
   try {
-    const restaurant = getRestaurantBySlug(params.slug);
+    const restaurant = await getRestaurantBySlug(params.slug);
 
     if (!restaurant) {
       return NextResponse.json({ error: 'Restaurant not found' }, { status: 404 });

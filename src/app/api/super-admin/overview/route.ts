@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getAllRestaurants, getAllInvites, authenticateSuperAdmin, getSuperAdminConfig } from '@/lib/db';
+import { getAllRestaurants, getAllInvites, authenticateSuperAdmin, getSuperAdminConfigAsync } from '@/lib/db';
 import { getSentEmails } from '@/lib/email';
 
 export async function POST(req: NextRequest) {
@@ -10,10 +10,10 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized Super Admin access' }, { status: 401 });
     }
 
-    const restaurants = getAllRestaurants();
-    const invites = getAllInvites();
+    const restaurants = await getAllRestaurants();
+    const invites = await getAllInvites();
     const sentEmails = getSentEmails();
-    const config = getSuperAdminConfig();
+    const config = await getSuperAdminConfigAsync();
 
     const totalReviews = restaurants.reduce((acc, r) => acc + (r.totalReviewsGenerated || 0), 0);
 

@@ -6,7 +6,7 @@ export async function GET(
   { params }: { params: { slug: string } }
 ) {
   try {
-    const restaurant = getRestaurantBySlug(params.slug);
+    const restaurant = await getRestaurantBySlug(params.slug);
 
     if (!restaurant) {
       return NextResponse.json({ error: 'Restaurant not found' }, { status: 404 });
@@ -29,7 +29,7 @@ export async function PUT(
   { params }: { params: { slug: string } }
 ) {
   try {
-    const restaurant = getRestaurantBySlug(params.slug);
+    const restaurant = await getRestaurantBySlug(params.slug);
 
     if (!restaurant) {
       return NextResponse.json({ error: 'Restaurant not found' }, { status: 404 });
@@ -54,7 +54,7 @@ export async function PUT(
     }
     if (customApiKey !== undefined) restaurant.customApiKey = customApiKey.trim();
 
-    saveRestaurant(restaurant);
+    await saveRestaurant(restaurant);
 
     const { adminPin: _pin, customApiKey: _key, ...safeRestaurant } = restaurant;
 

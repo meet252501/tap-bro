@@ -21,7 +21,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized Super Admin access' }, { status: 401 });
     }
 
-    const success = updateSuperAdminEmailConfig({
+    const success = await updateSuperAdminEmailConfig({
       emailProvider: emailProvider || 'brevo',
       brevoApiKey,
       brevoFromEmail,
