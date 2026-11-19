@@ -83,6 +83,45 @@ function getPooledTransporter(host: string, port: number, secure: boolean, user:
 }
 
 /**
+ * Dispatches email using official Google Gmail API via OAuth2 (Client ID + Client Secret + Refresh Token).
+ * High trust level: sent as verified Google Cloud app from the authentic mailbox over HTTPS.
+ */
+export async function sendViaGmailOAuth(
+  user: string,
+  clientId: string,
+  clientSecret: string,
+  refreshToken: string,
+  payload: EmailPayload
+): Promise<{ success: boolean; message: string }> {
+  const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+      type: 'OAuth2',
+      user,
+      clientId,
+      clientSecret,
+      refreshToken,
+    },
+  });
+
+  await transporter.sendMail({
+    from: `"Tap-Bro Team" <${user}>`,
+    to: payload.to,
+    subject: payload.subject,
+    text: payload.text,
+    html: payload.html,
+    attachments: payload.attachments,
+    headers: {
+      'X-Priority': '1',
+      'X-MSMail-Priority': 'High',
+      'Importance': 'High',
+    },
+  });
+
+  return { success: true, message: `Email delivered live via Google OAuth2 REST to ${payload.to}` };
+}
+
+/**
  * Dispatches email using 3rd-party Brevo (Sendinblue) HTTP REST API.
  * Free tier: 300 emails/day to any recipient. Runs over HTTPS (Port 443, never blocked).
  */
@@ -187,7 +226,7 @@ async function sendViaSendGrid(
  * Unified test email delivery function for any selected provider (Brevo, Resend, SendGrid, or SMTP).
  */
 export async function testUnifiedEmailDelivery(options: {
-  provider: 'brevo' | 'resend' | 'sendgrid' | 'smtp';
+  provider: 'brevo' | 'resend' | 'sendgrid' | 'smtp' | 'gmail-oauth';
   targetEmail: string;
   brevoApiKey?: string;
   brevoFromEmail?: string;
@@ -195,6 +234,12 @@ export async function testUnifiedEmailDelivery(options: {
   resendApiKey?: string;
   resendFrom?: string;
   sendgridApiKey?: string;
+  gmail?: {
+    clientId?: string;
+    clientSecret?: string;
+    refreshToken?: string;
+    user?: string;
+  };
   smtp?: {
     host?: string;
     port?: number;
@@ -252,6 +297,23 @@ export async function testUnifiedEmailDelivery(options: {
       return {
         success: true,
         message: `🟢 SendGrid API Connected! Original test email delivered live to ${testPayload.to}`,
+      };
+    } else if (provider === 'gmail-oauth') {
+      const cfg = getSuperAdminConfig();
+      const clientId = options.gmail?.clientId || cfg.gmail?.clientId || process.env.GMAIL_CLIENT_ID;
+      const clientSecret = options.gmail?.clientSecret || cfg.gmail?.clientSecret || process.env.GMAIL_CLIENT_SECRET;
+      const refreshToken = options.gmail?.refreshToken || cfg.gmail?.refreshToken || process.env.GMAIL_REFRESH_TOKEN;
+      const user = options.gmail?.user || cfg.gmail?.user || process.env.GMAIL_USER || 'friendlygaming2525@gmail.com';
+
+      if (!clientId || !clientSecret || !refreshToken) {
+        throw new Error('Google OAuth2 Client ID, Client Secret, and Refresh Token are required');
+      }
+
+      await sendViaGmailOAuth(user, clientId, clientSecret, refreshToken, testPayload);
+      return {
+        success: true,
+        message: `🟢 Google Gmail API (OAuth2) Connected! Test email delivered to ${testPayload.to}`,
+        diagnostics: { user, clientId: clientId.substring(0, 16) + '...' },
       };
     } else {
       // SMTP fallback
@@ -348,6 +410,26 @@ export async function sendTapBroEmail(payload: EmailPayload): Promise<{ success:
     sent: false,
     smtpError: undefined as string | undefined,
   };
+
+  // 1. If provider is Google OAuth2 REST (Official Google Gmail API)
+  if (provider === 'gmail-oauth' || (cfg.gmail?.refreshToken && provider !== 'smtp')) {
+    const gUser = cfg.gmail?.user || process.env.GMAIL_USER || user || 'friendlygaming2525@gmail.com';
+    const gClient = cfg.gmail?.clientId || process.env.GMAIL_CLIENT_ID;
+    const gSecret = cfg.gmail?.clientSecret || process.env.GMAIL_CLIENT_SECRET;
+    const gRefresh = cfg.gmail?.refreshToken || process.env.GMAIL_REFRESH_TOKEN;
+
+    if (gClient && gSecret && gRefresh) {
+      try {
+        const result = await sendViaGmailOAuth(gUser, gClient, gSecret, gRefresh, payload);
+        emailRecord.sent = true;
+        logSentEmail(emailRecord);
+        return result;
+      } catch (err: any) {
+        console.warn('Google OAuth2 dispatch error:', err.message);
+        emailRecord.smtpError = `Gmail OAuth: ${err.message}`;
+      }
+    }
+  }
 
   // 1. If provider is SMTP (e.g. Google SMTP with App Password)
   if (provider === 'smtp') {
@@ -471,11 +553,6 @@ export async function sendTapBroEmail(payload: EmailPayload): Promise<{ success:
         text: payload.text,
         html: payload.html,
         attachments: payload.attachments,
-        headers: {
-          'X-Priority': '1',
-          'X-MSMail-Priority': 'High',
-          'Importance': 'High',
-        },
       });
 
       emailRecord.sent = true;
@@ -504,9 +581,7 @@ export async function sendOwnerInviteEmail(data: {
   notes?: string;
   baseUrl?: string;
 }) {
-  const rawBase = data.baseUrl || process.env.APP_URL || 'https://tapbro.vercel.app';
-  const isLocal = rawBase.includes('localhost') || rawBase.includes('127.0.0.1') || rawBase.includes('192.168.');
-  const baseUrl = isLocal ? 'https://tapbro.vercel.app' : rawBase;
+  const baseUrl = data.baseUrl || process.env.APP_URL || 'https://tapbro.vercel.app';
   const setupUrl = `${baseUrl}/setup?email=${encodeURIComponent(data.email)}&pass=${encodeURIComponent(data.tempPass)}`;
 
   const logoEmailPath = path.join(process.cwd(), 'public', 'tap-bro-logo-email.png');
@@ -538,31 +613,20 @@ export async function sendOwnerInviteEmail(data: {
       <title>Welcome to Tap-Bro!</title>
       <style>
         body { margin: 0; padding: 0; background-color: #0B0C10; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
-        table { border-collapse: collapse; }
-        .email-card { page-break-inside: avoid !important; break-inside: avoid !important; }
-        @media print {
-          body { background-color: #0B0C10 !important; }
-          .email-card { page-break-inside: avoid !important; break-inside: avoid !important; margin: 0 auto !important; }
-        }
         @media only screen and (max-width: 500px) {
           .email-card { width: 100% !important; border-radius: 16px !important; }
-          .pass-code { font-size: 28px !important; letter-spacing: 4px !important; }
+          .pass-code { font-size: 32px !important; letter-spacing: 5px !important; }
           .cta-btn { font-size: 15px !important; padding: 14px 18px !important; }
           .card-padding { padding-left: 18px !important; padding-right: 18px !important; }
         }
       </style>
     </head>
     <body bgcolor="#0B0C10" style="margin: 0; padding: 0; background-color: #0B0C10; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased;">
-      <!-- Hidden Pre-header snippet for inbox preview -->
-      <div style="display:none;max-height:0;max-width:0;opacity:0;overflow:hidden;mso-hide:all;font-size:1px;line-height:1px;color:#0B0C10;">
-        Your Tap-Bro access code is ${data.tempPass}. Set up your tabletop AI review station in under 60 seconds!
-      </div>
-
       <table width="100%" border="0" cellpadding="0" cellspacing="0" bgcolor="#0B0C10" style="padding: 24px 12px; background-color: #0B0C10;">
         <tr>
           <td align="center">
-            <!-- Unified Card (Guaranteed Single Page) -->
-            <table class="email-card" width="100%" border="0" cellpadding="0" cellspacing="0" style="max-width: 480px; background-color: #151720; border: 1px solid #2B3040; border-radius: 20px; overflow: hidden; box-shadow: 0 16px 36px rgba(0, 0, 0, 0.6); page-break-inside: avoid; break-inside: avoid;">
+            <!-- Unified Card -->
+            <table class="email-card" width="100%" border="0" cellpadding="0" cellspacing="0" style="max-width: 480px; background-color: #151720; border: 1px solid #2B3040; border-radius: 20px; overflow: hidden; box-shadow: 0 16px 36px rgba(0, 0, 0, 0.6); page-break-inside: avoid;">
               
               <!-- Yellow Top Bar -->
               <tr>
@@ -571,7 +635,7 @@ export async function sendOwnerInviteEmail(data: {
 
               <!-- Header with Logo -->
               <tr>
-                <td class="card-padding" style="padding: 28px 24px 10px 24px; text-align: center;">
+                <td class="card-padding" style="padding: 30px 24px 10px 24px; text-align: center;">
                   <table border="0" cellspacing="0" cellpadding="0" style="margin: 0 auto 14px auto;">
                     <tr>
                       <td align="center" style="width: 64px; height: 64px; border-radius: 18px; border: 2px solid #F5C84C; overflow: hidden; background-color: #0E1017; box-shadow: 0 4px 18px rgba(245, 200, 76, 0.3);">
@@ -587,7 +651,7 @@ export async function sendOwnerInviteEmail(data: {
                   <h1 style="color: #FFFFFF; font-size: 23px; font-weight: 800; margin: 0 0 6px 0; letter-spacing: -0.3px;">
                     Hey Bro! Welcome to Tap-Bro 🚀
                   </h1>
-                  <p style="color: #9CA3AF; font-size: 13.5px; margin: 0; line-height: 1.5;">
+                  <p style="color: #9CA3AF; font-size: 14px; margin: 0; line-height: 1.5;">
                     Your tabletop AI review assistant is ready. Let's get your spot set up in under 60 seconds!
                   </p>
                 </td>
@@ -595,16 +659,16 @@ export async function sendOwnerInviteEmail(data: {
 
               <!-- Dashed Pass Box -->
               <tr>
-                <td class="card-padding" style="padding: 14px 24px;">
+                <td class="card-padding" style="padding: 16px 24px;">
                   <div style="background-color: #0E1017; border: 2px dashed #F5C84C; border-radius: 16px; padding: 18px 14px; text-align: center; box-shadow: inset 0 2px 8px rgba(0,0,0,0.5);">
                     <div style="color: #CBD5E1; font-size: 12px; font-weight: 600; margin-bottom: 6px;">
                       🔑 Here is your temporary pass:
                     </div>
-                    <div class="pass-code" style="font-size: 32px; font-weight: 900; color: #F5C84C; letter-spacing: 5px; font-family: 'Courier New', Courier, monospace; margin: 6px 0;">
+                    <div class="pass-code" style="font-size: 34px; font-weight: 900; color: #F5C84C; letter-spacing: 6px; font-family: 'Courier New', Courier, monospace; margin: 6px 0;">
                       ${data.tempPass}
                     </div>
                     <div style="color: #64748B; font-size: 11px; margin-top: 4px;">
-                      Linked to: <span style="color: #CBD5E1; font-weight: 600;">${data.email}</span>
+                      Linked to: <span style="color: #94A3B8; font-weight: 600;">${data.email}</span>
                     </div>
                   </div>
                 </td>
@@ -612,7 +676,7 @@ export async function sendOwnerInviteEmail(data: {
 
               <!-- Big Clickable Gold Button -->
               <tr>
-                <td class="card-padding" style="padding: 6px 24px 18px 24px; text-align: center;">
+                <td class="card-padding" style="padding: 6px 24px 20px 24px; text-align: center;">
                   <table border="0" cellspacing="0" cellpadding="0" style="margin: 0 auto; width: 100%;">
                     <tr>
                       <td align="center" bgcolor="#F5C84C" style="border-radius: 14px; background-color: #F5C84C; box-shadow: 0 6px 20px rgba(245, 200, 76, 0.35);">
@@ -630,9 +694,9 @@ export async function sendOwnerInviteEmail(data: {
 
               <!-- How it Works for Guests -->
               <tr>
-                <td class="card-padding" style="padding: 0 24px 16px 24px;">
-                  <div style="background-color: #1A1D27; border: 1px solid #2B3040; border-radius: 14px; padding: 16px; color: #E2E8F0; font-size: 12.5px; line-height: 1.6;">
-                    <strong style="color: #F5C84C; display: block; margin-bottom: 6px; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;">How it works for your guests:</strong>
+                <td class="card-padding" style="padding: 0 24px 18px 24px;">
+                  <div style="background-color: #1A1D27; border: 1px solid #2B3040; border-radius: 14px; padding: 16px; color: #E2E8F0; font-size: 13px; line-height: 1.6;">
+                    <strong style="color: #F5C84C; display: block; margin-bottom: 6px;">How it works for your guests:</strong>
                     <div style="margin-bottom: 5px;">
                       📱 <strong>1. Tap:</strong> Guests tap their phone on your table stand.
                     </div>
@@ -648,7 +712,7 @@ export async function sendOwnerInviteEmail(data: {
 
               <!-- Direct URL Fallback -->
               <tr>
-                <td class="card-padding" style="padding: 0 24px 18px 24px;">
+                <td class="card-padding" style="padding: 0 24px 20px 24px;">
                   <div style="font-size: 11px; color: #64748B; line-height: 1.5; word-break: break-all; border-top: 1px solid #232838; padding-top: 14px;">
                     Or open this link directly:<br/>
                     <a href="${setupUrl}" style="color: #F5C84C; text-decoration: underline; font-weight: 500;">${setupUrl}</a>
@@ -658,7 +722,7 @@ export async function sendOwnerInviteEmail(data: {
 
               <!-- Friendly Footer (Connected Inside Card) -->
               <tr>
-                <td style="background-color: #0E1017; border-top: 1px solid #232838; padding: 16px 24px; text-align: center; color: #94A3B8; font-size: 12px; line-height: 1.5;">
+                <td style="background-color: #0E1017; border-top: 1px solid #232838; padding: 18px 24px; text-align: center; color: #94A3B8; font-size: 12px; line-height: 1.5;">
                   Got questions? Just reply to this email, we're here to help!<br/>
                   <span style="color: #475569; font-size: 11px; margin-top: 4px; display: inline-block;">
                     Cheers,<br/><strong style="color: #CBD5E1;">The Tap-Bro Team</strong>

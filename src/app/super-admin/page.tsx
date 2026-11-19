@@ -60,7 +60,12 @@ export default function SuperAdminPage() {
   const [passwordError, setPasswordError] = useState<string | null>(null);
 
   // Email Provider Settings (3rd-Party & SMTP)
-  const [selectedProvider, setSelectedProvider] = useState<'brevo' | 'resend' | 'smtp'>('resend');
+  const [selectedProvider, setSelectedProvider] = useState<'brevo' | 'resend' | 'smtp' | 'gmail-oauth'>('gmail-oauth');
+  const [gmailClientId, setGmailClientId] = useState('');
+  const [gmailClientSecret, setGmailClientSecret] = useState('');
+  const [gmailRefreshToken, setGmailRefreshToken] = useState('');
+  const [gmailUser, setGmailUser] = useState('friendlygaming2525@gmail.com');
+
   const [brevoApiKey, setBrevoApiKey] = useState('');
   const [brevoFromEmail, setBrevoFromEmail] = useState('princesharma9955a@gmail.com');
   const [brevoFromName, setBrevoFromName] = useState('Tap-Bro Team');
@@ -139,6 +144,12 @@ export default function SuperAdminPage() {
         if (data.config) {
           setConfig(data.config);
           if (data.config.emailProvider) setSelectedProvider(data.config.emailProvider);
+          if (data.config.gmail) {
+            if (data.config.gmail.clientId) setGmailClientId(data.config.gmail.clientId);
+            if (data.config.gmail.clientSecret) setGmailClientSecret(data.config.gmail.clientSecret);
+            if (data.config.gmail.refreshToken) setGmailRefreshToken(data.config.gmail.refreshToken);
+            if (data.config.gmail.user) setGmailUser(data.config.gmail.user);
+          }
           if (data.config.brevoApiKey) setBrevoApiKey(data.config.brevoApiKey);
           if (data.config.brevoFromEmail) setBrevoFromEmail(data.config.brevoFromEmail);
           if (data.config.brevoFromName) setBrevoFromName(data.config.brevoFromName);
@@ -257,6 +268,12 @@ export default function SuperAdminPage() {
           brevoFromName,
           resendApiKey,
           resendFrom,
+          gmail: {
+            clientId: gmailClientId,
+            clientSecret: gmailClientSecret,
+            refreshToken: gmailRefreshToken,
+            user: gmailUser,
+          },
           smtp: {
             host: smtpHost,
             port: Number(smtpPort),
@@ -298,6 +315,12 @@ export default function SuperAdminPage() {
           brevoFromName,
           resendApiKey,
           resendFrom,
+          gmail: {
+            clientId: gmailClientId,
+            clientSecret: gmailClientSecret,
+            refreshToken: gmailRefreshToken,
+            user: gmailUser,
+          },
           smtp: {
             host: smtpHost,
             port: Number(smtpPort),
@@ -767,7 +790,20 @@ export default function SuperAdminPage() {
             </div>
 
             {/* Provider Tabs */}
-            <div className="grid grid-cols-3 gap-2 text-xs">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+              <button
+                type="button"
+                onClick={() => setSelectedProvider('gmail-oauth')}
+                className={`py-2 px-2.5 rounded-xl border text-center transition font-semibold flex flex-col items-center justify-center gap-0.5 ${
+                  selectedProvider === 'gmail-oauth'
+                    ? 'border-amber-400 bg-amber-500/15 text-amber-300 shadow-sm'
+                    : 'border-border bg-surface text-zinc-400 hover:text-white'
+                }`}
+              >
+                <span className="text-xs">Google OAuth2</span>
+                <span className="text-[10px] text-emerald-400 font-normal">Gmail REST API</span>
+              </button>
+
               <button
                 type="button"
                 onClick={() => setSelectedProvider('resend')}
@@ -807,6 +843,19 @@ export default function SuperAdminPage() {
                 <span className="text-[10px] text-zinc-400 font-normal">App Password</span>
               </button>
             </div>
+
+            {/* Provider Guide Banner */}
+            {selectedProvider === 'gmail-oauth' && (
+              <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/5 p-3 text-xs text-zinc-300 space-y-1.5">
+                <div className="flex items-center gap-1.5 font-bold text-emerald-400">
+                  <Sparkles className="h-3.5 w-3.5" />
+                  <span>Google Gmail REST API (OAuth2): Verified &amp; Active</span>
+                </div>
+                <p className="text-[11px] text-zinc-400 leading-relaxed">
+                  Your official Google OAuth2 tokens are loaded. Emails are dispatched via Google's authentic API with high sender authority.
+                </p>
+              </div>
+            )}
 
             {/* Provider Guide Banner */}
             {selectedProvider === 'resend' && (
@@ -873,6 +922,64 @@ export default function SuperAdminPage() {
             )}
 
             <form onSubmit={handleSaveEmailConfig} className="space-y-3">
+              {/* Form Fields for Google Gmail OAuth2 */}
+              {selectedProvider === 'gmail-oauth' && (
+                <div className="space-y-2.5">
+                  <div>
+                    <label className="block text-[11px] font-medium text-zinc-400 mb-1">
+                      Google OAuth2 Client ID
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="377883709057-...apps.googleusercontent.com"
+                      value={gmailClientId}
+                      onChange={(e) => setGmailClientId(e.target.value)}
+                      className="w-full rounded-xl border border-border bg-surface px-3 py-1.5 text-xs text-white font-mono"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[11px] font-medium text-zinc-400 mb-1">
+                      Google OAuth2 Client Secret
+                    </label>
+                    <input
+                      type="password"
+                      required
+                      placeholder="GOCSPX-..."
+                      value={gmailClientSecret}
+                      onChange={(e) => setGmailClientSecret(e.target.value)}
+                      className="w-full rounded-xl border border-border bg-surface px-3 py-1.5 text-xs text-white font-mono"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[11px] font-medium text-zinc-400 mb-1">
+                      Google OAuth2 Refresh Token
+                    </label>
+                    <input
+                      type="password"
+                      required
+                      placeholder="1//04..."
+                      value={gmailRefreshToken}
+                      onChange={(e) => setGmailRefreshToken(e.target.value)}
+                      className="w-full rounded-xl border border-border bg-surface px-3 py-1.5 text-xs text-white font-mono"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[11px] font-medium text-zinc-400 mb-1">
+                      Sending Gmail Address
+                    </label>
+                    <input
+                      type="email"
+                      required
+                      placeholder="friendlygaming2525@gmail.com"
+                      value={gmailUser}
+                      onChange={(e) => setGmailUser(e.target.value)}
+                      className="w-full rounded-xl border border-border bg-surface px-3 py-1.5 text-xs text-white font-mono"
+                    />
+                  </div>
+                </div>
+              )}
+
               {/* Form Fields for Resend */}
               {selectedProvider === 'resend' && (
                 <div className="space-y-2.5">

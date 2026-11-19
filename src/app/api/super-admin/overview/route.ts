@@ -38,6 +38,7 @@ export async function POST(req: NextRequest) {
         resendApiKey: config.resendApiKey || '',
         resendFrom: config.resendFrom || 'Tap-Bro <onboarding@resend.dev>',
         sendgridApiKey: config.sendgridApiKey || '',
+        gmail: config.gmail || null,
         smtp: config.smtp,
         updatedAt: config.updatedAt,
       },

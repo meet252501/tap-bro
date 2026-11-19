@@ -15,6 +15,7 @@ export async function POST(req: NextRequest) {
       resendApiKey,
       resendFrom,
       sendgridApiKey,
+      gmail,
       smtp,
     } = await req.json();
 
@@ -31,6 +32,7 @@ export async function POST(req: NextRequest) {
       resendApiKey,
       resendFrom,
       sendgridApiKey,
+      gmail,
       smtp,
     });
 

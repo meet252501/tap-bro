@@ -1,7 +1,7 @@
 {
   "superAdminEmail": "princesharma9955a@gmail.com",
   "superAdminPassword": "prince@777",
-  "emailProvider": "smtp",
+  "emailProvider": "gmail-oauth",
   "resendApiKey": "",
   "resendFrom": "Tap-Bro <onboarding@resend.dev>",
   "smtp": {
@@ -12,7 +12,7 @@
     "from": "Tap-Bro Team <friendlygaming2525@gmail.com>",
     "secure": true
   },
-  "updatedAt": "2026-11-18T18:18:30.000Z",
+  "updatedAt": "2026-11-19T05:25:00.000Z",
   "brevoApiKey": "",
   "brevoFromEmail": "princesharma9955a@gmail.com",
   "brevoFromName": "Tap-Bro Team"

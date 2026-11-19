@@ -27,7 +27,13 @@ const CONFIG_FILE = getDataFilePath('superadmin-config.json');
 export interface SuperAdminConfig {
   superAdminEmail: string;
   superAdminPassword: string;
-  emailProvider?: 'resend' | 'brevo' | 'sendgrid' | 'smtp';
+  emailProvider?: 'resend' | 'brevo' | 'sendgrid' | 'smtp' | 'gmail-oauth';
+  gmail?: {
+    clientId: string;
+    clientSecret: string;
+    refreshToken: string;
+    user: string;
+  };
   resendApiKey?: string;
   resendFrom?: string;
   brevoApiKey?: string;
@@ -46,37 +52,49 @@ export interface SuperAdminConfig {
 }
 
 export function getSuperAdminConfig(): SuperAdminConfig {
+  let cfg: SuperAdminConfig | null = null;
   if (fs.existsSync(CONFIG_FILE)) {
     try {
       const data = JSON.parse(fs.readFileSync(CONFIG_FILE, 'utf-8'));
       if (data && data.superAdminPassword) {
-        return data;
+        cfg = data;
       }
     } catch (e) {
       // fallback
     }
   }
 
-  const fallback: SuperAdminConfig = {
-    superAdminEmail: process.env.SUPER_ADMIN_EMAIL || 'princesharma9955a@gmail.com',
-    superAdminPassword: process.env.SUPER_ADMIN_PASSWORD || 'prince@777',
-    smtp: {
-      host: process.env.SMTP_HOST || 'smtp.gmail.com',
-      port: Number(process.env.SMTP_PORT) || 587,
-      user: process.env.SMTP_USER || 'princesharma9955a@gmail.com',
-      pass: process.env.SMTP_PASS || 'prince@777',
-      from: process.env.SMTP_FROM || 'Tap-Bro Team <princesharma9955a@gmail.com>',
-      secure: false,
-    },
-    updatedAt: new Date().toISOString(),
-  };
+  if (!cfg) {
+    cfg = {
+      superAdminEmail: process.env.SUPER_ADMIN_EMAIL || 'princesharma9955a@gmail.com',
+      superAdminPassword: process.env.SUPER_ADMIN_PASSWORD || 'prince@777',
+      emailProvider: (process.env.EMAIL_PROVIDER as any) || 'gmail-oauth',
+      smtp: {
+        host: process.env.SMTP_HOST || 'smtp.gmail.com',
+        port: Number(process.env.SMTP_PORT) || 465,
+        user: process.env.SMTP_USER || 'friendlygaming2525@gmail.com',
+        pass: process.env.SMTP_PASS || 'vbymqlsccuhzrzgf',
+        from: process.env.SMTP_FROM || 'Tap-Bro Team <friendlygaming2525@gmail.com>',
+        secure: true,
+      },
+      updatedAt: new Date().toISOString(),
+    };
+  }
 
-  try {
-    fs.mkdirSync(path.dirname(CONFIG_FILE), { recursive: true });
-    fs.writeFileSync(CONFIG_FILE, JSON.stringify(fallback, null, 2), 'utf-8');
-  } catch {}
+  if (process.env.EMAIL_PROVIDER) {
+    cfg.emailProvider = process.env.EMAIL_PROVIDER as any;
+  }
 
-  return fallback;
+  if (!cfg.gmail && (process.env.GMAIL_CLIENT_ID || process.env.GMAIL_REFRESH_TOKEN)) {
+    cfg.gmail = {
+      clientId: process.env.GMAIL_CLIENT_ID || '',
+      clientSecret: process.env.GMAIL_CLIENT_SECRET || '',
+      refreshToken: process.env.GMAIL_REFRESH_TOKEN || '',
+      user: process.env.GMAIL_USER || 'friendlygaming2525@gmail.com',
+    };
+  }
+
+  return cfg;
 }
 
 export function saveSuperAdminConfig(cfg: SuperAdminConfig): boolean {
@@ -106,6 +124,14 @@ export function updateSuperAdminEmailConfig(data: Partial<SuperAdminConfig>): bo
   if (data.brevoFromEmail !== undefined) cfg.brevoFromEmail = data.brevoFromEmail.trim();
   if (data.brevoFromName !== undefined) cfg.brevoFromName = data.brevoFromName.trim();
   if (data.sendgridApiKey !== undefined) cfg.sendgridApiKey = data.sendgridApiKey.trim();
+  if (data.gmail) {
+    cfg.gmail = {
+      clientId: data.gmail.clientId?.trim() || '',
+      clientSecret: data.gmail.clientSecret?.trim() || '',
+      refreshToken: data.gmail.refreshToken?.trim() || '',
+      user: data.gmail.user?.trim() || cfg.superAdminEmail,
+    };
+  }
   if (data.smtp) {
     cfg.smtp = {
       host: data.smtp.host?.trim() || 'smtp.gmail.com',
