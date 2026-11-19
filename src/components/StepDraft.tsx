@@ -99,11 +99,30 @@ export const StepDraft: React.FC<StepDraftProps> = ({
     }
   };
 
-  const handleCopyAndOpenGoogle = async () => {
-    await copyToClipboard();
+  const handleCopyAndOpenGoogle = () => {
+    // 1. Resolve effective Google Maps target (Direct 5-star review popup or search fallback)
+    const reviewUrl =
+      config.googleReviewUrl && config.googleReviewUrl.trim().length > 0
+        ? config.googleReviewUrl.trim()
+        : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+            [config.name, config.location].filter(Boolean).join(' ') || 'restaurant'
+          )}`;
+
+    // 2. Trigger navigator.clipboard.writeText(review) first
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(draftText).catch(() => {
+        const el = document.getElementById('reviewDraftTextarea') as HTMLTextAreaElement | null;
+        if (el) {
+          el.focus();
+          el.select();
+        }
+      });
+    }
+
+    triggerConfetti();
     setCopiedAndOpened(true);
 
-    // Record review as officially confirmed & posted on Google!
+    // Record review event to database (fire and forget)
     if (restaurantSlug) {
       fetch(`/api/restaurants/${restaurantSlug}/post-review`, {
         method: 'POST',
@@ -118,13 +137,11 @@ export const StepDraft: React.FC<StepDraftProps> = ({
       }).catch((e) => console.warn('Could not record review post event:', e));
     }
 
-    if (config.googleReviewUrl) {
-      setTimeout(() => {
-        window.open(config.googleReviewUrl, '_blank', 'noopener,noreferrer');
-      }, 300);
-    }
+    // 3. Rule 1: Always use Direct Link Navigation (window.location.href), NEVER window.open()
+    // Mobile browsers (Safari & in-app QR scanners) block window.open() after async actions.
+    window.location.href = reviewUrl;
 
-    setTimeout(() => setCopiedAndOpened(false), 4000);
+    setTimeout(() => setCopiedAndOpened(false), 5000);
   };
 
   const toneOptions: { id: ReviewTone; label: string; desc: string; icon: React.ElementType }[] = [
@@ -335,27 +352,43 @@ export const StepDraft: React.FC<StepDraftProps> = ({
           {copiedAndOpened ? (
             <>
               <Check className="h-5 w-5 stroke-[2.5]" />
-              <span>{config.googleReviewUrl ? 'Copied! Opening Google Reviews...' : 'Copied to Clipboard!'}</span>
+              <span>Copied! Opening Google Reviews...</span>
             </>
           ) : (
             <>
-              {config.googleReviewUrl ? (
-                <>
-                  <Sparkles className="h-5 w-5 fill-current" />
-                  <span>Copy & Open Google Reviews 🚀</span>
-                </>
-              ) : (
-                <>
-                  <Copy className="h-5 w-5" />
-                  <span>Copy Review Text</span>
-                </>
-              )}
+              <Sparkles className="h-5 w-5 fill-current" />
+              <span>Copy & Open Google Reviews 🚀</span>
             </>
           )}
         </button>
 
+        {/* Fallback Toast (Appears when customer taps button) */}
+        {copiedAndOpened && (
+          <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-2.5 text-center text-xs text-emerald-300 animate-fade-in flex items-center justify-center gap-2">
+            <Check className="h-4 w-4 text-emerald-400 shrink-0" />
+            <span>Review copied! Redirecting to Google...</span>
+          </div>
+        )}
+
+        {/* Fallback Toast & Visible Direct Link for customer phones & in-app QR scanners */}
+        <div className="text-center pt-0.5 pb-1">
+          <a
+            href={
+              config.googleReviewUrl && config.googleReviewUrl.trim().length > 0
+                ? config.googleReviewUrl.trim()
+                : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+                    [config.name, config.location].filter(Boolean).join(' ') || 'restaurant'
+                  )}`
+            }
+            className="text-[11px] text-zinc-400 hover:text-white underline underline-offset-2 transition inline-flex items-center gap-1"
+          >
+            <span>Didn&apos;t open automatically? Tap here</span>
+            <ExternalLink className="h-3 w-3" />
+          </a>
+        </div>
+
         {/* Secondary: Copy Only & Open Google */}
-        <div className={`grid ${config.googleReviewUrl ? 'grid-cols-2' : 'grid-cols-1'} gap-2`}>
+        <div className="grid grid-cols-2 gap-2">
           <button
             type="button"
             onClick={handleCopyOnly}
@@ -370,20 +403,22 @@ export const StepDraft: React.FC<StepDraftProps> = ({
             <span>{copied ? 'Copied!' : 'Copy Text Only'}</span>
           </button>
 
-          {config.googleReviewUrl && (
-            <button
-              type="button"
-              onClick={() => {
-                if (config.googleReviewUrl) {
-                  window.open(config.googleReviewUrl, '_blank', 'noopener,noreferrer');
-                }
-              }}
-              className="flex items-center justify-center gap-1.5 rounded-xl border border-zinc-800 bg-[#18181B] py-2.5 px-3 text-xs font-semibold text-zinc-300 hover:text-white hover:border-zinc-700 transition active:scale-95"
-            >
-              <ExternalLink className="h-3.5 w-3.5 text-zinc-400" />
-              <span>Open Google Only</span>
-            </button>
-          )}
+          <button
+            type="button"
+            onClick={() => {
+              const reviewUrl =
+                config.googleReviewUrl && config.googleReviewUrl.trim().length > 0
+                  ? config.googleReviewUrl.trim()
+                  : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+                      [config.name, config.location].filter(Boolean).join(' ') || 'restaurant'
+                    )}`;
+              window.location.href = reviewUrl;
+            }}
+            className="flex items-center justify-center gap-1.5 rounded-xl border border-zinc-800 bg-[#18181B] py-2.5 px-3 text-xs font-semibold text-zinc-300 hover:text-white hover:border-zinc-700 transition active:scale-95"
+          >
+            <ExternalLink className="h-3.5 w-3.5 text-zinc-400" />
+            <span>Open Google Only</span>
+          </button>
         </div>
 
         {/* Back Link */}

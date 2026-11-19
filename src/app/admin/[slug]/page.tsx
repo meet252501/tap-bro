@@ -75,6 +75,7 @@ function RestaurantAdminDashboardContent() {
   const [simulating, setSimulating] = useState(false);
 
   // Review Analytics & 30-Day Retention Cycle State
+  const [reviewViewMode, setReviewViewMode] = useState<'feed' | 'trends' | 'cycle'>('feed');
   const [chartPeriod, setChartPeriod] = useState<'day' | 'week' | 'month'>('day');
   const [isResettingCycle, setIsResettingCycle] = useState(false);
   const [cycleResetMessage, setCycleResetMessage] = useState<string | null>(null);
@@ -509,65 +510,105 @@ function RestaurantAdminDashboardContent() {
           </div>
         </div>
 
-        {/* 30-Day Retention Cycle & Monthly Email Report Tracker Card */}
-        {(() => {
-          const analytics = computeReviewAnalytics(reviewsList, restaurant.cycleStartDate);
-          const cyclePercent = Math.min(100, Math.round((analytics.currentCycleDay / 30) * 100));
-
-          return (
-            <div className="rounded-2xl border border-zinc-800 bg-[#121216] p-4 space-y-3">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Calendar className="h-4 w-4 text-zinc-400" />
-                  <span className="text-xs font-bold text-white">30-Day Retention Cycle</span>
-                </div>
-                <span className="rounded-full bg-zinc-800 border border-zinc-700 px-2.5 py-0.5 text-[10px] font-bold text-white font-mono">
-                  Day {analytics.currentCycleDay} of 30
-                </span>
-              </div>
-
-              {/* Cycle Progress Bar */}
-              <div className="w-full h-2 rounded-full bg-zinc-800 overflow-hidden">
-                <div
-                  className="h-full bg-white transition-all duration-300 rounded-full"
-                  style={{ width: `${cyclePercent}%` }}
-                />
-              </div>
-
-              <div className="flex items-center justify-between text-[11px] text-zinc-400">
-                <span>Month Progress</span>
-                <span className="font-mono text-zinc-300">{cyclePercent}% complete</span>
-              </div>
-
-              {cycleResetMessage && (
-                <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-2.5 text-[11px] text-emerald-300 flex items-center gap-2">
-                  <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400 shrink-0" />
-                  <span>{cycleResetMessage}</span>
-                </div>
-              )}
-
-              <p className="text-[10px] text-zinc-400 leading-relaxed border-t border-zinc-800/80 pt-2">
-                💡 <strong>Data Retention Policy:</strong> When the 30-day month completes, your performance report is automatically emailed to <strong>{restaurant.email || 'your registered email'}</strong> and the counter restarts from Day 1 to ensure lean, scalable database storage.
-              </p>
-
+        {/* Tab 1: Reviews, Analytics Trends & 30-Day Retention Hub */}
+        {activeTab === 'reviews' && (
+          <div className="space-y-3 animate-fade-in">
+            {/* Mobile View Switcher: Reviews Feed | Trends Chart | 30-Day Cycle */}
+            <div className="grid grid-cols-3 gap-1.5 p-1 rounded-xl bg-[#121216] border border-zinc-800">
               <button
                 type="button"
-                onClick={handleTriggerMonthlyReset}
-                disabled={isResettingCycle}
-                className="w-full flex items-center justify-center gap-1.5 rounded-xl border border-zinc-700 bg-zinc-850 py-2 px-3 text-xs font-semibold text-zinc-200 hover:text-white hover:bg-zinc-800 transition active:scale-95 disabled:opacity-50"
+                onClick={() => setReviewViewMode('feed')}
+                className={`py-2 px-1 text-center rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 ${
+                  reviewViewMode === 'feed'
+                    ? 'bg-white text-black shadow-sm'
+                    : 'text-zinc-400 hover:text-white'
+                }`}
               >
-                <Send className="h-3.5 w-3.5" />
-                <span>{isResettingCycle ? 'Dispatching Report...' : 'Email Monthly Report & Reset to Day 1'}</span>
+                <MessageSquare className="h-3.5 w-3.5" />
+                <span>Reviews ({reviewsList.length})</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setReviewViewMode('trends')}
+                className={`py-2 px-1 text-center rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 ${
+                  reviewViewMode === 'trends'
+                    ? 'bg-white text-black shadow-sm'
+                    : 'text-zinc-400 hover:text-white'
+                }`}
+              >
+                <BarChart3 className="h-3.5 w-3.5" />
+                <span>Trends</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setReviewViewMode('cycle')}
+                className={`py-2 px-1 text-center rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 ${
+                  reviewViewMode === 'cycle'
+                    ? 'bg-white text-black shadow-sm'
+                    : 'text-zinc-400 hover:text-white'
+                }`}
+              >
+                <Calendar className="h-3.5 w-3.5" />
+                <span>30-Day Cycle</span>
               </button>
             </div>
-          );
-        })()}
 
-        {/* Tab 1: Reviews & Real Data Chat Feed (Primary) */}
-        {activeTab === 'reviews' && (
-          <div className="space-y-4 animate-fade-in">
-            {/* Interactive Review Analytics Chart (Day, Week, Month) */}
-            {(() => {
+            {/* View 1: 30-Day Retention Cycle & Monthly Email Report */}
+            {reviewViewMode === 'cycle' && (() => {
+              const analytics = computeReviewAnalytics(reviewsList, restaurant.cycleStartDate);
+              const cyclePercent = Math.min(100, Math.round((analytics.currentCycleDay / 30) * 100));
+
+              return (
+                <div className="rounded-2xl border border-zinc-800 bg-[#121216] p-4 space-y-3 animate-fade-in">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Calendar className="h-4 w-4 text-zinc-400" />
+                      <span className="text-xs font-bold text-white">30-Day Retention Cycle</span>
+                    </div>
+                    <span className="rounded-full bg-zinc-800 border border-zinc-700 px-2.5 py-0.5 text-[10px] font-bold text-white font-mono">
+                      Day {analytics.currentCycleDay} of 30
+                    </span>
+                  </div>
+
+                  {/* Cycle Progress Bar */}
+                  <div className="w-full h-2 rounded-full bg-zinc-800 overflow-hidden">
+                    <div
+                      className="h-full bg-white transition-all duration-300 rounded-full"
+                      style={{ width: `${cyclePercent}%` }}
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-between text-[11px] text-zinc-400">
+                    <span>Month Progress</span>
+                    <span className="font-mono text-zinc-300">{cyclePercent}% complete</span>
+                  </div>
+
+                  {cycleResetMessage && (
+                    <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-2.5 text-[11px] text-emerald-300 flex items-center gap-2">
+                      <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400 shrink-0" />
+                      <span>{cycleResetMessage}</span>
+                    </div>
+                  )}
+
+                  <p className="text-[10px] text-zinc-400 leading-relaxed border-t border-zinc-800/80 pt-2">
+                    💡 <strong>Data Retention Policy:</strong> When the 30-day month completes, your performance report is automatically emailed to <strong>{restaurant.email || 'your registered email'}</strong> and the counter restarts from Day 1 to ensure lean, scalable database storage.
+                  </p>
+
+                  <button
+                    type="button"
+                    onClick={handleTriggerMonthlyReset}
+                    disabled={isResettingCycle}
+                    className="w-full flex items-center justify-center gap-1.5 rounded-xl border border-zinc-700 bg-zinc-850 py-2 px-3 text-xs font-semibold text-zinc-200 hover:text-white hover:bg-zinc-800 transition active:scale-95 disabled:opacity-50"
+                  >
+                    <Send className="h-3.5 w-3.5" />
+                    <span>{isResettingCycle ? 'Dispatching Report...' : 'Email Monthly Report & Reset to Day 1'}</span>
+                  </button>
+                </div>
+              );
+            })()}
+
+            {/* View 2: Interactive Review Analytics Chart (Day, Week, Month) */}
+            {reviewViewMode === 'trends' && (() => {
               const analytics = computeReviewAnalytics(reviewsList, restaurant.cycleStartDate);
               const activeBars =
                 chartPeriod === 'day'
@@ -578,7 +619,7 @@ function RestaurantAdminDashboardContent() {
               const maxCount = Math.max(1, ...activeBars.map((b) => b.count));
 
               return (
-                <div className="rounded-2xl border border-zinc-800 bg-[#121216] p-4 space-y-3">
+                <div className="rounded-2xl border border-zinc-800 bg-[#121216] p-4 space-y-3 animate-fade-in">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-1.5">
                       <BarChart3 className="h-4 w-4 text-zinc-400" />
@@ -646,109 +687,114 @@ function RestaurantAdminDashboardContent() {
               );
             })()}
 
-            {/* Live Feed Header */}
-            <div className="flex items-center justify-between pt-1">
-              <div>
-                <h2 className="text-sm font-bold text-white flex items-center gap-1.5">
-                  <MessageSquare className="h-4 w-4 text-zinc-400" />
-                  <span>Verified Google Reviews Feed</span>
-                </h2>
-                <p className="text-[11px] text-zinc-400">
-                  Only reviews confirmed &amp; posted to Google appear here
-                </p>
-              </div>
-              <button
-                type="button"
-                onClick={handleRunSimulator}
-                disabled={simulating}
-                className="rounded-xl border border-zinc-700 bg-zinc-800/80 px-2.5 py-1 text-[11px] font-semibold text-zinc-300 hover:text-white flex items-center gap-1 transition"
-              >
-                <Sparkles className="h-3 w-3" />
-                <span>{simulating ? 'Generating...' : 'Simulate Review'}</span>
-              </button>
-            </div>
-
-            {/* Simulated Preview Box (if generated) */}
-            {simDraft && (
-              <div className="rounded-2xl border border-zinc-700 bg-zinc-900/90 p-4 space-y-2 animate-fade-in">
-                <div className="flex items-center justify-between">
-                  <span className="text-[10px] font-bold text-zinc-300 uppercase tracking-wider flex items-center gap-1">
-                    <Sparkles className="h-3 w-3" />
-                    <span>AI Review Simulation Draft</span>
-                  </span>
-                  <span className="text-[10px] text-zinc-400 font-mono">Just Now</span>
-                </div>
-                <p className="text-xs text-zinc-200 leading-relaxed italic bg-[#0A0A0C] p-3 rounded-xl border border-zinc-800">
-                  &quot;{simDraft}&quot;
-                </p>
-              </div>
-            )}
-
-            {/* Real Review Feed List */}
-            {reviewsList.length > 0 ? (
-              <div className="space-y-3">
-                {reviewsList.map((rev) => (
-                  <div
-                    key={rev.id}
-                    className="rounded-2xl border border-zinc-800 bg-[#121216] p-4 space-y-2.5 shadow-sm"
-                  >
-                    <div className="flex items-center justify-between text-xs">
-                      <div className="flex items-center gap-1.5">
-                        <div className="flex items-center gap-0.5">
-                          {[...Array(rev.overallRating || 5)].map((_, i) => (
-                            <Star key={i} className="h-3 w-3 text-amber-400 fill-amber-400" />
-                          ))}
-                        </div>
-                        <span className="text-[10px] font-semibold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-full flex items-center gap-1">
-                          <CheckCircle2 className="h-2.5 w-2.5" />
-                          <span>Posted to Google</span>
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-1 text-[10px] text-zinc-400 font-mono">
-                        <Clock className="h-3 w-3" />
-                        <span>{new Date(rev.timestamp).toLocaleDateString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
-                      </div>
-                    </div>
-
-                    <p className="text-xs text-zinc-200 leading-relaxed bg-[#0A0A0C] p-3 rounded-xl border border-zinc-800/80">
-                      &quot;{rev.reviewDraft}&quot;
+            {/* View 3: Live Feed (Primary / Default view - appears immediately at top of screen) */}
+            {reviewViewMode === 'feed' && (
+              <div className="space-y-3 animate-fade-in">
+                {/* Live Feed Header */}
+                <div className="flex items-center justify-between pt-0.5">
+                  <div>
+                    <h2 className="text-xs font-bold text-white flex items-center gap-1.5">
+                      <MessageSquare className="h-3.5 w-3.5 text-zinc-400" />
+                      <span>Live Verified Reviews</span>
+                    </h2>
+                    <p className="text-[10px] text-zinc-400">
+                      Only reviews confirmed &amp; posted to Google appear here
                     </p>
-
-                    <div className="flex flex-wrap items-center justify-between gap-1.5 pt-1 text-[10px]">
-                      <div className="flex flex-wrap gap-1">
-                        {rev.selectedDishes?.map((d, idx) => (
-                          <span key={idx} className="rounded-md bg-zinc-800 px-2 py-0.5 text-zinc-300">
-                            {d}
-                          </span>
-                        ))}
-                      </div>
-                      <span className="text-zinc-500 uppercase tracking-wider font-mono">
-                        {rev.locale === 'hinglish' ? 'Hinglish' : 'English'} • {rev.tone}
-                      </span>
-                    </div>
                   </div>
-                ))}
-              </div>
-            ) : (
-              /* Clean Empty State */
-              <div className="rounded-2xl border border-zinc-800 bg-[#121216] p-6 text-center space-y-3">
-                <div className="h-10 w-10 mx-auto rounded-xl bg-zinc-800 border border-zinc-700 flex items-center justify-center text-zinc-400">
-                  <MessageSquare className="h-5 w-5" />
+                  <button
+                    type="button"
+                    onClick={handleRunSimulator}
+                    disabled={simulating}
+                    className="rounded-xl border border-zinc-700 bg-zinc-800/80 px-2.5 py-1 text-[11px] font-semibold text-zinc-300 hover:text-white flex items-center gap-1 transition shrink-0"
+                  >
+                    <Sparkles className="h-3 w-3" />
+                    <span>{simulating ? 'Generating...' : 'Simulate'}</span>
+                  </button>
                 </div>
-                <div>
-                  <h3 className="text-xs font-bold text-white">Live Review Stream Ready</h3>
-                  <p className="text-[11px] text-zinc-400 mt-1 leading-relaxed max-w-xs mx-auto">
-                    When diners tap the tabletop stand at your tables and draft reviews, they will appear here in real time.
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  onClick={handleRunSimulator}
-                  disabled={simulating}
-                  className="btn-gold rounded-xl px-4 py-2 text-xs font-semibold"
-                >
-                  {simulating ? 'Generating...' : 'Simulate a Diner Review'}
-                </button>
+
+                {/* Simulated Preview Box (if generated) */}
+                {simDraft && (
+                  <div className="rounded-2xl border border-zinc-700 bg-zinc-900/90 p-4 space-y-2 animate-fade-in">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] font-bold text-zinc-300 uppercase tracking-wider flex items-center gap-1">
+                        <Sparkles className="h-3 w-3" />
+                        <span>AI Review Simulation Draft</span>
+                      </span>
+                      <span className="text-[10px] text-zinc-400 font-mono">Just Now</span>
+                    </div>
+                    <p className="text-xs text-zinc-200 leading-relaxed italic bg-[#0A0A0C] p-3 rounded-xl border border-zinc-800">
+                      &quot;{simDraft}&quot;
+                    </p>
+                  </div>
+                )}
+
+                {/* Real Review Feed List */}
+                {reviewsList.length > 0 ? (
+                  <div className="space-y-3">
+                    {reviewsList.map((rev) => (
+                      <div
+                        key={rev.id}
+                        className="rounded-2xl border border-zinc-800 bg-[#121216] p-4 space-y-2.5 shadow-sm"
+                      >
+                        <div className="flex items-center justify-between text-xs">
+                          <div className="flex items-center gap-1.5">
+                            <div className="flex items-center gap-0.5">
+                              {[...Array(rev.overallRating || 5)].map((_, i) => (
+                                <Star key={i} className="h-3 w-3 text-amber-400 fill-amber-400" />
+                              ))}
+                            </div>
+                            <span className="text-[10px] font-semibold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-full flex items-center gap-1">
+                              <CheckCircle2 className="h-2.5 w-2.5" />
+                              <span>Posted to Google</span>
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-1 text-[10px] text-zinc-400 font-mono">
+                            <Clock className="h-3 w-3" />
+                            <span>{new Date(rev.timestamp).toLocaleDateString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
+                          </div>
+                        </div>
+
+                        <p className="text-xs text-zinc-200 leading-relaxed bg-[#0A0A0C] p-3 rounded-xl border border-zinc-800/80">
+                          &quot;{rev.reviewDraft}&quot;
+                        </p>
+
+                        <div className="flex flex-wrap items-center justify-between gap-1.5 pt-1 text-[10px]">
+                          <div className="flex flex-wrap gap-1">
+                            {rev.selectedDishes?.map((d, idx) => (
+                              <span key={idx} className="rounded-md bg-zinc-800 px-2 py-0.5 text-zinc-300">
+                                {d}
+                              </span>
+                            ))}
+                          </div>
+                          <span className="text-zinc-500 uppercase tracking-wider font-mono">
+                            {rev.locale === 'hinglish' ? 'Hinglish' : 'English'} • {rev.tone}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  /* Clean Empty State */
+                  <div className="rounded-2xl border border-zinc-800 bg-[#121216] p-5 text-center space-y-3">
+                    <div className="h-10 w-10 mx-auto rounded-xl bg-zinc-800 border border-zinc-700 flex items-center justify-center text-zinc-400">
+                      <MessageSquare className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <h3 className="text-xs font-bold text-white">Live Review Stream Ready</h3>
+                      <p className="text-[11px] text-zinc-400 mt-1 leading-relaxed max-w-xs mx-auto">
+                        When diners tap your table stand and complete a review, it will show up here instantly.
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleRunSimulator}
+                      disabled={simulating}
+                      className="btn-gold rounded-xl px-4 py-2 text-xs font-semibold"
+                    >
+                      {simulating ? 'Generating...' : 'Simulate a Diner Review'}
+                    </button>
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -834,14 +880,16 @@ function RestaurantAdminDashboardContent() {
               ))}
             </div>
 
-            <button
-              type="button"
-              onClick={() => handleSave()}
-              disabled={saving}
-              className="btn-gold w-full rounded-xl py-3 text-xs font-bold transition"
-            >
-              {saving ? 'Saving...' : 'Save Menu Changes'}
-            </button>
+            <div className="sticky bottom-16 z-30 bg-[#0A0A0C]/90 backdrop-blur-xl border-t border-zinc-800/80 -mx-4 px-4 py-2.5">
+              <button
+                type="button"
+                onClick={() => handleSave()}
+                disabled={saving}
+                className="btn-gold w-full rounded-xl py-3 text-xs font-bold transition shadow-lg active:scale-95"
+              >
+                {saving ? 'Saving...' : 'Save Menu Changes'}
+              </button>
+            </div>
           </div>
         )}
 
@@ -964,11 +1012,11 @@ function RestaurantAdminDashboardContent() {
                     <p className="font-semibold text-white">How to connect your Google Reviews in 10 seconds:</p>
                     <ol className="list-decimal list-inside space-y-1 text-zinc-400 text-[11px] leading-relaxed">
                       <li>Tap <strong>&quot;1-Tap: Find on Maps&quot;</strong> above to open your store on Google Maps.</li>
-                      <li>On your business card, tap <strong>&quot;Share&quot;</strong> (or <strong>&quot;Ask for reviews&quot;</strong>) and tap <strong>Copy Link</strong>.</li>
+                      <li>On your business card, tap <strong>&quot;Share&quot;</strong> and tap <strong>Copy Link</strong>.</li>
                       <li>Come back here and tap <strong>&quot;Paste Copied Link&quot;</strong>. Done!</li>
                     </ol>
-                    <p className="text-[10px] text-zinc-500 pt-1 border-t border-zinc-800">
-                      💡 Accepts any Google link: Google Maps share link, g.page short link, or Place ID review link.
+                    <p className="text-[10px] text-zinc-400 pt-1 border-t border-zinc-800 leading-relaxed">
+                      💡 <strong>No owner account needed:</strong> You do NOT need to be the Google Business Profile owner! Any Google Maps link works, or you can leave it blank and TapBro will find your store on Google Maps automatically!
                     </p>
                   </div>
                 )}
@@ -1001,12 +1049,12 @@ function RestaurantAdminDashboardContent() {
                 )}
               </div>
 
-              <div className="pt-2">
+              <div className="sticky bottom-16 z-30 bg-[#0A0A0C]/90 backdrop-blur-xl border-t border-zinc-800/80 -mx-5 px-5 py-2.5">
                 <button
                   type="button"
                   onClick={() => handleSave()}
                   disabled={saving}
-                  className="btn-gold w-full rounded-xl py-3 text-xs font-bold transition"
+                  className="btn-gold w-full rounded-xl py-3 text-xs font-bold transition shadow-lg active:scale-95"
                 >
                   {saving ? 'Saving...' : 'Save Profile Changes'}
                 </button>

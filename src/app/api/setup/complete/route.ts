@@ -17,50 +17,56 @@ export async function POST(req: NextRequest) {
       customDishes,
     } = await req.json();
 
-    if (!email || !tempPass || !restaurantName || !phone || !adminPin) {
+    if (!restaurantName || !phone || !adminPin) {
       return NextResponse.json(
-        { error: 'Email, Temporary Pass, Restaurant Name, Phone, and Admin PIN are required.' },
+        { error: 'Restaurant Name, Contact Phone Number, and Manager PIN are required.' },
         { status: 400 }
       );
     }
 
-    const cleanEmail = email.trim().toLowerCase();
-    const cleanPass = tempPass.trim().toUpperCase();
+    let verifiedInviteId: string | null = null;
 
-    // Verify invite in database
-    const inviteResult = await getInviteStatusByEmailAndTempPass(cleanEmail, cleanPass);
+    // If an invite pass was provided, verify it strictly
+    if (tempPass && email) {
+      const cleanEmail = email.trim().toLowerCase();
+      const cleanPass = tempPass.trim().toUpperCase();
 
-    if (inviteResult.status === 'completed') {
-      return NextResponse.json(
-        { error: 'This temporary pass has already been used. Temporary passes are strictly one-time use. Please log in using your permanent Admin PIN.' },
-        { status: 409 }
-      );
+      const inviteResult = await getInviteStatusByEmailAndTempPass(cleanEmail, cleanPass);
+
+      if (inviteResult.status === 'completed') {
+        return NextResponse.json(
+          { error: 'This temporary pass has already been used. Please log in using your permanent Admin PIN.' },
+          { status: 409 }
+        );
+      }
+
+      if (inviteResult.status !== 'valid' || !inviteResult.invite) {
+        return NextResponse.json(
+          { error: 'Invalid or expired temporary password for this email.' },
+          { status: 403 }
+        );
+      }
+
+      verifiedInviteId = inviteResult.invite.id;
     }
 
-    if (inviteResult.status !== 'valid' || !inviteResult.invite) {
-      return NextResponse.json(
-        { error: 'Invalid or expired temporary password for this email. Passes are single-use and valid for 48 hours.' },
-        { status: 403 }
-      );
-    }
-
-    const invite = inviteResult.invite;
-
-    // Create the restaurant
+    // Create the restaurant in PostgreSQL
     const newRestaurant = await createRestaurant({
       name: restaurantName,
-      phone,
-      email,
-      adminPin,
-      cuisine: cuisine || 'Multi-Cuisine',
+      phone: phone.trim(),
+      email: email ? email.trim() : undefined,
+      adminPin: adminPin.trim(),
+      cuisine: cuisine || 'Restaurant & Cafe',
       tagline: tagline || 'Delightful Dining & Hospitality',
       location: location || '',
       googleReviewUrl: googleReviewUrl || '',
       customDishes,
     });
 
-    // Mark invite as completed (strictly single-use: invalidated immediately)
-    await markInviteCompleted(invite.id, newRestaurant.id, newRestaurant.slug);
+    // Mark invite as completed if one was used
+    if (verifiedInviteId) {
+      await markInviteCompleted(verifiedInviteId, newRestaurant.id, newRestaurant.slug);
+    }
 
     // Send confirmation alert
     try {

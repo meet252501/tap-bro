@@ -2,7 +2,7 @@
 
 export const dynamic = 'force-dynamic';
 
-import React, { useState, useEffect, Suspense } from 'react';
+import React, { useState, useEffect, useRef, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import {
   Sparkles,
@@ -12,43 +12,69 @@ import {
   Phone,
   Link as LinkIcon,
   CheckCircle2,
-  ArrowRight,
-  ShieldCheck,
-  UtensilsCrossed,
-  Plus,
-  X,
-  HelpCircle,
   ExternalLink,
   Search,
   Copy,
+  Check,
+  MapPin,
+  QrCode,
+  ShieldCheck,
+  RefreshCw,
+  ArrowRight,
+  Flame,
 } from 'lucide-react';
+
+interface PlaceSuggestion {
+  placeId: string;
+  name: string;
+  address: string;
+  description: string;
+  reviewUrl: string;
+}
+
+function generateSlug(name: string, location?: string): string {
+  const parts = [name, location?.split(',')[0]].filter(Boolean).join(' ');
+  const s = parts
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)/g, '');
+  return s || 'restaurant';
+}
 
 function SetupContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
+  // "Search & Lock" State
+  const [searchInput, setSearchInput] = useState('');
+  const [predictions, setPredictions] = useState<PlaceSuggestion[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
+  const [showDropdown, setShowDropdown] = useState(false);
+  const [isLocked, setIsLocked] = useState(false);
+  const searchDebounceRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Locked Restaurant Details (Pulled from Google)
+  const [restaurantName, setRestaurantName] = useState('');
+  const [location, setLocation] = useState('');
+  const [placeId, setPlaceId] = useState('');
+  const [googleReviewUrl, setGoogleReviewUrl] = useState('');
+  const [slug, setSlug] = useState('');
+  const [liveTapBroLink, setLiveTapBroLink] = useState('');
+
+  // Owner Access Credentials
+  const [phone, setPhone] = useState('');
+  const [adminPin, setAdminPin] = useState('');
   const [email, setEmail] = useState('');
   const [tempPass, setTempPass] = useState('');
   const [token, setToken] = useState<string | null>(null);
-  const [isVerified, setIsVerified] = useState(false);
-  const [validating, setValidating] = useState(false);
+
+  // UI helpers
+  const [copiedReviewUrl, setCopiedReviewUrl] = useState(false);
+  const [copiedTapBroUrl, setCopiedTapBroUrl] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Restaurant details fed by the owner (Completely blank by default)
-  const [restaurantName, setRestaurantName] = useState('');
-  const [phone, setPhone] = useState('');
-  const [adminPin, setAdminPin] = useState('');
-  const [cuisine, setCuisine] = useState('');
-  const [tagline, setTagline] = useState('');
-  const [googleReviewUrl, setGoogleReviewUrl] = useState('');
-  const [submitting, setSubmitting] = useState(false);
-
-  // Custom signature dishes added by the owner during setup
-  const [dishTags, setDishTags] = useState<string[]>([]);
-  const [newDishInput, setNewDishInput] = useState('');
-  const [showGoogleHelp, setShowGoogleHelp] = useState(false);
-
-  // Auto-verify if email and temp pass are in the URL parameters
+  // Initialize from URL params if present (from invite email)
   useEffect(() => {
     const urlEmail = searchParams?.get('email');
     const urlPass = searchParams?.get('pass');
@@ -57,77 +83,108 @@ function SetupContent() {
     if (urlEmail) setEmail(urlEmail);
     if (urlPass) setTempPass(urlPass);
     if (urlToken) setToken(urlToken);
-
-    if (urlEmail && urlPass) {
-      setValidating(true);
-      fetch('/api/setup/validate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email: urlEmail.trim(),
-          tempPass: urlPass.trim(),
-          token: urlToken || undefined,
-        }),
-      })
-        .then((res) => res.json())
-        .then((data) => {
-          if (data.success) {
-            setIsVerified(true);
-            setError(null);
-          } else {
-            setError(data.error || 'Temporary pass is invalid or expired (valid for 48 hours)');
-          }
-        })
-        .catch(() => setError('Unable to auto-validate temporary pass. Please verify manually.'))
-        .finally(() => setValidating(false));
-    }
   }, [searchParams]);
 
-  const handleVerifyPass = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError(null);
-    setValidating(true);
+  // Autocomplete fetch on search typing
+  useEffect(() => {
+    if (isLocked) return;
 
-    try {
-      const res = await fetch('/api/setup/validate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email: email.trim(),
-          tempPass: tempPass.trim(),
-          token: token || undefined,
-        }),
-      });
+    if (!searchInput.trim() || searchInput.trim().length < 2) {
+      setPredictions([]);
+      setShowDropdown(false);
+      return;
+    }
 
-      const data = await res.json();
-      if (res.ok && data.success) {
-        setIsVerified(true);
-      } else {
-        setError(data.error || 'Invalid or expired temporary password (valid for 48 hours)');
+    if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
+
+    searchDebounceRef.current = setTimeout(async () => {
+      setIsSearching(true);
+      try {
+        const res = await fetch(`/api/places/autocomplete?input=${encodeURIComponent(searchInput.trim())}`);
+        const data = await res.json();
+        if (data.success && Array.isArray(data.predictions)) {
+          setPredictions(data.predictions);
+          setShowDropdown(true);
+        }
+      } catch (err) {
+        console.warn('Place search error:', err);
+      } finally {
+        setIsSearching(false);
       }
-    } catch (err: any) {
-      setError(err.message || 'Validation error');
-    } finally {
-      setValidating(false);
-    }
+    }, 280);
+
+    return () => {
+      if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
+    };
+  }, [searchInput, isLocked]);
+
+  // Lock listing when owner taps a suggestion from dropdown
+  const handleSelectPlace = (place: PlaceSuggestion) => {
+    const cleanName = place.name.trim();
+    const cleanAddress = place.address.trim();
+    const pid = place.placeId.trim();
+
+    // Direct 5-Star Review Popup URL
+    const reviewUrl = pid
+      ? `https://search.google.com/local/writereview?placeid=${pid}`
+      : place.reviewUrl || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(cleanName + ' ' + cleanAddress)}`;
+
+    const generatedSlug = generateSlug(cleanName, cleanAddress);
+    const origin = typeof window !== 'undefined' ? window.location.origin : 'https://tapbro.vercel.app';
+    const tapBroLink = `${origin}/r/${generatedSlug}`;
+
+    setRestaurantName(cleanName);
+    setLocation(cleanAddress);
+    setPlaceId(pid);
+    setGoogleReviewUrl(reviewUrl);
+    setSlug(generatedSlug);
+    setLiveTapBroLink(tapBroLink);
+    setIsLocked(true);
+    setShowDropdown(false);
+    setError(null);
   };
 
-  const handleAddDish = (e?: React.FormEvent) => {
-    if (e) e.preventDefault();
-    const trimmed = newDishInput.trim();
-    if (trimmed && !dishTags.includes(trimmed)) {
-      setDishTags([...dishTags, trimmed]);
-      setNewDishInput('');
-    }
+  // Allow manual lock if listing not found in dropdown
+  const handleManualLock = () => {
+    if (!searchInput.trim()) return;
+    const cleanName = searchInput.trim();
+    const reviewUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(cleanName)}`;
+    const generatedSlug = generateSlug(cleanName);
+    const origin = typeof window !== 'undefined' ? window.location.origin : 'https://tapbro.vercel.app';
+
+    setRestaurantName(cleanName);
+    setLocation('Google Maps Search');
+    setGoogleReviewUrl(reviewUrl);
+    setSlug(generatedSlug);
+    setLiveTapBroLink(`${origin}/r/${generatedSlug}`);
+    setIsLocked(true);
+    setShowDropdown(false);
   };
 
-  const handleRemoveDish = (dish: string) => {
-    setDishTags(dishTags.filter((d) => d !== dish));
+  // Rule 1: Instant direct link navigation for testing
+  const handleTestReview = () => {
+    if (!googleReviewUrl) return;
+    window.location.href = googleReviewUrl;
   };
 
+  // Final Station Activation Form Submit
   const handleCompleteSetup = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+
+    if (!restaurantName.trim()) {
+      setError('Please search and lock your restaurant first.');
+      return;
+    }
+    if (!phone.trim()) {
+      setError('Please enter your contact phone number.');
+      return;
+    }
+    if (!adminPin.trim() || adminPin.trim().length < 4) {
+      setError('Please create a 4-digit Manager PIN (e.g. 1234).');
+      return;
+    }
+
     setSubmitting(true);
 
     try {
@@ -135,156 +192,244 @@ function SetupContent() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          email: email.trim(),
-          tempPass: tempPass.trim(),
-          token: token || undefined,
           restaurantName: restaurantName.trim(),
+          location: location.trim(),
+          googleReviewUrl: googleReviewUrl.trim(),
           phone: phone.trim(),
           adminPin: adminPin.trim(),
-          cuisine: cuisine.trim(),
-          tagline: tagline.trim(),
-          googleReviewUrl: googleReviewUrl.trim(),
-          customDishes: dishTags,
+          email: email.trim() || undefined,
+          tempPass: tempPass.trim() || undefined,
+          token: token || undefined,
         }),
       });
 
       const data = await res.json();
       if (res.ok && data.success) {
-        localStorage.setItem(`admin_${data.restaurant.slug}`, adminPin);
-        router.push(`/admin/${data.restaurant.slug}?new=1`);
+        localStorage.setItem(`admin_${data.restaurant.slug}`, adminPin.trim());
+        router.push(`/admin/${data.restaurant.slug}?welcome=1`);
       } else {
         setError(data.error || 'Failed to complete setup');
       }
     } catch (err: any) {
-      setError(err.message || 'Setup error');
+      setError(err.message || 'Network setup error');
     } finally {
       setSubmitting(false);
     }
   };
 
   return (
-    <div className="relative z-10 w-full max-w-md mx-auto px-3.5 sm:px-0 py-6">
+    <div className="min-h-screen bg-[#0A0A0C] text-white p-4 sm:p-6 pb-24 max-w-xl mx-auto flex flex-col justify-center">
       {/* Brand Header */}
-      <div className="text-center mb-7">
-        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-xl overflow-hidden border border-zinc-700/80 mb-3 bg-[#0A0A0C] p-1.5">
-          <img src="/tap-bro-logo.png" alt="Tap-Bro Logo" className="h-full w-full object-cover rounded-lg" />
+      <div className="text-center mb-6 space-y-2">
+        <div className="inline-flex items-center gap-2 rounded-full bg-zinc-900 border border-zinc-800 px-3 py-1 text-xs text-zinc-400">
+          <Sparkles className="h-3.5 w-3.5 text-zinc-300" />
+          <span>Self-Serve Stand Onboarding</span>
         </div>
-        <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-white">
-          Tap-Bro Restaurant Activation
+        <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
+          Search &amp; Lock Your Restaurant
         </h1>
-        <p className="mt-1.5 text-xs text-zinc-400 leading-relaxed max-w-xs mx-auto">
-          Set up your restaurant name &amp; menu to activate your tabletop NFC review stand.
+        <p className="text-xs sm:text-sm text-zinc-400 max-w-md mx-auto leading-relaxed">
+          Type your restaurant name below. We&apos;ll automatically lock your direct 5-star Google review target and launch your tabletop stand in 10 seconds.
         </p>
       </div>
 
-      {/* Step 1: Verify Temp Pass (Auto-bypassed if URL has valid credentials) */}
-      {!isVerified ? (
-        <div className="rounded-2xl border border-zinc-800 bg-[#121216] p-6 sm:p-7 space-y-5 animate-fade-in">
+      {error && (
+        <div className="mb-4 rounded-xl border border-red-500/30 bg-red-500/10 p-3 text-xs text-red-300">
+          {error}
+        </div>
+      )}
+
+      {/* STEP 1: Search & Lock Search Box */}
+      {!isLocked ? (
+        <div className="rounded-2xl border border-zinc-800 bg-[#121216] p-5 sm:p-6 space-y-4 shadow-xl">
           <div>
-            <h2 className="text-base font-bold text-white">Temporary Access Pass</h2>
-            <p className="text-xs text-zinc-400 mt-1">
-              Enter the 4-digit pass received in your Tap-Bro invitation email or link.
+            <label className="block text-xs font-bold text-white uppercase tracking-wider mb-2 flex items-center gap-1.5">
+              <Search className="h-4 w-4 text-zinc-400" />
+              <span>Search Google Business Profile</span>
+            </label>
+            <div className="relative">
+              <Search className="h-4 w-4 text-zinc-500 absolute left-3.5 top-3.5" />
+              <input
+                type="text"
+                autoFocus
+                autoComplete="off"
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
+                placeholder='e.g. "Eat Panjab, Gandhinagar" or paste Maps link'
+                className="w-full rounded-xl border border-zinc-800 bg-[#0A0A0C] pl-10 pr-10 py-3 text-sm text-white placeholder-zinc-500 focus:border-zinc-500 focus:outline-none transition"
+              />
+              {isSearching && (
+                <RefreshCw className="h-4 w-4 text-zinc-400 absolute right-3.5 top-3.5 animate-spin" />
+              )}
+            </div>
+            <p className="text-[11px] text-zinc-500 mt-1.5 leading-relaxed">
+              💡 Works for any business! You do not need to be the Google owner.
             </p>
           </div>
 
-          {error && (
-            <div className="rounded-xl border border-red-500/30 bg-red-500/10 p-3.5 text-xs text-red-300">
-              {error}
+          {/* Autocomplete Predictions Dropdown */}
+          {showDropdown && predictions.length > 0 && (
+            <div className="rounded-xl border border-zinc-800 bg-[#0A0A0C] divide-y divide-zinc-850 overflow-hidden shadow-2xl animate-fade-in max-h-72 overflow-y-auto">
+              {predictions.map((p, idx) => (
+                <button
+                  key={idx}
+                  type="button"
+                  onClick={() => handleSelectPlace(p)}
+                  className="w-full text-left p-3 hover:bg-zinc-850 flex items-start gap-2.5 transition group"
+                >
+                  <MapPin className="h-4 w-4 text-zinc-400 mt-0.5 shrink-0 group-hover:text-white" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-bold text-white truncate group-hover:text-white">
+                      {p.name}
+                    </p>
+                    <p className="text-[11px] text-zinc-400 truncate mt-0.5">
+                      {p.address}
+                    </p>
+                  </div>
+                  <span className="text-[10px] text-zinc-500 font-mono shrink-0 uppercase group-hover:text-zinc-300">
+                    Lock ➔
+                  </span>
+                </button>
+              ))}
             </div>
           )}
 
-          <form onSubmit={handleVerifyPass} className="space-y-4">
-            <div>
-              <label className="block text-xs font-semibold text-zinc-300 mb-1.5">
-                Your Email Address
-              </label>
-              <div className="relative">
-                <Mail className="h-4 w-4 text-zinc-500 absolute left-3.5 top-3.5" />
-                <input
-                  type="email"
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="your-restaurant-email@gmail.com"
-                  className="w-full rounded-xl border border-zinc-800 bg-[#0A0A0C] pl-10 pr-3.5 py-3 text-base sm:text-sm text-white focus:border-zinc-500 focus:outline-none placeholder-zinc-500"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-xs font-semibold text-zinc-300 mb-1.5">
-                Temporary Pass (from email)
-              </label>
-              <div className="relative">
-                <KeyRound className="h-4 w-4 text-zinc-500 absolute left-3.5 top-3.5" />
-                <input
-                  type="text"
-                  required
-                  placeholder="e.g. TAP-7892"
-                  value={tempPass}
-                  onChange={(e) => setTempPass(e.target.value)}
-                  className="w-full rounded-xl border border-zinc-700 bg-[#0A0A0C] pl-10 pr-3.5 py-3 text-base sm:text-sm text-white font-mono font-bold tracking-widest focus:border-zinc-500 focus:outline-none uppercase placeholder-zinc-500"
-                />
-              </div>
-            </div>
-
+          {/* Fallback Lock Button if typed custom */}
+          {searchInput.trim().length >= 2 && !showDropdown && (
             <button
-              type="submit"
-              disabled={validating}
-              className="flex w-full items-center justify-center gap-2 rounded-xl btn-gold py-3 font-semibold text-sm transition disabled:opacity-50 active:scale-[0.98]"
+              type="button"
+              onClick={handleManualLock}
+              className="w-full rounded-xl border border-zinc-700 bg-zinc-800 py-2.5 px-3 text-xs font-semibold text-zinc-200 hover:text-white hover:bg-zinc-750 transition flex items-center justify-center gap-1.5"
             >
-              <span>{validating ? 'Verifying Pass...' : 'Unlock Setup Form'}</span>
-              <ArrowRight className="h-4 w-4 stroke-[2.5]" />
+              <span>Lock &quot;{searchInput.trim()}&quot;</span>
+              <ArrowRight className="h-3.5 w-3.5" />
             </button>
-          </form>
+          )}
         </div>
       ) : (
-        /* Step 2: Clean, Unprefilled Restaurant Profile Setup */
-        <div className="rounded-2xl border border-zinc-800 bg-[#121216] p-6 sm:p-7 space-y-5 animate-fade-in">
-          <div className="flex items-center justify-between text-xs pb-3 border-b border-zinc-800">
-            <span className="flex items-center gap-1.5 text-emerald-400 font-semibold">
-              <CheckCircle2 className="h-4 w-4" />
-              <span>Pass Verified ({email})</span>
-            </span>
-            <span className="text-[10px] text-zinc-400 font-mono uppercase bg-zinc-800 px-2 py-0.5 rounded-full border border-zinc-700">
-              Single-use pass
-            </span>
-          </div>
-
-          <div>
-            <h2 className="text-base sm:text-lg font-bold text-white">Your Restaurant Profile</h2>
-            <p className="text-xs text-zinc-400 mt-0.5">
-              Fill in your details. You can update these anytime in your manager dashboard.
-            </p>
-          </div>
-
-          {error && (
-            <div className="rounded-xl border border-red-500/30 bg-red-500/10 p-3 text-xs text-red-300">
-              {error}
+        /* STEP 2: The Locked Restaurant Card + Instant Live Preview + Activation */
+        <div className="space-y-4 animate-fade-in">
+          {/* Locked Badge & Card */}
+          <div className="rounded-2xl border border-emerald-500/30 bg-[#121216] p-5 space-y-4 shadow-xl">
+            <div className="flex items-center justify-between pb-3 border-b border-zinc-800">
+              <span className="flex items-center gap-1.5 text-xs font-semibold text-emerald-400">
+                <CheckCircle2 className="h-4 w-4" />
+                <span>Locked from Google Business Profile</span>
+              </span>
+              <button
+                type="button"
+                onClick={() => {
+                  setIsLocked(false);
+                  setShowDropdown(false);
+                }}
+                className="text-[11px] text-zinc-400 hover:text-white underline underline-offset-2 transition"
+              >
+                Change Listing
+              </button>
             </div>
-          )}
 
-          <form onSubmit={handleCompleteSetup} className="space-y-4">
-            {/* Restaurant Name */}
-            <div>
-              <label className="block text-xs font-semibold text-zinc-300 mb-1">
-                Restaurant / Cafe Name *
-              </label>
-              <div className="relative">
-                <Store className="h-4 w-4 text-zinc-500 absolute left-3.5 top-3.5" />
+            {/* Extracted Business Information */}
+            <div className="space-y-1.5">
+              <div className="flex items-center gap-2">
+                <Store className="h-4 w-4 text-zinc-400 shrink-0" />
+                <h2 className="text-base font-bold text-white">{restaurantName}</h2>
+              </div>
+              <p className="text-xs text-zinc-400 pl-6 leading-relaxed">
+                {location}
+              </p>
+            </div>
+
+            {/* Direct 5-Star Review Popup URL Target */}
+            <div className="rounded-xl bg-[#0A0A0C] p-3 border border-zinc-800 space-y-1">
+              <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider block">
+                Direct 5-Star Review Popup URL:
+              </span>
+              <div className="flex items-center gap-2">
                 <input
                   type="text"
-                  required
-                  autoComplete="off"
-                  value={restaurantName}
-                  onChange={(e) => setRestaurantName(e.target.value)}
-                  placeholder="Enter your restaurant name"
-                  className="w-full rounded-xl border border-zinc-800 bg-[#0A0A0C] pl-10 pr-3.5 py-3 text-base sm:text-sm text-white focus:border-zinc-500 focus:outline-none placeholder-zinc-500"
+                  readOnly
+                  value={googleReviewUrl}
+                  className="flex-1 rounded-lg border border-zinc-800 bg-[#121216] px-2.5 py-1.5 text-xs text-emerald-400 font-mono truncate"
                 />
+                <button
+                  type="button"
+                  onClick={async () => {
+                    try {
+                      await navigator.clipboard.writeText(googleReviewUrl);
+                      setCopiedReviewUrl(true);
+                      setTimeout(() => setCopiedReviewUrl(false), 2000);
+                    } catch {}
+                  }}
+                  className="rounded-lg border border-zinc-700 bg-zinc-800 px-2.5 py-1.5 text-xs font-semibold text-zinc-300 hover:text-white transition shrink-0"
+                >
+                  {copiedReviewUrl ? <Check className="h-3.5 w-3.5 text-emerald-400" /> : <Copy className="h-3.5 w-3.5" />}
+                </button>
               </div>
             </div>
 
-            {/* Phone & PIN */}
+            {/* Live TapBro Tabletop Link */}
+            <div className="rounded-xl bg-[#0A0A0C] p-3 border border-zinc-800 space-y-1">
+              <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider block">
+                Live TapBro Counter Stand Link:
+              </span>
+              <div className="flex items-center gap-2">
+                <input
+                  type="text"
+                  readOnly
+                  value={liveTapBroLink}
+                  className="flex-1 rounded-lg border border-zinc-800 bg-[#121216] px-2.5 py-1.5 text-xs text-zinc-200 font-mono truncate"
+                />
+                <button
+                  type="button"
+                  onClick={async () => {
+                    try {
+                      await navigator.clipboard.writeText(liveTapBroLink);
+                      setCopiedTapBroUrl(true);
+                      setTimeout(() => setCopiedTapBroUrl(false), 2000);
+                    } catch {}
+                  }}
+                  className="rounded-lg border border-zinc-700 bg-zinc-800 px-2.5 py-1.5 text-xs font-semibold text-zinc-300 hover:text-white transition shrink-0"
+                >
+                  {copiedTapBroUrl ? <Check className="h-3.5 w-3.5 text-emerald-400" /> : <Copy className="h-3.5 w-3.5" />}
+                </button>
+              </div>
+            </div>
+
+            {/* Instant Preview: Test Live Review Button (Rule 1 & Rule 2) */}
+            <div className="pt-2 space-y-2">
+              <button
+                type="button"
+                onClick={handleTestReview}
+                className="btn-gold w-full flex items-center justify-center gap-2 rounded-xl py-3 font-bold text-xs sm:text-sm shadow-xl active:scale-95 transition"
+              >
+                <Sparkles className="h-4 w-4 fill-current" />
+                <span>Test Live Review Button (Watch 5-Star Box Pop Up) 🚀</span>
+              </button>
+
+              <div className="text-center">
+                <a
+                  href={googleReviewUrl}
+                  className="text-[11px] text-zinc-400 hover:text-white underline underline-offset-2 transition inline-flex items-center gap-1"
+                >
+                  <span>Didn&apos;t open automatically? Tap here</span>
+                  <ExternalLink className="h-3 w-3" />
+                </a>
+              </div>
+            </div>
+          </div>
+
+          {/* STEP 3: Owner Credentials & Launch */}
+          <form onSubmit={handleCompleteSetup} className="rounded-2xl border border-zinc-800 bg-[#121216] p-5 space-y-4 shadow-xl">
+            <div>
+              <h3 className="text-sm font-bold text-white flex items-center gap-1.5">
+                <ShieldCheck className="h-4 w-4 text-zinc-400" />
+                <span>Owner Credentials (To Access Manager Hub)</span>
+              </h3>
+              <p className="text-[11px] text-zinc-400 mt-0.5">
+                Set a PIN so only you can access your reviews and menu dashboard.
+              </p>
+            </div>
+
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <label className="block text-xs font-semibold text-zinc-300 mb-1">
@@ -299,7 +444,7 @@ function SetupContent() {
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
                     placeholder="e.g. 9876543210"
-                    className="w-full rounded-xl border border-zinc-800 bg-[#0A0A0C] pl-10 pr-3.5 py-3 text-base sm:text-sm text-white focus:border-zinc-500 focus:outline-none placeholder-zinc-500"
+                    className="w-full rounded-xl border border-zinc-800 bg-[#0A0A0C] pl-10 pr-3.5 py-2.5 text-sm text-white focus:border-zinc-500 focus:outline-none placeholder-zinc-500"
                   />
                 </div>
               </div>
@@ -318,215 +463,46 @@ function SetupContent() {
                     placeholder="4-digit PIN (e.g. 1234)"
                     value={adminPin}
                     onChange={(e) => setAdminPin(e.target.value)}
-                    className="w-full rounded-xl border border-zinc-800 bg-[#0A0A0C] pl-10 pr-3.5 py-3 text-base sm:text-sm text-white focus:border-zinc-500 focus:outline-none placeholder-zinc-500 font-mono"
+                    className="w-full rounded-xl border border-zinc-800 bg-[#0A0A0C] pl-10 pr-3.5 py-2.5 text-sm text-white focus:border-zinc-500 focus:outline-none placeholder-zinc-500 font-mono"
                   />
                 </div>
               </div>
             </div>
 
-            {/* Cuisine & Tagline */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div>
-                <label className="block text-xs font-semibold text-zinc-300 mb-1">
-                  Cuisine / Category
-                </label>
-                <input
-                  type="text"
-                  autoComplete="off"
-                  value={cuisine}
-                  onChange={(e) => setCuisine(e.target.value)}
-                  placeholder="e.g. Italian, Cafe, North Indian"
-                  className="w-full rounded-xl border border-zinc-800 bg-[#0A0A0C] px-3.5 py-3 text-base sm:text-sm text-white focus:border-zinc-500 focus:outline-none placeholder-zinc-500"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-zinc-300 mb-1">
-                  Tagline / Catchphrase
-                </label>
-                <input
-                  type="text"
-                  autoComplete="off"
-                  value={tagline}
-                  onChange={(e) => setTagline(e.target.value)}
-                  placeholder="e.g. Fresh Bites & Great Vibes"
-                  className="w-full rounded-xl border border-zinc-800 bg-[#0A0A0C] px-3.5 py-3 text-base sm:text-sm text-white focus:border-zinc-500 focus:outline-none placeholder-zinc-500"
-                />
-              </div>
-            </div>
-
-            {/* Signature Dishes Editor */}
             <div>
-              <label className="block text-xs font-semibold text-zinc-300 mb-1 flex items-center justify-between">
-                <span className="flex items-center gap-1.5">
-                  <UtensilsCrossed className="h-3.5 w-3.5 text-zinc-400" />
-                  <span>Signature Dishes (Optional)</span>
-                </span>
-                <span className="text-[10px] text-zinc-500">Guests will pick from these</span>
+              <label className="block text-xs font-semibold text-zinc-300 mb-1">
+                Owner Email (For 30-Day Monthly Performance Report)
               </label>
-
-              <div className="flex gap-2 mb-2">
+              <div className="relative">
+                <Mail className="h-4 w-4 text-zinc-500 absolute left-3.5 top-3.5" />
                 <input
-                  type="text"
-                  value={newDishInput}
-                  onChange={(e) => setNewDishInput(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      e.preventDefault();
-                      handleAddDish();
-                    }
-                  }}
-                  placeholder="e.g. Paneer Tikka, Cold Brew"
-                  className="flex-1 rounded-xl border border-zinc-800 bg-[#0A0A0C] px-3.5 py-2.5 text-base sm:text-xs text-white placeholder-zinc-500 focus:border-zinc-500 focus:outline-none"
-                />
-                <button
-                  type="button"
-                  onClick={handleAddDish}
-                  disabled={!newDishInput.trim()}
-                  className="flex items-center gap-1 rounded-xl bg-zinc-800 border border-zinc-700 px-3.5 py-2.5 text-xs font-semibold text-zinc-300 hover:bg-zinc-700 disabled:opacity-40 transition-all"
-                >
-                  <Plus className="h-3.5 w-3.5" />
-                  <span>Add</span>
-                </button>
-              </div>
-
-              {dishTags.length > 0 && (
-                <div className="flex flex-wrap gap-1.5 pt-1">
-                  {dishTags.map((dish) => (
-                    <span
-                      key={dish}
-                      className="inline-flex items-center gap-1.5 rounded-full bg-zinc-800 border border-zinc-700 px-3 py-1 text-xs text-zinc-300 font-medium"
-                    >
-                      <span>{dish}</span>
-                      <button
-                        type="button"
-                        onClick={() => handleRemoveDish(dish)}
-                        className="text-zinc-400 hover:text-white ml-0.5"
-                      >
-                        <X className="h-3 w-3" />
-                      </button>
-                    </span>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* Google Review URL with Dead-Simple 1-Tap Search & Paste */}
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <label className="text-xs font-semibold text-zinc-300 flex items-center gap-1.5">
-                  <LinkIcon className="h-3.5 w-3.5 text-zinc-400" />
-                  <span>Google Business Review URL</span>
-                </label>
-                <button
-                  type="button"
-                  onClick={() => setShowGoogleHelp(!showGoogleHelp)}
-                  className="text-[11px] text-zinc-400 hover:text-white flex items-center gap-1 transition"
-                >
-                  <HelpCircle className="h-3.5 w-3.5" />
-                  <span>Quick Guide</span>
-                </button>
-              </div>
-
-              {/* 1-Tap Google Search & Quick Paste Helper */}
-              <div className="flex flex-wrap items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => {
-                    const name = restaurantName.trim();
-                    const query = encodeURIComponent(name ? `${name} restaurant` : 'my restaurant');
-                    window.open(`https://www.google.com/maps/search/?api=1&query=${query}`, '_blank');
-                  }}
-                  className="flex items-center gap-1.5 rounded-lg border border-zinc-700 bg-zinc-900/90 px-3 py-1.5 text-xs font-medium text-zinc-300 hover:text-white hover:bg-zinc-800 transition active:scale-95"
-                >
-                  <Search className="h-3.5 w-3.5 text-zinc-400" />
-                  <span>
-                    1-Tap: Find &quot;{restaurantName.trim() || 'My Business'}&quot; on Maps
-                  </span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={async () => {
-                    try {
-                      const text = await navigator.clipboard.readText();
-                      if (text && (text.startsWith('http://') || text.startsWith('https://'))) {
-                        setGoogleReviewUrl(text.trim());
-                      }
-                    } catch {}
-                  }}
-                  className="flex items-center gap-1.5 rounded-lg border border-zinc-700 bg-zinc-900/90 px-3 py-1.5 text-xs font-medium text-zinc-300 hover:text-white hover:bg-zinc-800 transition active:scale-95"
-                >
-                  <Copy className="h-3.5 w-3.5 text-zinc-400" />
-                  <span>Paste Copied Link</span>
-                </button>
-              </div>
-
-              {/* Step-by-Step Visual Guide for Shop Owners */}
-              {showGoogleHelp && (
-                <div className="rounded-xl border border-zinc-700 bg-[#0A0A0C] p-3 text-xs space-y-2 animate-fade-in">
-                  <p className="font-semibold text-white">How to connect in 10 seconds:</p>
-                  <ol className="list-decimal list-inside space-y-1 text-zinc-400 text-[11px] leading-relaxed">
-                    <li>Tap <strong>&quot;1-Tap: Find on Maps&quot;</strong> above to open your store on Google Maps.</li>
-                    <li>On your store card, tap <strong>&quot;Share&quot;</strong> (or <strong>&quot;Ask for reviews&quot;</strong>) and tap <strong>Copy Link</strong>.</li>
-                    <li>Come back here and tap <strong>&quot;Paste Copied Link&quot;</strong>. Done!</li>
-                  </ol>
-                  <p className="text-[10px] text-zinc-500 pt-1 border-t border-zinc-800">
-                    💡 Accepts any Google link: Google Maps share link, g.page short link, or Place ID review link.
-                  </p>
-                </div>
-              )}
-
-              <div className="flex gap-2">
-                <input
-                  type="url"
+                  type="email"
                   autoComplete="off"
-                  value={googleReviewUrl}
-                  onChange={(e) => setGoogleReviewUrl(e.target.value)}
-                  placeholder="Paste any Google Maps link (e.g. https://maps.app.goo.gl/...)"
-                  className="flex-1 rounded-xl border border-zinc-800 bg-[#0A0A0C] px-3.5 py-3 text-xs sm:text-sm text-white focus:border-zinc-500 focus:outline-none font-mono placeholder-zinc-500"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="e.g. owner@gmail.com"
+                  className="w-full rounded-xl border border-zinc-800 bg-[#0A0A0C] pl-10 pr-3.5 py-2.5 text-sm text-white focus:border-zinc-500 focus:outline-none placeholder-zinc-500"
                 />
-                {googleReviewUrl && (
-                  <button
-                    type="button"
-                    onClick={() => window.open(googleReviewUrl, '_blank')}
-                    className="flex items-center gap-1 rounded-xl border border-zinc-700 bg-zinc-800 px-3 py-3 text-xs font-semibold text-white hover:bg-zinc-700 transition shrink-0"
-                    title="Test your review link"
-                  >
-                    <ExternalLink className="h-3.5 w-3.5" />
-                    <span className="hidden sm:inline">Test Link</span>
-                  </button>
-                )}
               </div>
-
-              {googleReviewUrl && (
-                <p className="text-[11px] text-emerald-400 flex items-center gap-1">
-                  <CheckCircle2 className="h-3.5 w-3.5" />
-                  <span>Google Link Connected! Tap &quot;Test Link&quot; to verify.</span>
-                </p>
-              )}
-
-              <p className="text-[11px] text-zinc-500">
-                Optional: You can also skip this and add or update it anytime later in your manager dashboard.
-              </p>
             </div>
 
             <div className="pt-2">
               <button
                 type="submit"
                 disabled={submitting}
-                className="btn-gold flex w-full items-center justify-center gap-2 rounded-xl py-3 font-semibold transition text-sm sm:text-base disabled:opacity-50"
+                className="btn-gold flex w-full items-center justify-center gap-2 rounded-xl py-3.5 font-bold transition text-sm disabled:opacity-50 shadow-xl active:scale-95"
               >
                 <Sparkles className="h-4 w-4 fill-current" />
-                <span>{submitting ? 'Activating Restaurant...' : 'Activate Tabletop Station'}</span>
+                <span>{submitting ? 'Activating Stand...' : 'Activate Tabletop Station 🚀'}</span>
               </button>
             </div>
           </form>
         </div>
       )}
 
-      <div className="mt-6 text-center text-xs text-zinc-500">
-        <p>Tap-Bro Tabletop NFC Review Assistant</p>
+      {/* Footer */}
+      <div className="mt-8 text-center text-xs text-zinc-500">
+        <p>Tap-Bro • 1-Click NFC &amp; QR Tabletop Review Engine</p>
       </div>
     </div>
   );
@@ -534,11 +510,8 @@ function SetupContent() {
 
 export default function BusinessSetupPage() {
   return (
-    <div className="min-h-[100dvh] bg-[#0A0A0C] flex flex-col justify-center items-center p-3 sm:p-4 text-white relative overflow-x-hidden">
-      <div className="ambient-bg pointer-events-none fixed inset-0 z-0" />
-      <Suspense fallback={<div className="text-zinc-400 text-xs">Loading Setup Portal...</div>}>
-        <SetupContent />
-      </Suspense>
-    </div>
+    <Suspense fallback={<div className="min-h-screen bg-[#0A0A0C] flex items-center justify-center p-4 text-zinc-400 text-xs">Loading Search &amp; Lock Setup...</div>}>
+      <SetupContent />
+    </Suspense>
   );
 }

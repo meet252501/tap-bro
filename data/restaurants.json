@@ -1,1 +1,48 @@
-[]
+[
+  {
+    "id": "REST_5RVLBX",
+    "slug": "eat-panjab",
+    "name": "Eat Panjab",
+    "tagline": "Delightful Dining & Hospitality",
+    "cuisine": "Restaurant & Cafe",
+    "location": "Kudasan, Gandhinagar, Gujarat",
+    "phone": "9876543210",
+    "email": "owner@eatpanjab.com",
+    "adminPin": "1234",
+    "googleReviewUrl": "https://search.google.com/local/writereview?placeid=ChIJEatPanjabGandhinagar77",
+    "aiProvider": "nvidia",
+    "totalReviewsGenerated": 0,
+    "tableCount": 10,
+    "createdAt": "2026-11-19T14:26:52.747Z",
+    "updatedAt": "2026-11-19T14:26:52.748Z",
+    "menuCategories": [
+      {
+        "name": "Starters & Chaat",
+        "icon": "🍲",
+        "items": [
+          "Crispy Veg Spring Roll",
+          "Paneer Tikka",
+          "Crispy Corn Chaat"
+        ]
+      },
+      {
+        "name": "Main Courses",
+        "icon": "🍛",
+        "items": [
+          "Dal Makhani",
+          "Paneer Butter Masala",
+          "Butter Garlic Naan"
+        ]
+      },
+      {
+        "name": "Desserts & Beverages",
+        "icon": "🍧",
+        "items": [
+          "Hot Gulab Jamun",
+          "Masala Kulhad Chai",
+          "Fresh Mango Lassi"
+        ]
+      }
+    ]
+  }
+]
