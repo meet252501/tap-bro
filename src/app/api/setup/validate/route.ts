@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getInviteByEmailAndTempPass } from '@/lib/db';
+import { getInviteStatusByEmailAndTempPass } from '@/lib/db';
 import { isRateLimited, recordFailedAttempt, resetRateLimit, getClientIp } from '@/lib/rateLimit';
-import { verifyInviteToken, isValidPassForEmail } from '@/lib/tokens';
 
 export async function POST(req: NextRequest) {
   try {
@@ -17,7 +16,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const { email, tempPass, token } = await req.json();
+    const { email, tempPass } = await req.json();
 
     if (!email || !tempPass) {
       return NextResponse.json({ error: 'Email and temporary password are required' }, { status: 400 });
@@ -26,60 +25,45 @@ export async function POST(req: NextRequest) {
     const cleanEmail = email.trim().toLowerCase();
     const cleanPass = tempPass.trim().toUpperCase();
 
-    // 1. Check signed cryptographic token first (stateless resilience across serverless instances)
-    if (token) {
-      const tokenResult = verifyInviteToken(token, cleanEmail, cleanPass);
-      if (tokenResult.valid) {
-        resetRateLimit(limitKey);
-        return NextResponse.json({
-          success: true,
-          invite: {
-            id: `INV_${cleanEmail.replace(/[^a-zA-Z0-9]/g, '').slice(0, 8).toUpperCase()}`,
-            email: cleanEmail,
-            tempPass: cleanPass,
-          },
-        });
-      } else if (tokenResult.expired) {
-        return NextResponse.json(
-          { error: 'This temporary pass has expired (passes are valid for 48 hours). Please request a new invite from Super Admin.' },
-          { status: 410 }
-        );
-      }
-    }
+    // Query database for invite state
+    const inviteResult = await getInviteStatusByEmailAndTempPass(cleanEmail, cleanPass);
 
-    // 2. Check 48-hour deterministic cryptographic slot (works across cold restarts and manual pass entry)
-    if (isValidPassForEmail(cleanEmail, cleanPass)) {
-      resetRateLimit(limitKey);
-      return NextResponse.json({
-        success: true,
-        invite: {
-          id: `INV_${cleanEmail.replace(/[^a-zA-Z0-9]/g, '').slice(0, 8).toUpperCase()}`,
-          email: cleanEmail,
-          tempPass: cleanPass,
-        },
-      });
-    }
-
-    // 3. Check database record
-    const invite = await getInviteByEmailAndTempPass(cleanEmail, cleanPass);
-
-    if (!invite) {
+    // 1. Single-use enforcement: if already completed, block immediately
+    if (inviteResult.status === 'completed') {
       recordFailedAttempt(limitKey);
       return NextResponse.json(
-        { error: 'Invalid or expired temporary password for this email address. Passes are valid for 48 hours.' },
+        { error: 'This temporary pass has already been used. Temporary passes are strictly one-time use. Please log in using your permanent Admin PIN.' },
+        { status: 409 }
+      );
+    }
+
+    // 2. Expiration check
+    if (inviteResult.status === 'expired') {
+      recordFailedAttempt(limitKey);
+      return NextResponse.json(
+        { error: 'This temporary pass has expired (passes are valid for 48 hours). Please request a fresh invite from Super Admin.' },
+        { status: 410 }
+      );
+    }
+
+    // 3. Invalid pass check
+    if (inviteResult.status !== 'valid' || !inviteResult.invite) {
+      recordFailedAttempt(limitKey);
+      return NextResponse.json(
+        { error: 'Invalid temporary password for this email address. Please check your invitation email.' },
         { status: 404 }
       );
     }
 
-    // Clear failed attempts on valid code
+    // Pass is active and pending
     resetRateLimit(limitKey);
 
     return NextResponse.json({
       success: true,
       invite: {
-        id: invite.id,
-        email: invite.email,
-        tempPass: invite.tempPass,
+        id: inviteResult.invite.id,
+        email: inviteResult.invite.email,
+        tempPass: inviteResult.invite.tempPass,
       },
     });
   } catch (error: any) {

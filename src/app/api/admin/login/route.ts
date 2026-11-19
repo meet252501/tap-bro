@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { authenticateAdmin, getInviteByEmailAndTempPass } from '@/lib/db';
+import { authenticateAdmin, getInviteStatusByEmailAndTempPass } from '@/lib/db';
 import { isRateLimited, recordFailedAttempt, resetRateLimit, getClientIp } from '@/lib/rateLimit';
 
 export async function POST(req: NextRequest) {
@@ -28,10 +28,20 @@ export async function POST(req: NextRequest) {
     const restaurant = await authenticateAdmin(phone, pinOrId);
 
     if (!restaurant) {
-      // Check if user has an authorized pending invite with this email and temporary pass
       const cleanEmail = phone.trim().toLowerCase();
-      const invite = await getInviteByEmailAndTempPass(cleanEmail, pinOrId.trim());
-      if (invite) {
+      const inviteResult = await getInviteStatusByEmailAndTempPass(cleanEmail, pinOrId.trim());
+
+      // Single-use check: If temporary pass was already used to onboard, reject login and instruct to use PIN
+      if (inviteResult.status === 'completed') {
+        recordFailedAttempt(limitKey);
+        return NextResponse.json(
+          { error: 'This temporary pass has already been used. Please log in using your restaurant phone or email and your permanent Admin PIN.' },
+          { status: 401 }
+        );
+      }
+
+      // If pass is an active pending invite, redirect them to complete onboarding
+      if (inviteResult.status === 'valid' && inviteResult.invite) {
         resetRateLimit(limitKey);
         return NextResponse.json({
           success: true,
@@ -42,7 +52,7 @@ export async function POST(req: NextRequest) {
 
       recordFailedAttempt(limitKey);
       return NextResponse.json(
-        { error: 'Access Denied: Unauthorized account. Manager portal is strictly invite-only. Please use the link or temporary pass sent to your email.' },
+        { error: 'Access Denied: Invalid credentials or expired temporary pass. Manager portal is strictly invite-only.' },
         { status: 401 }
       );
     }

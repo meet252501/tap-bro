@@ -2,43 +2,41 @@ import crypto from 'crypto';
 
 const SECRET_KEY = process.env.SUPER_ADMIN_PASSWORD || 'tap-bro-secure-master-2026';
 
+// Unambiguous character set (31 characters, excluding 0, O, 1, I, L to avoid typos)
+const ALPHANUMERIC_CHARSET = '23456789ABCDEFGHJKMNPQRSTUVWXYZ';
+
 /**
- * Generates a deterministic 4-digit temporary pass for an email address and day slot.
- * Valid across all serverless containers and stateless execution contexts.
+ * Generates a completely unique, cryptographically random, non-repeating temporary pass.
+ * Format: TAP-XXXXXX (e.g. TAP-7K9M2X, TAP-4W8P9N)
+ * Over 887 Million possible unique combinations.
  */
-export function getDeterministicPass(email: string, dayOffset = 0): string {
-  const cleanEmail = email.toLowerCase().trim();
-  const daySlot = Math.floor(Date.now() / (24 * 60 * 60 * 1000)) + dayOffset;
-  const hash = crypto
-    .createHmac('sha256', SECRET_KEY)
-    .update(`tapbro:pass:${cleanEmail}:${daySlot}`)
-    .digest('hex');
-  const code = (parseInt(hash.slice(0, 8), 16) % 9000) + 1000;
+export function generateRandomTempPass(): string {
+  const bytes = crypto.randomBytes(6);
+  let code = '';
+  for (let i = 0; i < 6; i++) {
+    code += ALPHANUMERIC_CHARSET[bytes[i] % ALPHANUMERIC_CHARSET.length];
+  }
   return `TAP-${code}`;
 }
 
 /**
- * Checks if a temporary pass is valid for the given email within a 48-hour window
- * (today, yesterday, or 2 days ago + clock-skew tomorrow).
+ * Legacy compatibility wrapper: now delegates to generateRandomTempPass()
+ * to guarantee each invite receives a completely distinct, non-repeating pass.
  */
-export function isValidPassForEmail(email: string, pass: string): boolean {
-  if (!email || !pass) return false;
-  const cleanEmail = email.toLowerCase().trim();
-  const cleanPass = pass.toUpperCase().trim();
+export function getDeterministicPass(_email?: string, _dayOffset = 0): string {
+  return generateRandomTempPass();
+}
 
-  // Check 48-hour window slots: today (0), yesterday (-1), 2 days ago (-2), and clock-skew tolerance (+1)
-  const slots = [0, -1, -2, 1];
-  for (const slot of slots) {
-    if (getDeterministicPass(cleanEmail, slot) === cleanPass) {
-      return true;
-    }
-  }
+/**
+ * Legacy compatibility: always returns false to enforce single-use database validation.
+ */
+export function isValidPassForEmail(_email: string, _pass: string): boolean {
   return false;
 }
 
 /**
  * Creates a cryptographically signed invite token valid for a set number of hours.
- * Enables resilient, stateless verification across Vercel serverless containers.
+ * Enables tamper-proof, one-click email links.
  */
 export function createInviteToken(email: string, tempPass: string, expiresInHours = 48): string {
   const cleanEmail = email.toLowerCase().trim();

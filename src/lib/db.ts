@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import { Restaurant, BusinessInvite } from '@/types/restaurant';
-import { getDeterministicPass, isValidPassForEmail } from '@/lib/tokens';
+import { generateRandomTempPass } from '@/lib/tokens';
 import {
   isDatabaseConfigured,
   pgGetAllRestaurants,
@@ -323,16 +323,14 @@ export async function authenticateAdmin(phoneOrEmail: string, pinOrId: string): 
   const cleanPass = pinOrId.trim();
   const list = await getAllRestaurants();
 
-  const inviteMatch = await getInviteByEmailAndTempPass(cleanInput, cleanPass);
-
+  // Once a restaurant is onboarded, authentication strictly requires their permanent Admin PIN
   return (
     list.find((r) => {
       const matchPhone = cleanPhone && r.phone.replace(/\D/g, '') === cleanPhone;
       const matchEmail = r.email && r.email.toLowerCase() === cleanInput;
       const matchSlug = r.slug && r.slug.toLowerCase() === cleanInput;
       const matchPin = r.adminPin === cleanPass || r.id === cleanPass;
-      const matchTempPass = Boolean(matchEmail && (isValidPassForEmail(cleanInput, cleanPass) || inviteMatch !== null));
-      return (matchPhone || matchEmail || matchSlug) && (matchPin || matchTempPass);
+      return (matchPhone || matchEmail || matchSlug) && matchPin;
     }) || null
   );
 }
@@ -555,16 +553,22 @@ export async function createBusinessInvite(email: string, notes?: string): Promi
   const list = await getAllInvites();
   const cleanEmail = email.trim().toLowerCase();
 
-  // Keep all invites valid for 48 hours; do not prematurely delete pending passes
+  // Generate a completely unique, non-repeating random temporary pass
+  let tempPass = generateRandomTempPass();
+  const existingPasses = new Set(list.map((inv) => inv.tempPass.toUpperCase()));
+  let attempts = 0;
+  while (existingPasses.has(tempPass.toUpperCase()) && attempts < 50) {
+    tempPass = generateRandomTempPass();
+    attempts++;
+  }
+
+  // Active list retaining completed records for audit & single-use enforcement
   const now = Date.now();
   const activeList = list.filter((inv) => {
     if (inv.status === 'completed') return true;
     const created = new Date(inv.createdAt).getTime();
     return now - created < 48 * 60 * 60 * 1000;
   });
-
-  // Generate a resilient 48-hour deterministic temporary password, e.g. "TAP-5137"
-  const tempPass = getDeterministicPass(cleanEmail);
 
   const invite: BusinessInvite = {
     id: `INV_${Math.random().toString(36).substring(2, 9).toUpperCase()}`,
@@ -589,44 +593,68 @@ export async function createBusinessInvite(email: string, notes?: string): Promi
   return invite;
 }
 
-export async function getInviteByEmailAndTempPass(email: string, tempPass: string): Promise<BusinessInvite | null> {
+export interface InviteStatusResult {
+  status: 'valid' | 'completed' | 'expired' | 'invalid';
+  invite?: BusinessInvite;
+  restaurantId?: string;
+  restaurantSlug?: string;
+}
+
+export async function getInviteStatusByEmailAndTempPass(
+  email: string,
+  tempPass: string
+): Promise<InviteStatusResult> {
   const list = await getAllInvites();
   const cleanEmail = email.trim().toLowerCase();
   const cleanPass = tempPass.trim().toUpperCase();
 
-  const match = list.find(
+  // 1. Check if this exact pass was already used / completed (strictly single-use)
+  const completedMatch = list.find(
+    (inv) =>
+      inv.email.toLowerCase() === cleanEmail &&
+      inv.tempPass.toUpperCase() === cleanPass &&
+      inv.status === 'completed'
+  );
+
+  if (completedMatch) {
+    return {
+      status: 'completed',
+      invite: completedMatch,
+      restaurantId: completedMatch.restaurantId,
+      restaurantSlug: completedMatch.restaurantSlug,
+    };
+  }
+
+  // 2. Check for active pending invite
+  const pendingMatch = list.find(
     (inv) =>
       inv.email.toLowerCase() === cleanEmail &&
       inv.tempPass.toUpperCase() === cleanPass &&
       inv.status === 'pending'
   );
 
-  if (match) {
+  if (pendingMatch) {
     // 48-hour expiration window
-    const created = new Date(match.createdAt).getTime();
+    const created = new Date(pendingMatch.createdAt).getTime();
     if (Date.now() - created > 48 * 60 * 60 * 1000) {
-      match.status = 'expired';
+      pendingMatch.status = 'expired';
       saveLocalInvites(list);
       if (isDatabaseConfigured()) {
-        pgSaveInvite(match).catch(() => {});
+        pgSaveInvite(pendingMatch).catch(() => {});
       }
-      return null;
+      return { status: 'expired', invite: pendingMatch };
     }
-    return match;
+    return { status: 'valid', invite: pendingMatch };
   }
 
-  // Stateless fallback: verify against 48-hour deterministic cryptographic slot
-  if (isValidPassForEmail(cleanEmail, cleanPass)) {
-    return {
-      id: `INV_${cleanEmail.replace(/[^a-zA-Z0-9]/g, '').slice(0, 8).toUpperCase()}`,
-      email: cleanEmail,
-      tempPass: cleanPass,
-      status: 'pending',
-      notes: 'Verified via 48hr HMAC signature',
-      createdAt: new Date().toISOString(),
-    };
-  }
+  return { status: 'invalid' };
+}
 
+export async function getInviteByEmailAndTempPass(email: string, tempPass: string): Promise<BusinessInvite | null> {
+  const result = await getInviteStatusByEmailAndTempPass(email, tempPass);
+  if (result.status === 'valid' && result.invite) {
+    return result.invite;
+  }
   return null;
 }
 
