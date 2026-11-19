@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getInviteByEmailAndTempPass, createRestaurant, markInviteCompleted } from '@/lib/db';
-import { sendOnboardingEmails } from '@/lib/email';
+import { sendOnboardingEmails, resolvePublicBaseUrl } from '@/lib/email';
 
 export async function POST(req: NextRequest) {
   try {
@@ -50,9 +50,10 @@ export async function POST(req: NextRequest) {
 
     // Send confirmation alert
     try {
-      const host = req.headers.get('x-forwarded-host') || req.headers.get('host') || 'localhost:3000';
-      const proto = req.headers.get('x-forwarded-proto') || (host.includes('localhost') ? 'http' : 'https');
-      const baseUrl = process.env.APP_URL || `${proto}://${host}`;
+      const host = req.headers.get('x-forwarded-host') || req.headers.get('host') || '';
+      const proto = req.headers.get('x-forwarded-proto') || 'https';
+      const requestUrl = host && !host.includes('localhost') && !host.includes('127.0.0.1') ? `${proto}://${host}` : undefined;
+      const baseUrl = resolvePublicBaseUrl(requestUrl);
       await sendOnboardingEmails(newRestaurant, baseUrl);
     } catch (e) {
       console.warn('Failed to dispatch alert emails:', e);

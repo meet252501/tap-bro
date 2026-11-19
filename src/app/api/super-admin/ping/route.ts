@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { sendTapBroEmail } from '@/lib/email';
+import { sendTapBroEmail, resolvePublicBaseUrl } from '@/lib/email';
 import { getAllRestaurants, getAllInvites } from '@/lib/db';
 
 export async function POST(req: NextRequest) {
@@ -9,9 +9,10 @@ export async function POST(req: NextRequest) {
     const invites = getAllInvites();
     const timestamp = new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' });
 
-    const host = req.headers.get('x-forwarded-host') || req.headers.get('host') || 'localhost:3000';
-    const proto = req.headers.get('x-forwarded-proto') || (host.includes('localhost') ? 'http' : 'https');
-    const baseUrl = process.env.APP_URL || `${proto}://${host}`;
+    const host = req.headers.get('x-forwarded-host') || req.headers.get('host') || '';
+    const proto = req.headers.get('x-forwarded-proto') || 'https';
+    const requestUrl = host && !host.includes('localhost') && !host.includes('127.0.0.1') ? `${proto}://${host}` : undefined;
+    const baseUrl = resolvePublicBaseUrl(requestUrl);
     const superAdminUrl = `${baseUrl}/super-admin`;
 
     const html = `

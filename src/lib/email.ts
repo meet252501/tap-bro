@@ -573,6 +573,20 @@ export async function sendTapBroEmail(payload: EmailPayload): Promise<{ success:
 }
 
 /**
+ * Resolves an authoritative, public URL for emails and external invitations.
+ * Avoids sending localhost links to real email recipients and mobile devices.
+ */
+export function resolvePublicBaseUrl(providedUrl?: string): string {
+  if (providedUrl && !providedUrl.includes('localhost') && !providedUrl.includes('127.0.0.1')) {
+    return providedUrl.replace(/\/+$/, '');
+  }
+  if (process.env.APP_URL && !process.env.APP_URL.includes('localhost') && !process.env.APP_URL.includes('127.0.0.1')) {
+    return process.env.APP_URL.replace(/\/+$/, '');
+  }
+  return 'https://tapbro.vercel.app';
+}
+
+/**
  * Dispatches the customized Tap-Bro invitation with Temporary Password to the business owner.
  */
 export async function sendOwnerInviteEmail(data: {
@@ -581,7 +595,7 @@ export async function sendOwnerInviteEmail(data: {
   notes?: string;
   baseUrl?: string;
 }) {
-  const baseUrl = data.baseUrl || process.env.APP_URL || 'https://tapbro.vercel.app';
+  const baseUrl = resolvePublicBaseUrl(data.baseUrl);
   const setupUrl = `${baseUrl}/setup?email=${encodeURIComponent(data.email)}&pass=${encodeURIComponent(data.tempPass)}`;
 
   const logoEmailPath = path.join(process.cwd(), 'public', 'tap-bro-logo-email.png');
@@ -765,7 +779,7 @@ export async function sendOnboardingEmails(
   customBaseUrl?: string
 ) {
   const superAdmin = process.env.SUPER_ADMIN_EMAIL || 'princesharma9955a@gmail.com';
-  const baseUrl = customBaseUrl || process.env.APP_URL || 'http://localhost:3000';
+  const baseUrl = resolvePublicBaseUrl(customBaseUrl);
   const dinerUrl = `${baseUrl}/r/${restaurant.slug}`;
   const adminUrl = `${baseUrl}/admin/${restaurant.slug}`;
 

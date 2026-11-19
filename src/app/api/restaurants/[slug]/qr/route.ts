@@ -13,10 +13,13 @@ export async function GET(
       return NextResponse.json({ error: 'Restaurant not found' }, { status: 404 });
     }
 
-    // Determine host from request headers
-    const host = req.headers.get('x-forwarded-host') || req.headers.get('host') || 'localhost:3000';
-    const proto = req.headers.get('x-forwarded-proto') || (host.includes('localhost') ? 'http' : 'https');
-    const destinationUrl = `${proto}://${host}/r/${restaurant.slug}`;
+    // Determine host from request headers (fallback to production domain for mobile NFC / QR scans)
+    const host = req.headers.get('x-forwarded-host') || req.headers.get('host') || '';
+    const proto = req.headers.get('x-forwarded-proto') || 'https';
+    const baseUrl = host && !host.includes('localhost') && !host.includes('127.0.0.1')
+      ? `${proto}://${host}`
+      : (process.env.APP_URL && !process.env.APP_URL.includes('localhost') ? process.env.APP_URL : 'https://tapbro.vercel.app');
+    const destinationUrl = `${baseUrl}/r/${restaurant.slug}`;
 
     // Generate high-resolution QR Code
     const qrDataUrl = await QRCode.toDataURL(destinationUrl, {

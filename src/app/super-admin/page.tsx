@@ -390,8 +390,17 @@ export default function SuperAdminPage() {
     }
   };
 
+  const getPublicBaseUrl = () => {
+    if (typeof window !== 'undefined') {
+      if (!window.location.origin.includes('localhost') && !window.location.origin.includes('127.0.0.1')) {
+        return window.location.origin;
+      }
+    }
+    return 'https://tapbro.vercel.app';
+  };
+
   const copySetupLink = (email: string, tempPass: string) => {
-    const url = `${window.location.origin}/setup?email=${encodeURIComponent(email)}&pass=${encodeURIComponent(tempPass)}`;
+    const url = `${getPublicBaseUrl()}/setup?email=${encodeURIComponent(email)}&pass=${encodeURIComponent(tempPass)}`;
     navigator.clipboard.writeText(url);
     setCopiedLink(tempPass);
     setTimeout(() => setCopiedLink(null), 3000);
@@ -611,11 +620,9 @@ export default function SuperAdminPage() {
                 <div className="truncate max-w-md text-zinc-400 font-mono text-[11px]">
                   Setup Link:{' '}
                   <span className="text-amber-400">
-                    {typeof window !== 'undefined'
-                      ? `${window.location.origin}/setup?email=${encodeURIComponent(
-                          dispatchedInvite.email
-                        )}&pass=${encodeURIComponent(dispatchedInvite.tempPass)}`
-                      : ''}
+                    {`${getPublicBaseUrl()}/setup?email=${encodeURIComponent(
+                      dispatchedInvite.email
+                    )}&pass=${encodeURIComponent(dispatchedInvite.tempPass)}`}
                   </span>
                 </div>
 
@@ -623,9 +630,7 @@ export default function SuperAdminPage() {
                   {/* WhatsApp Button */}
                   <a
                     href={`https://wa.me/?text=${encodeURIComponent(
-                      `Hello! Welcome to Tap-Bro. Here is your digital restaurant onboarding link:\n${
-                        typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000'
-                      }/setup?email=${encodeURIComponent(
+                      `Hello! Welcome to Tap-Bro. Here is your digital restaurant onboarding link:\n${getPublicBaseUrl()}/setup?email=${encodeURIComponent(
                         dispatchedInvite.email
                       )}&pass=${encodeURIComponent(dispatchedInvite.tempPass)}\nTemporary Pass: ${
                         dispatchedInvite.tempPass
@@ -1212,14 +1217,9 @@ export default function SuperAdminPage() {
               </thead>
               <tbody className="divide-y divide-border/40 text-zinc-200">
                 {invites.map((inv) => {
-                  const setupLink =
-                    typeof window !== 'undefined'
-                      ? `${window.location.origin}/setup?email=${encodeURIComponent(
-                          inv.email
-                        )}&pass=${encodeURIComponent(inv.tempPass)}`
-                      : `/setup?email=${encodeURIComponent(inv.email)}&pass=${encodeURIComponent(
-                          inv.tempPass
-                        )}`;
+                  const setupLink = `${getPublicBaseUrl()}/setup?email=${encodeURIComponent(
+                    inv.email
+                  )}&pass=${encodeURIComponent(inv.tempPass)}`;
                   const whatsappText = `Hello! Welcome to Tap-Bro. Here is your digital restaurant onboarding link:\n${setupLink}\nTemporary Pass: ${inv.tempPass}`;
                   const gmailComposeUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(
                     inv.email

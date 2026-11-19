@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createBusinessInvite, authenticateSuperAdmin } from '@/lib/db';
-import { sendOwnerInviteEmail } from '@/lib/email';
+import { sendOwnerInviteEmail, resolvePublicBaseUrl } from '@/lib/email';
 
 export async function POST(req: NextRequest) {
   try {
@@ -18,10 +18,11 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Valid business owner email is required' }, { status: 400 });
     }
 
-    // Determine dynamic base URL based on incoming request
-    const host = req.headers.get('x-forwarded-host') || req.headers.get('host') || 'localhost:3000';
-    const proto = req.headers.get('x-forwarded-proto') || (host.includes('localhost') ? 'http' : 'https');
-    const baseUrl = process.env.APP_URL || `${proto}://${host}`;
+    // Determine public base URL (never send localhost in outgoing invites)
+    const host = req.headers.get('x-forwarded-host') || req.headers.get('host') || '';
+    const proto = req.headers.get('x-forwarded-proto') || 'https';
+    const requestUrl = host && !host.includes('localhost') && !host.includes('127.0.0.1') ? `${proto}://${host}` : undefined;
+    const baseUrl = resolvePublicBaseUrl(requestUrl);
 
     // Create invite with unique temp pass
     const invite = createBusinessInvite(targetEmail, notes);
