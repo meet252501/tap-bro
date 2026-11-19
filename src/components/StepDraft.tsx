@@ -268,7 +268,7 @@ export const StepDraft: React.FC<StepDraftProps> = ({
             rows={5}
             value={draftText}
             onChange={(e) => onDraftTextChange(e.target.value)}
-            className="w-full rounded-xl border border-border/80 bg-surface px-3.5 py-3 text-[15px] sm:text-sm text-white placeholder-zinc-500 leading-relaxed focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400 transition"
+            className="w-full rounded-xl border border-border/80 bg-surface px-3.5 py-3 text-base sm:text-sm text-white placeholder-zinc-500 leading-relaxed focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400 transition"
             placeholder="Your draft will appear here..."
           />
         )}

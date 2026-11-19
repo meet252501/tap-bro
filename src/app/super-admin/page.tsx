@@ -443,7 +443,7 @@ export default function SuperAdminPage() {
                   placeholder="admin@tapbro.com"
                   value={adminEmail}
                   onChange={(e) => setAdminEmail(e.target.value)}
-                  className="w-full rounded-xl border border-border bg-surface pl-10 pr-3.5 py-2.5 text-xs text-white focus:border-amber-400 focus:outline-none"
+                  className="w-full rounded-xl border border-border bg-surface pl-10 pr-3.5 py-3 sm:py-2.5 text-base sm:text-xs text-white focus:border-amber-400 focus:outline-none"
                 />
               </div>
             </div>
@@ -453,14 +453,14 @@ export default function SuperAdminPage() {
                 Super Admin Password
               </label>
               <div className="relative">
-                <KeyRound className="h-4 w-4 text-zinc-500 absolute left-3.5 top-3" />
+                <KeyRound className="h-4 w-4 text-zinc-500 absolute left-3.5 top-3.5 sm:top-3" />
                 <input
                   type="password"
                   required
                   placeholder="••••••••••••"
                   value={adminPin}
                   onChange={(e) => setAdminPin(e.target.value)}
-                  className="w-full rounded-xl border border-border bg-surface pl-10 pr-3.5 py-2.5 text-xs text-white focus:border-amber-400 focus:outline-none font-mono"
+                  className="w-full rounded-xl border border-border bg-surface pl-10 pr-3.5 py-3 sm:py-2.5 text-base sm:text-xs text-white focus:border-amber-400 focus:outline-none font-mono"
                 />
               </div>
             </div>
@@ -714,7 +714,7 @@ export default function SuperAdminPage() {
                 value={targetEmail}
                 onChange={(e) => setTargetEmail(e.target.value)}
                 placeholder="Business Owner Email (e.g. manager@tajdining.com)"
-                className="w-full rounded-xl border border-border bg-surface px-3.5 py-2.5 text-xs sm:text-sm text-white focus:border-amber-400 focus:outline-none"
+                className="w-full rounded-xl border border-border bg-surface px-3.5 py-3 text-base sm:text-sm text-white focus:border-amber-400 focus:outline-none"
               />
             </div>
             <div>
@@ -1140,7 +1140,8 @@ export default function SuperAdminPage() {
             <span className="text-xs text-zinc-500 font-mono">{restaurants.length} active</span>
           </div>
 
-          <div className="overflow-x-auto">
+          {/* Desktop Table View */}
+          <div className="hidden sm:block overflow-x-auto">
             <table className="w-full text-left text-xs">
               <thead className="bg-surface-raised border-b border-border/80 text-text-secondary uppercase text-[10px] tracking-wider">
                 <tr>
@@ -1201,6 +1202,58 @@ export default function SuperAdminPage() {
               </tbody>
             </table>
           </div>
+
+          {/* Mobile Phone Card Stack View */}
+          <div className="sm:hidden divide-y divide-border/60">
+            {restaurants.length === 0 ? (
+              <p className="p-4 text-center text-xs text-zinc-500 italic">No active businesses yet.</p>
+            ) : (
+              restaurants.map((rest) => (
+                <div key={rest.id} className="p-4 space-y-2.5">
+                  <div className="flex items-start justify-between gap-2">
+                    <div>
+                      <h4 className="text-sm font-bold text-white">{rest.name}</h4>
+                      <p className="text-[11px] text-zinc-400 font-mono">ID: {rest.id}</p>
+                    </div>
+                    <span className="rounded-full bg-amber-400/15 border border-amber-400/30 px-2 py-0.5 text-[10px] font-bold text-amber-300 shrink-0">
+                      {rest.totalReviewsGenerated || 0} reviews
+                    </span>
+                  </div>
+
+                  <div className="text-xs text-zinc-300 space-y-0.5">
+                    <p><span className="text-zinc-500">Phone:</span> {rest.phone}</p>
+                    <p><span className="text-zinc-500">Email:</span> {rest.email || 'None'}</p>
+                    <p><span className="text-zinc-500">Cuisine:</span> {rest.cuisine} ({rest.tableCount || 10} tables)</p>
+                  </div>
+
+                  <div className="flex items-center gap-2 pt-1">
+                    <Link
+                      href={`/admin/${rest.slug}`}
+                      className="flex-1 flex items-center justify-center gap-1.5 rounded-xl border border-border bg-surface-raised py-2 px-3 text-xs font-semibold text-white hover:border-amber-400"
+                    >
+                      <Eye className="h-3.5 w-3.5 text-amber-400" />
+                      <span>Manager View</span>
+                    </Link>
+                    <Link
+                      href={`/r/${rest.slug}`}
+                      target="_blank"
+                      className="flex-1 flex items-center justify-center gap-1.5 rounded-xl bg-amber-400 py-2 px-3 text-xs font-bold text-page hover:bg-amber-300"
+                    >
+                      <ExternalLink className="h-3.5 w-3.5" />
+                      <span>Diner View</span>
+                    </Link>
+                    <button
+                      onClick={() => handleDeleteRestaurant(rest.id, rest.name)}
+                      className="flex h-9 w-9 items-center justify-center rounded-xl border border-red-500/30 bg-red-500/10 text-red-400"
+                      title="Delete"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
         </div>
 
         {/* Pending & Completed Invites Table */}
@@ -1213,7 +1266,8 @@ export default function SuperAdminPage() {
             <span className="text-xs text-zinc-500 font-mono">{invites.length} dispatched</span>
           </div>
 
-          <div className="overflow-x-auto">
+          {/* Desktop Table View */}
+          <div className="hidden sm:block overflow-x-auto">
             <table className="w-full text-left text-xs">
               <thead className="bg-surface-raised border-b border-border/80 text-text-secondary uppercase text-[10px] tracking-wider">
                 <tr>
@@ -1329,6 +1383,75 @@ export default function SuperAdminPage() {
                 })}
               </tbody>
             </table>
+          </div>
+
+          {/* Mobile Phone Card Stack View */}
+          <div className="sm:hidden divide-y divide-border/60">
+            {invites.length === 0 ? (
+              <p className="p-4 text-center text-xs text-zinc-500 italic">No invitation records yet.</p>
+            ) : (
+              invites.map((inv) => {
+                const setupLink = `${getPublicBaseUrl()}/setup?email=${encodeURIComponent(
+                  inv.email
+                )}&pass=${encodeURIComponent(inv.tempPass)}`;
+                const whatsappText = `Hello! Welcome to Tap-Bro. Here is your digital restaurant onboarding link:\n${setupLink}\nTemporary Pass: ${inv.tempPass}`;
+
+                return (
+                  <div key={inv.id} className="p-4 space-y-2.5">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="min-w-0">
+                        <h4 className="text-sm font-bold text-white truncate">{inv.email}</h4>
+                        <span className="text-[10px] text-zinc-400">{new Date(inv.createdAt).toLocaleDateString()}</span>
+                      </div>
+                      <code className="rounded bg-surface-raised border border-amber-400/30 px-2 py-1 text-amber-300 font-mono font-bold text-xs shrink-0">
+                        {inv.tempPass}
+                      </code>
+                    </div>
+
+                    <div className="flex items-center justify-between text-xs">
+                      <span
+                        className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold ${
+                          inv.status === 'completed'
+                            ? 'bg-emerald-500/20 text-emerald-400'
+                            : 'bg-amber-500/20 text-amber-400'
+                        }`}
+                      >
+                        {inv.status === 'completed' ? 'Setup Completed' : 'Pending Setup'}
+                      </span>
+                      {inv.notes && <span className="text-[11px] text-zinc-500 truncate max-w-[150px]">{inv.notes}</span>}
+                    </div>
+
+                    <div className="flex items-center gap-2 pt-1">
+                      <a
+                        href={`https://wa.me/?text=${encodeURIComponent(whatsappText)}`}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="flex-1 flex items-center justify-center gap-1 rounded-xl bg-emerald-600 hover:bg-emerald-500 py-2 text-xs font-semibold text-white shadow-sm"
+                      >
+                        <MessageCircle className="h-3.5 w-3.5" />
+                        <span>WhatsApp</span>
+                      </a>
+                      <button
+                        type="button"
+                        onClick={() => copySetupLink(inv.email, inv.tempPass)}
+                        className="flex-1 flex items-center justify-center gap-1 rounded-xl border border-border bg-surface-raised py-2 text-xs font-semibold text-amber-400 hover:text-white"
+                      >
+                        {copiedLink === inv.tempPass ? <Check className="h-3.5 w-3.5 text-emerald-400" /> : <Copy className="h-3.5 w-3.5" />}
+                        <span>{copiedLink === inv.tempPass ? 'Copied' : 'Copy'}</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteInvite(inv.id)}
+                        className="flex h-9 w-9 items-center justify-center rounded-xl border border-red-500/30 bg-red-500/10 text-red-400"
+                        title="Delete"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </div>
+                  </div>
+                );
+              })
+            )}
           </div>
         </div>
 

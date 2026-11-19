@@ -112,12 +112,8 @@ export const StepRatings: React.FC<StepRatingsProps> = ({ ratings, onChange, onN
               </div>
 
               {/* Big Touch-Friendly Star Rating Buttons */}
-              <div className="mt-3 flex items-center justify-between pt-2 border-t border-border/40">
-                <span className="text-[11px] text-zinc-400 font-medium">
-                  {selectedValue > 0 ? `${selectedValue} of 5 Stars` : 'Tap star to rate:'}
-                </span>
-
-                <div className="flex items-center gap-1.5 sm:gap-2">
+              <div className="mt-3 pt-2.5 border-t border-border/40">
+                <div className="flex items-center justify-between gap-1">
                   {[1, 2, 3, 4, 5].map((star) => {
                     const isFilled = star <= selectedValue;
                     return (
@@ -125,16 +121,16 @@ export const StepRatings: React.FC<StepRatingsProps> = ({ ratings, onChange, onN
                         key={star}
                         type="button"
                         onClick={() => handleStarClick(cat.key, star)}
-                        className={`star-btn flex h-10 w-10 sm:h-9 sm:w-9 items-center justify-center rounded-xl transition-all duration-150 active:scale-90 focus:outline-none ${
+                        className={`star-btn flex-1 flex h-11 items-center justify-center rounded-xl transition-all duration-150 active:scale-95 focus:outline-none ${
                           isFilled
-                            ? 'bg-amber-400/20 text-amber-400 border border-amber-400/40 shadow-sm shadow-amber-400/10'
+                            ? 'bg-amber-400/20 text-amber-400 border border-amber-400/40 shadow-sm shadow-amber-400/15'
                             : 'bg-surface text-zinc-600 hover:text-zinc-400 border border-border/70'
                         }`}
                         aria-label={`Rate ${cat.title} ${star} out of 5 stars`}
                       >
                         <Star
                           className={`h-5 w-5 transition-transform ${
-                            isFilled ? 'fill-amber-400 stroke-amber-400 scale-105' : 'stroke-current'
+                            isFilled ? 'fill-amber-400 stroke-amber-400 scale-110' : 'stroke-current'
                           }`}
                         />
                       </button>

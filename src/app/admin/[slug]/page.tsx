@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import {
   Store,
@@ -25,11 +25,12 @@ import {
   Flame,
   ChevronRight,
   Sliders,
+  QrCode,
 } from 'lucide-react';
 import { Restaurant, AIProviderType } from '@/types/restaurant';
 import { DishCategory, ReviewLanguage, ReviewTone } from '@/types/review';
 
-export default function RestaurantAdminDashboard() {
+function RestaurantAdminDashboardContent() {
   const params = useParams();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -147,6 +148,20 @@ export default function RestaurantAdminDashboard() {
     navigator.clipboard.writeText(destinationUrl);
     setCopiedNfc(true);
     setTimeout(() => setCopiedNfc(false), 3000);
+  };
+
+  const handleShareWhatsApp = () => {
+    const text = `🍽️ Tap-Bro Tabletop Review Stand for *${name}*:\nTap your phone on the stand or open:\n${destinationUrl}`;
+    window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`, '_blank');
+  };
+
+  const handleDownloadQr = () => {
+    const a = document.createElement('a');
+    a.href = `/api/restaurants/${slug}/qr`;
+    a.download = `${slug}-tabletop-qr.png`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
   };
 
   const handleRunSimulator = async () => {
@@ -330,15 +345,15 @@ export default function RestaurantAdminDashboard() {
           </div>
         </div>
 
-        {/* Tab 1: Tabletop NFC Hub (QR Code Removed) */}
+        {/* Tab 1: Tabletop NFC & QR Stand Hub */}
         {activeTab === 'nfc' && (
           <div className="space-y-4 animate-fade-in">
-            {/* NFC Hardware Station Card */}
-            <div className="rounded-2xl border border-border bg-surface-card p-4 space-y-3.5 shadow-xl">
+            {/* Tabletop Acrylic Stand Preview Card */}
+            <div className="rounded-2xl border border-border bg-surface-card p-4 space-y-4 shadow-xl">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold text-amber-400 uppercase tracking-wider flex items-center gap-1.5">
                   <Radio className="h-4 w-4" />
-                  <span>Tabletop NFC Station</span>
+                  <span>Tabletop NFC &amp; QR Stand</span>
                 </span>
                 <span className="rounded-full bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 text-[10px] font-semibold text-emerald-300">
                   Ready to Tap
@@ -348,13 +363,52 @@ export default function RestaurantAdminDashboard() {
               <div>
                 <h2 className="text-base font-bold text-white">{name} Table Stands</h2>
                 <p className="text-xs text-text-secondary mt-0.5 leading-relaxed">
-                  Diners tap their phone on your table puck or card. No camera QR scanning required.
+                  Guests tap their phone on the NFC stand or scan the QR code to write authentic reviews with AI.
                 </p>
               </div>
 
-              <div className="rounded-xl bg-surface p-3 border border-border/80 space-y-2">
+              {/* QR Stand Preview */}
+              <div className="flex flex-col items-center justify-center p-4 rounded-xl bg-surface border border-border/70 space-y-3">
+                <div className="p-3 bg-white rounded-2xl shadow-lg border border-amber-400/40">
+                  <img
+                    src={`/api/restaurants/${slug}/qr`}
+                    alt={`${name} QR Code`}
+                    className="w-36 h-36 object-contain"
+                  />
+                </div>
+                <div className="text-center space-y-1">
+                  <p className="text-xs font-bold text-white flex items-center justify-center gap-1">
+                    <QrCode className="h-3.5 w-3.5 text-amber-400" />
+                    <span>Tabletop Review Stand QR</span>
+                  </p>
+                  <p className="text-[11px] text-zinc-400 font-mono break-all max-w-xs">
+                    {destinationUrl}
+                  </p>
+                </div>
+              </div>
+
+              {/* Fast Action Buttons: WhatsApp Share & Download */}
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={handleShareWhatsApp}
+                  className="flex items-center justify-center gap-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white py-2.5 px-3 text-xs font-semibold shadow-md active:scale-95 transition"
+                >
+                  <span>Share on WhatsApp</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={handleDownloadQr}
+                  className="flex items-center justify-center gap-1.5 rounded-xl border border-amber-500/40 bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 py-2.5 px-3 text-xs font-semibold active:scale-95 transition"
+                >
+                  <span>Download Stand QR</span>
+                </button>
+              </div>
+
+              {/* URL Copy Bar */}
+              <div className="rounded-xl bg-surface p-3 border border-border/80 space-y-1.5">
                 <span className="text-[11px] text-zinc-400 font-medium block">
-                  NFC Tabletop URL Link:
+                  Direct Station URL:
                 </span>
                 <div className="flex items-center gap-2">
                   <input
@@ -386,14 +440,14 @@ export default function RestaurantAdminDashboard() {
                   max={200}
                   value={tableCount}
                   onChange={(e) => setTableCount(Number(e.target.value))}
-                  className="w-16 rounded-xl border border-border bg-surface px-2.5 py-1.5 text-xs text-white text-center font-bold focus:border-amber-400 focus:outline-none"
+                  className="w-16 rounded-xl border border-border bg-surface px-2.5 py-2 text-sm text-white text-center font-bold focus:border-amber-400 focus:outline-none"
                 />
               </div>
 
               <button
                 type="button"
                 onClick={() => window.open(`/r/${slug}`, '_blank')}
-                className="w-full flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-amber-400 to-amber-500 py-3 font-semibold text-page shadow-md shadow-amber-500/20 text-xs active:scale-[0.99] transition"
+                className="w-full flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-amber-400 to-amber-500 py-3.5 font-bold text-page shadow-md shadow-amber-500/20 text-xs sm:text-sm active:scale-[0.99] transition"
               >
                 <Eye className="h-4 w-4" />
                 <span>Test Live Diner Flow on Phone</span>
@@ -432,7 +486,7 @@ export default function RestaurantAdminDashboard() {
                   type="text"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="w-full rounded-xl border border-border bg-surface px-3 py-2 text-xs text-white focus:border-amber-400 focus:outline-none"
+                  className="w-full rounded-xl border border-border bg-surface px-3 py-2.5 text-base sm:text-xs text-white focus:border-amber-400 focus:outline-none"
                 />
               </div>
 
@@ -444,7 +498,7 @@ export default function RestaurantAdminDashboard() {
                   type="text"
                   value={cuisine}
                   onChange={(e) => setCuisine(e.target.value)}
-                  className="w-full rounded-xl border border-border bg-surface px-3 py-2 text-xs text-white focus:border-amber-400 focus:outline-none"
+                  className="w-full rounded-xl border border-border bg-surface px-3 py-2.5 text-base sm:text-xs text-white focus:border-amber-400 focus:outline-none"
                 />
               </div>
 
@@ -457,7 +511,7 @@ export default function RestaurantAdminDashboard() {
                   maxLength={8}
                   value={adminPin}
                   onChange={(e) => setAdminPin(e.target.value)}
-                  className="w-full rounded-xl border border-border bg-surface px-3 py-2 text-xs text-white focus:border-amber-400 focus:outline-none font-mono"
+                  className="w-full rounded-xl border border-border bg-surface px-3 py-2.5 text-base sm:text-xs text-white focus:border-amber-400 focus:outline-none font-mono"
                 />
               </div>
 
@@ -469,7 +523,7 @@ export default function RestaurantAdminDashboard() {
                   type="text"
                   value={tagline}
                   onChange={(e) => setTagline(e.target.value)}
-                  className="w-full rounded-xl border border-border bg-surface px-3 py-2 text-xs text-white focus:border-amber-400 focus:outline-none"
+                  className="w-full rounded-xl border border-border bg-surface px-3 py-2.5 text-base sm:text-xs text-white focus:border-amber-400 focus:outline-none"
                 />
               </div>
 
@@ -496,7 +550,7 @@ export default function RestaurantAdminDashboard() {
                   value={googleReviewUrl}
                   onChange={(e) => setGoogleReviewUrl(e.target.value)}
                   placeholder="https://search.google.com/local/writereview?placeid=..."
-                  className="w-full rounded-xl border border-border bg-surface px-3 py-2 text-xs text-white focus:border-amber-400 focus:outline-none font-mono"
+                  className="w-full rounded-xl border border-border bg-surface px-3 py-2.5 text-base sm:text-xs text-white focus:border-amber-400 focus:outline-none font-mono"
                 />
               </div>
 
@@ -748,5 +802,13 @@ export default function RestaurantAdminDashboard() {
         </div>
       </nav>
     </div>
+  );
+}
+
+export default function RestaurantAdminDashboard() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-page flex items-center justify-center p-4 text-amber-400 text-xs">Loading Tap-Bro Portal...</div>}>
+      <RestaurantAdminDashboardContent />
+    </Suspense>
   );
 }

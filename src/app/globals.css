@@ -7,18 +7,60 @@
   --foreground: #F8F9FA;
 }
 
+/* Prevent unwanted horizontal viewport shift and enable smooth scrolling */
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  scroll-behavior: smooth;
+  height: 100%;
+}
+
 body {
   background-color: #0B0C10;
   color: #F8F9FA;
   font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  -webkit-tap-highlight-color: transparent;
+  overflow-x: hidden;
+  min-height: 100dvh;
+}
+
+/* Prevent iOS Safari 16px auto-zoom on input focus */
+@media screen and (max-width: 768px) {
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  input[type="tel"],
+  input[type="number"],
+  textarea,
+  select {
+    font-size: 16px !important;
+  }
+}
+
+/* Mobile Safe Area utilities */
+.pb-safe {
+  padding-bottom: max(16px, env(safe-area-inset-bottom));
+}
+
+.pt-safe {
+  padding-top: max(12px, env(safe-area-inset-top));
+}
+
+/* Touch manipulation optimization */
+button,
+a,
+input,
+textarea,
+select {
+  touch-action: manipulation;
 }
 
 /* Custom scrollbar for mobile luxury feel */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
 }
 ::-webkit-scrollbar-track {
   background: #111319;
@@ -33,24 +75,29 @@ body {
 
 /* Star glow transition */
 .star-btn {
-  transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1), color 0.15s ease;
+  transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1), color 0.15s ease, background-color 0.15s ease;
 }
 .star-btn:active {
-  transform: scale(1.25);
+  transform: scale(1.15);
 }
 
 /* Chip selection bounce */
 .chip-item {
   transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
 }
-.chip-item:hover {
-  transform: translateY(-1px);
-}
 .chip-item:active {
-  transform: scale(0.96);
+  transform: scale(0.95);
 }
 
 /* Ambient glow background */
 .ambient-bg {
-  background: radial-gradient(circle at 50% 0%, rgba(245, 200, 76, 0.08) 0%, rgba(11, 12, 16, 0) 70%);
+  background: radial-gradient(circle at 50% 0%, rgba(245, 200, 76, 0.09) 0%, rgba(11, 12, 16, 0) 75%);
+}
+
+/* Glass card styling */
+.glass-card {
+  background: rgba(21, 23, 31, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(44, 48, 61, 0.8);
 }

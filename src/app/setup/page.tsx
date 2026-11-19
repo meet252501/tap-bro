@@ -156,27 +156,27 @@ function SetupContent() {
   };
 
   return (
-    <div className="relative z-10 w-full max-w-lg px-2 sm:px-0">
+    <div className="relative z-10 w-full max-w-md mx-auto px-3.5 sm:px-0 py-6">
       {/* Brand Header */}
-      <div className="text-center mb-5 sm:mb-6">
-        <div className="mx-auto flex h-14 w-14 sm:h-16 sm:w-16 items-center justify-center rounded-2xl overflow-hidden border border-amber-400/40 shadow-xl shadow-amber-500/20 mb-2.5 bg-surface">
-          <img src="/tap-bro-logo.png" alt="Tap-Bro Logo" className="h-full w-full object-cover" />
+      <div className="text-center mb-6">
+        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl overflow-hidden border border-amber-400/40 shadow-xl shadow-amber-500/20 mb-3 bg-surface p-1">
+          <img src="/tap-bro-logo.png" alt="Tap-Bro Logo" className="h-full w-full object-cover rounded-xl" />
         </div>
-        <h1 className="text-xl sm:text-2xl font-extrabold tracking-tight text-white">
+        <h1 className="text-2xl font-extrabold tracking-tight text-white">
           Tap-Bro Restaurant Activation
         </h1>
-        <p className="mt-1 text-xs text-text-secondary leading-relaxed">
+        <p className="mt-1 text-xs text-text-secondary leading-relaxed max-w-xs mx-auto">
           Set up your restaurant name &amp; menu to activate your tabletop NFC review stand.
         </p>
       </div>
 
       {/* Step 1: Verify Temp Pass (Auto-bypassed if URL has valid credentials) */}
       {!isVerified ? (
-        <div className="rounded-2xl border border-border bg-surface-card p-5 sm:p-6 shadow-2xl space-y-4 animate-fade-in">
+        <div className="rounded-2xl border border-border/80 bg-surface-card/95 backdrop-blur-xl p-5 sm:p-6 shadow-2xl space-y-4 animate-fade-in">
           <div>
-            <h2 className="text-sm sm:text-base font-bold text-white">Temporary Access Pass</h2>
+            <h2 className="text-base font-bold text-white">Temporary Access Pass</h2>
             <p className="text-xs text-text-secondary mt-0.5">
-              Enter the single-use 4-digit pass received in your Tap-Bro invitation email.
+              Enter the 4-digit pass received in your Tap-Bro invitation email or link.
             </p>
           </div>
 
@@ -186,20 +186,20 @@ function SetupContent() {
             </div>
           )}
 
-          <form onSubmit={handleVerifyPass} className="space-y-3.5">
+          <form onSubmit={handleVerifyPass} className="space-y-4">
             <div>
               <label className="block text-xs font-semibold text-zinc-300 mb-1">
                 Your Email Address
               </label>
               <div className="relative">
-                <Mail className="h-4 w-4 text-zinc-500 absolute left-3.5 top-3" />
+                <Mail className="h-4 w-4 text-zinc-500 absolute left-3.5 top-3.5" />
                 <input
                   type="email"
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="your-restaurant-email@gmail.com"
-                  className="w-full rounded-xl border border-border bg-surface pl-10 pr-3.5 py-2.5 text-[15px] sm:text-sm text-white focus:border-amber-400 focus:outline-none"
+                  className="w-full rounded-xl border border-border bg-surface pl-10 pr-3.5 py-3 text-base sm:text-sm text-white focus:border-amber-400 focus:outline-none"
                 />
               </div>
             </div>
@@ -209,14 +209,14 @@ function SetupContent() {
                 Temporary Pass (from email)
               </label>
               <div className="relative">
-                <KeyRound className="h-4 w-4 text-zinc-500 absolute left-3.5 top-3" />
+                <KeyRound className="h-4 w-4 text-zinc-500 absolute left-3.5 top-3.5" />
                 <input
                   type="text"
                   required
                   placeholder="e.g. TAP-7892"
                   value={tempPass}
                   onChange={(e) => setTempPass(e.target.value)}
-                  className="w-full rounded-xl border border-border bg-surface pl-10 pr-3.5 py-2.5 text-[15px] sm:text-sm text-amber-300 font-mono font-bold tracking-wider focus:border-amber-400 focus:outline-none uppercase"
+                  className="w-full rounded-xl border border-border bg-surface pl-10 pr-3.5 py-3 text-base sm:text-sm text-amber-300 font-mono font-bold tracking-wider focus:border-amber-400 focus:outline-none uppercase"
                 />
               </div>
             </div>
@@ -224,7 +224,7 @@ function SetupContent() {
             <button
               type="submit"
               disabled={validating}
-              className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-amber-400 to-amber-500 py-3.5 font-bold text-page shadow-lg shadow-amber-500/20 hover:from-amber-300 hover:to-amber-400 transition text-xs sm:text-sm disabled:opacity-50"
+              className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-amber-400 to-amber-500 py-3.5 font-bold text-page shadow-lg shadow-amber-500/20 hover:from-amber-300 hover:to-amber-400 transition text-sm disabled:opacity-50 active:scale-[0.98]"
             >
               <span>{validating ? 'Verifying Pass...' : 'Unlock Setup Form ➔'}</span>
               <ArrowRight className="h-4 w-4" />
@@ -233,8 +233,8 @@ function SetupContent() {
         </div>
       ) : (
         /* Step 2: Clean, Unprefilled Restaurant Profile Setup */
-        <div className="rounded-2xl border border-amber-500/30 bg-surface-card p-5 sm:p-6 shadow-2xl space-y-4 animate-fade-in">
-          <div className="flex items-center justify-between text-xs pb-1 border-b border-border/50">
+        <div className="rounded-2xl border border-amber-500/30 bg-surface-card/95 backdrop-blur-xl p-5 sm:p-6 shadow-2xl space-y-4 animate-fade-in">
+          <div className="flex items-center justify-between text-xs pb-2 border-b border-border/50">
             <span className="flex items-center gap-1.5 text-emerald-400 font-semibold">
               <CheckCircle2 className="h-4 w-4" />
               <span>Pass Verified ({email})</span>
@@ -255,14 +255,14 @@ function SetupContent() {
             </div>
           )}
 
-          <form onSubmit={handleCompleteSetup} className="space-y-3.5">
+          <form onSubmit={handleCompleteSetup} className="space-y-4">
             {/* Restaurant Name */}
             <div>
               <label className="block text-xs font-semibold text-zinc-300 mb-1">
                 Restaurant / Cafe Name *
               </label>
               <div className="relative">
-                <Store className="h-4 w-4 text-zinc-500 absolute left-3.5 top-3" />
+                <Store className="h-4 w-4 text-zinc-500 absolute left-3.5 top-3.5" />
                 <input
                   type="text"
                   required
@@ -270,7 +270,7 @@ function SetupContent() {
                   value={restaurantName}
                   onChange={(e) => setRestaurantName(e.target.value)}
                   placeholder="Enter your restaurant name"
-                  className="w-full rounded-xl border border-border bg-surface pl-10 pr-3.5 py-2.5 text-[15px] sm:text-sm text-white focus:border-amber-400 focus:outline-none"
+                  className="w-full rounded-xl border border-border bg-surface pl-10 pr-3.5 py-3 text-base sm:text-sm text-white focus:border-amber-400 focus:outline-none"
                 />
               </div>
             </div>
@@ -282,7 +282,7 @@ function SetupContent() {
                   Contact Phone Number *
                 </label>
                 <div className="relative">
-                  <Phone className="h-4 w-4 text-zinc-500 absolute left-3 top-3" />
+                  <Phone className="h-4 w-4 text-zinc-500 absolute left-3.5 top-3.5" />
                   <input
                     type="tel"
                     required
@@ -290,7 +290,7 @@ function SetupContent() {
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
                     placeholder="e.g. 9876543210"
-                    className="w-full rounded-xl border border-border bg-surface pl-9 pr-3 py-2.5 text-[15px] sm:text-sm text-white focus:border-amber-400 focus:outline-none"
+                    className="w-full rounded-xl border border-border bg-surface pl-10 pr-3.5 py-3 text-base sm:text-sm text-white focus:border-amber-400 focus:outline-none"
                   />
                 </div>
               </div>
@@ -300,7 +300,7 @@ function SetupContent() {
                   Create Manager PIN *
                 </label>
                 <div className="relative">
-                  <KeyRound className="h-4 w-4 text-zinc-500 absolute left-3 top-3" />
+                  <KeyRound className="h-4 w-4 text-zinc-500 absolute left-3.5 top-3.5" />
                   <input
                     type="password"
                     required
@@ -309,7 +309,7 @@ function SetupContent() {
                     placeholder="4-digit PIN (e.g. 1234)"
                     value={adminPin}
                     onChange={(e) => setAdminPin(e.target.value)}
-                    className="w-full rounded-xl border border-border bg-surface pl-9 pr-3 py-2.5 text-[15px] sm:text-sm text-white focus:border-amber-400 focus:outline-none"
+                    className="w-full rounded-xl border border-border bg-surface pl-10 pr-3.5 py-3 text-base sm:text-sm text-white focus:border-amber-400 focus:outline-none"
                   />
                 </div>
               </div>
@@ -327,7 +327,7 @@ function SetupContent() {
                   value={cuisine}
                   onChange={(e) => setCuisine(e.target.value)}
                   placeholder="e.g. Italian, Cafe, North Indian"
-                  className="w-full rounded-xl border border-border bg-surface px-3 py-2.5 text-[15px] sm:text-sm text-white focus:border-amber-400 focus:outline-none"
+                  className="w-full rounded-xl border border-border bg-surface px-3.5 py-3 text-base sm:text-sm text-white focus:border-amber-400 focus:outline-none"
                 />
               </div>
 
@@ -341,7 +341,7 @@ function SetupContent() {
                   value={tagline}
                   onChange={(e) => setTagline(e.target.value)}
                   placeholder="e.g. Fresh Bites & Great Vibes"
-                  className="w-full rounded-xl border border-border bg-surface px-3 py-2.5 text-[15px] sm:text-sm text-white focus:border-amber-400 focus:outline-none"
+                  className="w-full rounded-xl border border-border bg-surface px-3.5 py-3 text-base sm:text-sm text-white focus:border-amber-400 focus:outline-none"
                 />
               </div>
             </div>
@@ -367,14 +367,14 @@ function SetupContent() {
                       handleAddDish();
                     }
                   }}
-                  placeholder="e.g. Paneer Tikka, Cold Brew, Truffle Pasta"
-                  className="flex-1 rounded-xl border border-border bg-surface px-3 py-2 text-[15px] sm:text-xs text-white placeholder-zinc-500 focus:border-amber-400 focus:outline-none"
+                  placeholder="e.g. Paneer Tikka, Cold Brew"
+                  className="flex-1 rounded-xl border border-border bg-surface px-3.5 py-2.5 text-base sm:text-xs text-white placeholder-zinc-500 focus:border-amber-400 focus:outline-none"
                 />
                 <button
                   type="button"
                   onClick={handleAddDish}
                   disabled={!newDishInput.trim()}
-                  className="flex items-center gap-1 rounded-xl bg-surface-raised border border-border px-3 py-2 text-xs font-semibold text-amber-400 hover:bg-surface-highlight disabled:opacity-40"
+                  className="flex items-center gap-1 rounded-xl bg-surface-raised border border-border px-3.5 py-2.5 text-xs font-semibold text-amber-400 hover:bg-surface-highlight disabled:opacity-40"
                 >
                   <Plus className="h-3.5 w-3.5" />
                   <span>Add</span>
@@ -386,13 +386,13 @@ function SetupContent() {
                   {dishTags.map((dish) => (
                     <span
                       key={dish}
-                      className="inline-flex items-center gap-1 rounded-full bg-amber-400/10 border border-amber-400/30 px-2.5 py-1 text-xs text-amber-300"
+                      className="inline-flex items-center gap-1 rounded-full bg-amber-400/10 border border-amber-400/30 px-3 py-1 text-xs text-amber-300"
                     >
                       <span>{dish}</span>
                       <button
                         type="button"
                         onClick={() => handleRemoveDish(dish)}
-                        className="text-zinc-400 hover:text-white"
+                        className="text-zinc-400 hover:text-white ml-0.5"
                       >
                         <X className="h-3 w-3" />
                       </button>
@@ -413,8 +413,8 @@ function SetupContent() {
                 autoComplete="off"
                 value={googleReviewUrl}
                 onChange={(e) => setGoogleReviewUrl(e.target.value)}
-                placeholder="https://search.google.com/local/writereview?placeid=..."
-                className="w-full rounded-xl border border-border bg-surface px-3 py-2.5 text-[15px] sm:text-sm text-white focus:border-amber-400 focus:outline-none font-mono"
+                placeholder="https://g.page/r/your-restaurant/review"
+                className="w-full rounded-xl border border-border bg-surface px-3.5 py-3 text-base sm:text-sm text-white focus:border-amber-400 focus:outline-none font-mono"
               />
               <p className="mt-1 text-[11px] text-zinc-400">
                 Guests tap here after generating their review draft to post directly on Google.
@@ -425,7 +425,7 @@ function SetupContent() {
               <button
                 type="submit"
                 disabled={submitting}
-                className="flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-amber-400 to-amber-500 py-4 font-extrabold text-page shadow-xl shadow-amber-500/20 hover:from-amber-300 hover:to-amber-400 transition text-sm disabled:opacity-50 active:scale-[0.98]"
+                className="flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-amber-400 to-amber-500 py-4 font-extrabold text-page shadow-xl shadow-amber-500/25 hover:from-amber-300 hover:to-amber-400 transition text-sm sm:text-base disabled:opacity-50 active:scale-[0.98]"
               >
                 <Sparkles className="h-4 w-4 fill-current" />
                 <span>{submitting ? 'Activating Restaurant...' : 'Activate Tabletop Station ➔'}</span>

@@ -123,7 +123,7 @@ export const StepDishes: React.FC<StepDishesProps> = ({
                   value={customDishInput}
                   onChange={(e) => setCustomDishInput(e.target.value)}
                   placeholder="e.g. Sizzling Brownie, Iced Tea"
-                  className="flex-1 rounded-xl border border-border bg-surface px-3 py-2 text-[15px] sm:text-xs text-white placeholder-zinc-500 focus:border-amber-400 focus:outline-none"
+                  className="flex-1 rounded-xl border border-border bg-surface px-3 py-2.5 text-base sm:text-xs text-white placeholder-zinc-500 focus:border-amber-400 focus:outline-none"
                   autoFocus
                 />
                 <button
@@ -158,7 +158,7 @@ export const StepDishes: React.FC<StepDishesProps> = ({
             onChange={(e) => onNotesChange(e.target.value)}
             placeholder="e.g. Celebrated birthday, server Rahul was great, rooftop view"
             maxLength={180}
-            className="w-full rounded-xl border border-border/80 bg-surface px-3.5 py-2.5 text-[15px] sm:text-xs text-white placeholder-zinc-500 focus:border-amber-400 focus:outline-none"
+            className="w-full rounded-xl border border-border/80 bg-surface px-3.5 py-3 text-base sm:text-xs text-white placeholder-zinc-500 focus:border-amber-400 focus:outline-none"
           />
         </div>
       </div>

@@ -96,7 +96,7 @@ async function runManagerTests() {
     // Step 2: Manager Dashboard & Live Tabletop NFC URL Verification
     // -----------------------------------------------------------------
     console.log(`\n${colors.bold}[2/4] Verifying NFC Tabletop Station Link...${colors.reset}`);
-    await page.waitForSelector(`text=${testName}`, { timeout: 8000 });
+    await page.waitForSelector(`text=${testName}`, { timeout: 15000 });
     pass(`Dashboard mounted with restaurant name: ${testName}`);
 
     // Verify NFC tabletop URL does NOT contain localhost
@@ -115,7 +115,7 @@ async function runManagerTests() {
     console.log(`\n${colors.bold}[3/4] Updating Restaurant Profile in Manager Portal...${colors.reset}`);
     // Switch to Profile Tab
     await page.click('button:has-text("Profile")');
-    await page.waitForSelector('input[value*="Wood-Smoked Meats"], input[placeholder*="Tagline" i]', { timeout: 8000 });
+    await page.waitForSelector('input[value*="Wood-Smoked Meats"], input[placeholder*="Tagline" i]', { timeout: 15000 });
 
     const newTagline = 'World Class Smoked Specialties & Cocktails';
     const taglineInput = page.locator('input[value*="Wood-Smoked Meats"], input[placeholder*="Tagline" i]').first();

@@ -72,7 +72,7 @@ export default function LandingPage() {
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
           <Link
             href="/r/saffron-spice"
-            className="w-full sm:w-auto flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-amber-400 to-amber-500 py-3.5 px-6 font-semibold text-page shadow-lg shadow-amber-500/20 hover:from-amber-300 hover:to-amber-400 transition active:scale-[0.99] text-xs sm:text-sm"
+            className="w-full sm:w-auto flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-amber-400 via-amber-400 to-amber-500 py-4 px-6 font-extrabold text-page shadow-xl shadow-amber-500/25 hover:from-amber-300 hover:to-amber-400 transition active:scale-[0.98] text-sm sm:text-base"
           >
             <span>Try Live Diner Experience</span>
             <ArrowRight className="h-4 w-4" />
@@ -80,10 +80,10 @@ export default function LandingPage() {
 
           <Link
             href="/admin"
-            className="w-full sm:w-auto flex items-center justify-center gap-2 rounded-xl border border-border bg-surface-raised py-3.5 px-6 font-semibold text-white hover:border-amber-400/50 hover:bg-surface-highlight transition active:scale-[0.99] text-xs sm:text-sm"
+            className="w-full sm:w-auto flex items-center justify-center gap-2 rounded-2xl border border-border bg-surface-raised py-4 px-6 font-bold text-white hover:border-amber-400/50 hover:bg-surface-highlight transition active:scale-[0.98] text-sm sm:text-base"
           >
             <Store className="h-4 w-4 text-amber-400" />
-            <span>Manage Restaurants (Admin)</span>
+            <span>Partner Manager Hub</span>
           </Link>
         </div>
 

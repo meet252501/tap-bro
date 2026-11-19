@@ -165,14 +165,14 @@ export default function AdminPortalPage() {
                   Owner Phone Number
                 </label>
                 <div className="relative">
-                  <Phone className="h-4 w-4 text-zinc-500 absolute left-3.5 top-3" />
+                  <Phone className="h-4 w-4 text-zinc-500 absolute left-3.5 top-3.5" />
                   <input
                     type="tel"
                     required
                     value={loginPhone}
                     onChange={(e) => setLoginPhone(e.target.value)}
                     placeholder="e.g. 9876543210"
-                    className="w-full rounded-xl border border-border bg-surface pl-10 pr-3.5 py-2.5 text-xs sm:text-sm text-white focus:border-amber-400 focus:outline-none"
+                    className="w-full rounded-xl border border-border bg-surface pl-10 pr-3.5 py-3 text-base sm:text-sm text-white focus:border-amber-400 focus:outline-none"
                   />
                 </div>
               </div>
@@ -182,14 +182,14 @@ export default function AdminPortalPage() {
                   Admin PIN or Restaurant ID
                 </label>
                 <div className="relative">
-                  <KeyRound className="h-4 w-4 text-zinc-500 absolute left-3.5 top-3" />
+                  <KeyRound className="h-4 w-4 text-zinc-500 absolute left-3.5 top-3.5" />
                   <input
                     type="password"
                     required
                     value={loginPin}
                     onChange={(e) => setLoginPin(e.target.value)}
                     placeholder="e.g. 1234 or REST_SAFFRON_01"
-                    className="w-full rounded-xl border border-border bg-surface pl-10 pr-3.5 py-2.5 text-xs sm:text-sm text-white focus:border-amber-400 focus:outline-none"
+                    className="w-full rounded-xl border border-border bg-surface pl-10 pr-3.5 py-3 text-base sm:text-sm text-white focus:border-amber-400 focus:outline-none"
                   />
                 </div>
               </div>
@@ -198,7 +198,7 @@ export default function AdminPortalPage() {
                 <button
                   type="submit"
                   disabled={loginLoading}
-                  className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-amber-400 to-amber-500 py-3 px-4 font-semibold text-page shadow-lg shadow-amber-500/20 hover:from-amber-300 hover:to-amber-400 transition active:scale-[0.99] disabled:opacity-50 text-xs sm:text-sm"
+                  className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-amber-400 to-amber-500 py-3.5 px-4 font-bold text-page shadow-lg shadow-amber-500/20 hover:from-amber-300 hover:to-amber-400 transition active:scale-[0.98] disabled:opacity-50 text-sm"
                 >
                   <LogIn className="h-4 w-4" />
                   <span>{loginLoading ? 'Authenticating...' : 'Sign In to Dashboard'}</span>

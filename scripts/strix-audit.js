@@ -218,11 +218,13 @@ async function runSecurityAudit() {
   console.log(`${colors.bold}${colors.cyan}------------------------------------------------------------\n${colors.reset}`);
 
   if (failures > 0) {
-    process.exit(1);
+    process.exitCode = 1;
   } else {
     console.log(`${colors.bold}${colors.green}🎉 ALL SECURITY AUDIT & PEN-TEST CHECKS PASSED SUCCESSFULLY!${colors.reset}\n`);
-    process.exit(0);
+    process.exitCode = 0;
   }
 }
 
-runSecurityAudit();
+runSecurityAudit().catch(() => {
+  process.exitCode = 1;
+});
