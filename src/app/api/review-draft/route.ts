@@ -29,12 +29,13 @@ export async function POST(req: NextRequest) {
       genderGrammar,
     } = body;
 
-    // Check if restaurant slug is provided to lookup its preferences
+    // Check if restaurant slug is provided to lookup its preferences and track analytics
+    const targetSlug = (restaurantSlug || body.slug);
     let matchedRest = null;
-    if (restaurantSlug && typeof restaurantSlug === 'string') {
-      matchedRest = getRestaurantBySlug(restaurantSlug);
+    if (targetSlug && typeof targetSlug === 'string') {
+      matchedRest = getRestaurantBySlug(targetSlug);
       if (matchedRest) {
-        incrementReviewCount(restaurantSlug);
+        incrementReviewCount(targetSlug);
       }
     }
 

@@ -6,7 +6,13 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
+    "test": "node scripts/test-all.js",
+    "test:all": "node scripts/test-all.js",
+    "test:unit": "node scripts/test-unit.js",
     "test:security": "node scripts/strix-audit.js",
+    "test:qr": "node scripts/test-qr.js",
+    "test:languages": "node scripts/test-diner-languages.js",
+    "test:manager": "node scripts/test-manager.js",
     "test:e2e": "node scripts/human-tester.js",
     "test:human": "node scripts/human-tester.js",
     "audit": "node scripts/strix-audit.js"

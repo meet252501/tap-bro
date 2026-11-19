@@ -94,10 +94,10 @@ export default function RestaurantAdminDashboard() {
       .catch(() => setError('Error loading restaurant details'))
       .finally(() => setLoading(false));
 
-    // Determine diner link
-    const host = window.location.host;
-    const proto = window.location.protocol;
-    setDestinationUrl(`${proto}//${host}/r/${slug}`);
+    // Determine diner link (strictly avoid localhost for NFC hardware programming)
+    const isLocal = typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+    const publicOrigin = isLocal ? 'https://tapbro.vercel.app' : window.location.origin;
+    setDestinationUrl(`${publicOrigin}/r/${slug}`);
   }, [slug]);
 
   const handleSave = async (e?: React.FormEvent) => {
