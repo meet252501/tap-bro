@@ -181,11 +181,11 @@ export default function RestaurantDinerPage() {
             This QR code or link does not appear to be linked to an active restaurant profile.
           </p>
           <button
-            onClick={() => router.push('/')}
+            onClick={() => router.push('/admin')}
             className="inline-flex items-center gap-2 rounded-xl bg-surface-raised border border-border px-4 py-2.5 text-xs font-semibold text-white hover:bg-surface-highlight transition"
           >
             <ArrowLeft className="h-4 w-4" />
-            <span>Go to Home</span>
+            <span>Go to Partner Login</span>
           </button>
         </div>
       </div>
