@@ -1,6 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import { Restaurant, BusinessInvite } from '@/types/restaurant';
+import { getDeterministicPass, isValidPassForEmail } from '@/lib/tokens';
 
 export function getDataFilePath(filename: string): string {
   const standardPath = path.join(process.cwd(), 'data', filename);
@@ -496,9 +497,8 @@ export function createBusinessInvite(email: string, notes?: string): BusinessInv
     return now - created < 48 * 60 * 60 * 1000;
   });
 
-  // Generate a friendly 4-digit temporary password, e.g. "TAP-7492"
-  const randNum = Math.floor(1000 + Math.random() * 9000);
-  const tempPass = `TAP-${randNum}`;
+  // Generate a resilient 48-hour deterministic temporary password, e.g. "TAP-5137"
+  const tempPass = getDeterministicPass(cleanEmail);
 
   const invite: BusinessInvite = {
     id: `INV_${Math.random().toString(36).substring(2, 9).toUpperCase()}`,
@@ -526,19 +526,32 @@ export function getInviteByEmailAndTempPass(email: string, tempPass: string): Bu
       inv.status === 'pending'
   );
 
-  if (!match) return null;
-
-  // 48-hour expiration window
-  const created = new Date(match.createdAt).getTime();
-  if (Date.now() - created > 48 * 60 * 60 * 1000) {
-    match.status = 'expired';
-    try {
-      fs.writeFileSync(INVITES_FILE, JSON.stringify(list, null, 2), 'utf-8');
-    } catch {}
-    return null;
+  if (match) {
+    // 48-hour expiration window
+    const created = new Date(match.createdAt).getTime();
+    if (Date.now() - created > 48 * 60 * 60 * 1000) {
+      match.status = 'expired';
+      try {
+        fs.writeFileSync(INVITES_FILE, JSON.stringify(list, null, 2), 'utf-8');
+      } catch {}
+      return null;
+    }
+    return match;
   }
 
-  return match;
+  // Stateless fallback: verify against 48-hour deterministic cryptographic slot
+  if (isValidPassForEmail(cleanEmail, cleanPass)) {
+    return {
+      id: `INV_${cleanEmail.replace(/[^a-zA-Z0-9]/g, '').slice(0, 8).toUpperCase()}`,
+      email: cleanEmail,
+      tempPass: cleanPass,
+      status: 'pending',
+      notes: 'Verified via 48hr HMAC signature',
+      createdAt: new Date().toISOString(),
+    };
+  }
+
+  return null;
 }
 
 export function markInviteCompleted(inviteId: string, restaurantId: string, restaurantSlug: string) {

@@ -310,7 +310,7 @@ export default function SuperAdminPage() {
           superAdminEmail: adminEmail,
           superAdminPin: adminPin,
           provider: selectedProvider,
-          targetEmail: adminEmail,
+          targetEmail: targetEmail.trim() || adminEmail,
           brevoApiKey,
           brevoFromEmail,
           brevoFromName,

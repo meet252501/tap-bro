@@ -40,6 +40,8 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({
       success: true,
       message: emailResult?.message || `Invitation dispatched to ${invite.email}`,
+      emailSent: emailResult ? emailResult.success : true,
+      emailError: emailResult && !emailResult.success ? emailResult.message : undefined,
       invite: {
         ...invite,
         token,

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getInviteByEmailAndTempPass, createRestaurant, markInviteCompleted } from '@/lib/db';
 import { sendOnboardingEmails, resolvePublicBaseUrl } from '@/lib/email';
-import { verifyInviteToken } from '@/lib/tokens';
+import { verifyInviteToken, isValidPassForEmail } from '@/lib/tokens';
 
 export async function POST(req: NextRequest) {
   try {
@@ -26,18 +26,31 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    let invite = getInviteByEmailAndTempPass(email, tempPass);
+    const cleanEmail = email.trim().toLowerCase();
+    const cleanPass = tempPass.trim().toUpperCase();
+
+    let invite = getInviteByEmailAndTempPass(cleanEmail, cleanPass);
     if (!invite && token) {
-      const tokenResult = verifyInviteToken(token, email, tempPass);
+      const tokenResult = verifyInviteToken(token, cleanEmail, cleanPass);
       if (tokenResult.valid) {
         invite = {
-          id: `INV_${email.replace(/[^a-zA-Z0-9]/g, '').slice(0, 8).toUpperCase()}`,
-          email: email.trim().toLowerCase(),
-          tempPass: tempPass.trim().toUpperCase(),
+          id: `INV_${cleanEmail.replace(/[^a-zA-Z0-9]/g, '').slice(0, 8).toUpperCase()}`,
+          email: cleanEmail,
+          tempPass: cleanPass,
           status: 'pending',
           createdAt: new Date().toISOString(),
         };
       }
+    }
+
+    if (!invite && isValidPassForEmail(cleanEmail, cleanPass)) {
+      invite = {
+        id: `INV_${cleanEmail.replace(/[^a-zA-Z0-9]/g, '').slice(0, 8).toUpperCase()}`,
+        email: cleanEmail,
+        tempPass: cleanPass,
+        status: 'pending',
+        createdAt: new Date().toISOString(),
+      };
     }
 
     if (!invite) {

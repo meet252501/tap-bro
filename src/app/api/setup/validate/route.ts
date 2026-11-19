@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getInviteByEmailAndTempPass } from '@/lib/db';
 import { isRateLimited, recordFailedAttempt, resetRateLimit, getClientIp } from '@/lib/rateLimit';
-import { verifyInviteToken } from '@/lib/tokens';
+import { verifyInviteToken, isValidPassForEmail } from '@/lib/tokens';
 
 export async function POST(req: NextRequest) {
   try {
@@ -23,17 +23,20 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Email and temporary password are required' }, { status: 400 });
     }
 
+    const cleanEmail = email.trim().toLowerCase();
+    const cleanPass = tempPass.trim().toUpperCase();
+
     // 1. Check signed cryptographic token first (stateless resilience across serverless instances)
     if (token) {
-      const tokenResult = verifyInviteToken(token, email, tempPass);
+      const tokenResult = verifyInviteToken(token, cleanEmail, cleanPass);
       if (tokenResult.valid) {
         resetRateLimit(limitKey);
         return NextResponse.json({
           success: true,
           invite: {
-            id: `INV_${email.replace(/[^a-zA-Z0-9]/g, '').slice(0, 8).toUpperCase()}`,
-            email: email.trim().toLowerCase(),
-            tempPass: tempPass.trim().toUpperCase(),
+            id: `INV_${cleanEmail.replace(/[^a-zA-Z0-9]/g, '').slice(0, 8).toUpperCase()}`,
+            email: cleanEmail,
+            tempPass: cleanPass,
           },
         });
       } else if (tokenResult.expired) {
@@ -44,8 +47,21 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // 2. Check local database record
-    const invite = getInviteByEmailAndTempPass(email, tempPass);
+    // 2. Check 48-hour deterministic cryptographic slot (works across cold restarts and manual pass entry)
+    if (isValidPassForEmail(cleanEmail, cleanPass)) {
+      resetRateLimit(limitKey);
+      return NextResponse.json({
+        success: true,
+        invite: {
+          id: `INV_${cleanEmail.replace(/[^a-zA-Z0-9]/g, '').slice(0, 8).toUpperCase()}`,
+          email: cleanEmail,
+          tempPass: cleanPass,
+        },
+      });
+    }
+
+    // 3. Check local database record (backwards compatibility)
+    const invite = getInviteByEmailAndTempPass(cleanEmail, cleanPass);
 
     if (!invite) {
       recordFailedAttempt(limitKey);

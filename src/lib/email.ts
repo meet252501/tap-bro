@@ -60,27 +60,17 @@ export function getEffectiveSmtpConfig() {
   return { host, port, user, pass, from, secure };
 }
 
-// SMTP Connection Pool for instant (<500ms) email delivery
-let pooledTransporter: ReturnType<typeof nodemailer.createTransport> | null = null;
-let pooledKey = '';
-
-function getPooledTransporter(host: string, port: number, secure: boolean, user: string, pass: string) {
-  const key = `${host}:${port}:${user}:${pass}:${secure}`;
-  if (!pooledTransporter || pooledKey !== key) {
-    pooledTransporter = nodemailer.createTransport({
-      pool: true,
-      maxConnections: 5,
-      maxMessages: 100,
-      host,
-      port,
-      secure,
-      auth: { user, pass },
-      connectionTimeout: 8000,
-      socketTimeout: 10000,
-    });
-    pooledKey = key;
-  }
-  return pooledTransporter;
+// Fresh SMTP Transporter factory (never pool in serverless environments)
+function createSmtpTransporter(host: string, port: number, secure: boolean, user: string, pass: string) {
+  return nodemailer.createTransport({
+    host,
+    port,
+    secure,
+    auth: { user, pass },
+    connectionTimeout: 10000,
+    greetingTimeout: 8000,
+    socketTimeout: 15000,
+  });
 }
 
 /**
@@ -318,7 +308,7 @@ export async function testUnifiedEmailDelivery(options: {
       };
     } else {
       // SMTP fallback
-      return await testSmtpConnection(options.smtp);
+      return await testSmtpConnection(options.smtp, options.targetEmail);
     }
   } catch (err: any) {
     return {
@@ -329,58 +319,63 @@ export async function testUnifiedEmailDelivery(options: {
   }
 }
 
-export async function testSmtpConnection(customConfig?: {
-  host?: string;
-  port?: number;
-  user?: string;
-  pass?: string;
-  from?: string;
-}): Promise<{ success: boolean; message: string; diagnostics?: any }> {
+export async function testSmtpConnection(
+  customConfig?: {
+    host?: string;
+    port?: number;
+    user?: string;
+    pass?: string;
+    from?: string;
+  },
+  targetEmail?: string
+): Promise<{ success: boolean; message: string; diagnostics?: any }> {
   const effective = customConfig
     ? {
         host: customConfig.host || 'smtp.gmail.com',
-        port: Number(customConfig.port) || 587,
-        user: customConfig.user || 'princesharma9955a@gmail.com',
-        pass: customConfig.pass || 'prince@777',
-        from: customConfig.from || `Tap-Bro Team <${customConfig.user || 'princesharma9955a@gmail.com'}>`,
+        port: Number(customConfig.port) || 465,
+        user: customConfig.user || 'friendlygaming2525@gmail.com',
+        pass: customConfig.pass || 'vbymqlsccuhzrzgf',
+        from: customConfig.from || `Tap-Bro Team <${customConfig.user || 'friendlygaming2525@gmail.com'}>`,
         secure: Number(customConfig.port) === 465,
       }
     : getEffectiveSmtpConfig();
 
+  const recipient = targetEmail || effective.user;
+
   try {
-    const transporter = nodemailer.createTransport({
-      host: effective.host,
-      port: effective.port,
-      secure: effective.secure,
-      auth: {
-        user: effective.user,
-        pass: effective.pass,
-      },
-      connectionTimeout: 8000,
-      greetingTimeout: 8000,
-    });
+    const transporter = createSmtpTransporter(
+      effective.host,
+      effective.port,
+      effective.secure,
+      effective.user,
+      effective.pass
+    );
 
     await transporter.verify();
 
     // Send a real test email to the user
     await transporter.sendMail({
       from: effective.from,
-      to: effective.user,
+      to: recipient,
       subject: `✅ Tap-Bro Live Email Verification (${new Date().toLocaleTimeString()})`,
-      text: `Hello Prince! Your Tap-Bro live email dispatch is verified and operational!`,
+      text: `Hello! Your Tap-Bro live email dispatch is verified and operational!`,
       html: `
         <div style="font-family: Arial, sans-serif; background: #0B0C10; color: #fff; padding: 20px; border-radius: 12px; border: 1px solid #F5C84C;">
           <h2 style="color: #F5C84C; margin: 0 0 10px;">Tap-Bro Live Email System Connected!</h2>
           <p style="color: #d1d5db;">This original verification email confirms that your SMTP server is sending emails live.</p>
-          <p style="color: #9ca3af; font-size: 12px;">Sent from: ${effective.from} to ${effective.user}</p>
+          <p style="color: #9ca3af; font-size: 12px;">Sent from: ${effective.from} to ${recipient}</p>
         </div>
       `,
+      headers: {
+        'X-Priority': '1',
+        'Importance': 'High',
+      },
     });
 
     return {
       success: true,
-      message: `🟢 SMTP Connected & Original Test Email dispatched live to ${effective.user}!`,
-      diagnostics: { host: effective.host, port: effective.port, user: effective.user },
+      message: `🟢 SMTP Connected & Original Test Email dispatched live to ${recipient}!`,
+      diagnostics: { host: effective.host, port: effective.port, user: effective.user, recipient },
     };
   } catch (err: any) {
     let tip = '';
@@ -436,7 +431,7 @@ export async function sendTapBroEmail(payload: EmailPayload): Promise<{ success:
   if (provider === 'smtp') {
     if (host && user && pass) {
       try {
-        const transporter = getPooledTransporter(host, port, secure, user, pass);
+        const transporter = createSmtpTransporter(host, port, secure, user, pass);
 
         await transporter.sendMail({
           from,
@@ -445,6 +440,12 @@ export async function sendTapBroEmail(payload: EmailPayload): Promise<{ success:
           text: payload.text,
           html: payload.html,
           attachments: payload.attachments,
+          headers: {
+            'X-Priority': '1',
+            'X-MSMail-Priority': 'High',
+            'Importance': 'High',
+            'X-Mailer': 'Tap-Bro Direct Dispatch',
+          },
         });
 
         emailRecord.sent = true;
@@ -545,7 +546,7 @@ export async function sendTapBroEmail(payload: EmailPayload): Promise<{ success:
   // 5. Fallback SMTP if not already tried
   if (host && user && pass) {
     try {
-      const transporter = getPooledTransporter(host, port, secure, user, pass);
+      const transporter = createSmtpTransporter(host, port, secure, user, pass);
 
       await transporter.sendMail({
         from,
@@ -732,7 +733,7 @@ export async function sendOwnerInviteEmail(data: {
 
   return await sendTapBroEmail({
     to: data.email,
-    subject: `Tap-Bro Access Code: ${data.tempPass}`,
+    subject: `🔑 Tap-Bro Restaurant Access: ${data.tempPass} (Setup Invitation)`,
     text: `Hey Bro! Welcome to Tap-Bro 🚀\n\nYour Temporary Pass is: ${data.tempPass}\n\nSet up your restaurant here:\n${setupUrl}\n\nCheers,\nTap-Bro Team`,
     html,
     type: 'owner-invite',

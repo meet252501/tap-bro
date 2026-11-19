@@ -3,6 +3,40 @@ import crypto from 'crypto';
 const SECRET_KEY = process.env.SUPER_ADMIN_PASSWORD || 'tap-bro-secure-master-2026';
 
 /**
+ * Generates a deterministic 4-digit temporary pass for an email address and day slot.
+ * Valid across all serverless containers and stateless execution contexts.
+ */
+export function getDeterministicPass(email: string, dayOffset = 0): string {
+  const cleanEmail = email.toLowerCase().trim();
+  const daySlot = Math.floor(Date.now() / (24 * 60 * 60 * 1000)) + dayOffset;
+  const hash = crypto
+    .createHmac('sha256', SECRET_KEY)
+    .update(`tapbro:pass:${cleanEmail}:${daySlot}`)
+    .digest('hex');
+  const code = (parseInt(hash.slice(0, 8), 16) % 9000) + 1000;
+  return `TAP-${code}`;
+}
+
+/**
+ * Checks if a temporary pass is valid for the given email within a 48-hour window
+ * (today, yesterday, or 2 days ago + clock-skew tomorrow).
+ */
+export function isValidPassForEmail(email: string, pass: string): boolean {
+  if (!email || !pass) return false;
+  const cleanEmail = email.toLowerCase().trim();
+  const cleanPass = pass.toUpperCase().trim();
+
+  // Check 48-hour window slots: today (0), yesterday (-1), 2 days ago (-2), and clock-skew tolerance (+1)
+  const slots = [0, -1, -2, 1];
+  for (const slot of slots) {
+    if (getDeterministicPass(cleanEmail, slot) === cleanPass) {
+      return true;
+    }
+  }
+  return false;
+}
+
+/**
  * Creates a cryptographically signed invite token valid for a set number of hours.
  * Enables resilient, stateless verification across Vercel serverless containers.
  */
