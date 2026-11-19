@@ -22,10 +22,15 @@ const config: Config = {
           bright: "#334155",
         },
         accent: {
-          DEFAULT: "#F59E0B",
-          hover: "#D97706",
-          light: "#FDE68A",
-          glow: "rgba(245, 158, 11, 0.2)",
+          DEFAULT: "#6366F1",
+          hover: "#4F46E5",
+          light: "#A5B4FC",
+          glow: "rgba(99, 102, 241, 0.3)",
+        },
+        cyan: {
+          400: "#22D3EE",
+          500: "#06B6D4",
+          600: "#0891B2",
         },
         saffron: {
           400: "#FBBF24",

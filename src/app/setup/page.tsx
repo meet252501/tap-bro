@@ -161,13 +161,13 @@ function SetupContent() {
     <div className="relative z-10 w-full max-w-md mx-auto px-3.5 sm:px-0 py-6">
       {/* Brand Header */}
       <div className="text-center mb-7">
-        <div className="mx-auto flex h-18 w-18 items-center justify-center rounded-2xl overflow-hidden border border-amber-400/50 shadow-[0_0_35px_rgba(245,186,66,0.35)] mb-3 bg-[#0A0C12] p-1.5 ring-2 ring-amber-400/20">
+        <div className="mx-auto flex h-18 w-18 items-center justify-center rounded-2xl overflow-hidden border border-indigo-400/40 shadow-[0_0_25px_rgba(99,102,241,0.25)] mb-3 bg-[#0B1326] p-1.5 ring-2 ring-indigo-400/20">
           <img src="/tap-bro-logo.png" alt="Tap-Bro Logo" className="h-full w-full object-cover rounded-xl" />
         </div>
         <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-white">
           Tap-Bro Restaurant Activation
         </h1>
-        <p className="mt-1.5 text-xs text-zinc-300 leading-relaxed max-w-xs mx-auto">
+        <p className="mt-1.5 text-xs text-slate-400 leading-relaxed max-w-xs mx-auto">
           Set up your restaurant name &amp; menu to activate your tabletop NFC review stand.
         </p>
       </div>
@@ -201,7 +201,7 @@ function SetupContent() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="your-restaurant-email@gmail.com"
-                  className="w-full rounded-xl border border-slate-700 bg-[#0B1326] pl-10 pr-3.5 py-3 text-base sm:text-sm text-white focus:border-amber-400 focus:outline-none placeholder-slate-500"
+                  className="w-full rounded-xl border border-slate-700 bg-[#0B1326] pl-10 pr-3.5 py-3 text-base sm:text-sm text-white focus:border-indigo-400 focus:outline-none placeholder-slate-500"
                 />
               </div>
             </div>
@@ -211,14 +211,14 @@ function SetupContent() {
                 Temporary Pass (from email)
               </label>
               <div className="relative">
-                <KeyRound className="h-4 w-4 text-amber-400 absolute left-3.5 top-3.5" />
+                <KeyRound className="h-4 w-4 text-indigo-400 absolute left-3.5 top-3.5" />
                 <input
                   type="text"
                   required
                   placeholder="e.g. TAP-7892"
                   value={tempPass}
                   onChange={(e) => setTempPass(e.target.value)}
-                  className="w-full rounded-xl border border-amber-400/40 bg-[#0B1326] pl-10 pr-3.5 py-3 text-base sm:text-sm text-amber-300 font-mono font-bold tracking-widest focus:border-amber-400 focus:outline-none uppercase"
+                  className="w-full rounded-xl border border-indigo-400/40 bg-[#0B1326] pl-10 pr-3.5 py-3 text-base sm:text-sm text-indigo-300 font-mono font-bold tracking-widest focus:border-indigo-400 focus:outline-none uppercase"
                 />
               </div>
             </div>
@@ -274,7 +274,7 @@ function SetupContent() {
                   value={restaurantName}
                   onChange={(e) => setRestaurantName(e.target.value)}
                   placeholder="Enter your restaurant name"
-                  className="w-full rounded-xl border border-slate-700 bg-[#0B1326] pl-10 pr-3.5 py-3 text-base sm:text-sm text-white focus:border-amber-400 focus:outline-none placeholder-slate-500"
+                  className="w-full rounded-xl border border-slate-700 bg-[#0B1326] pl-10 pr-3.5 py-3 text-base sm:text-sm text-white focus:border-indigo-400 focus:outline-none placeholder-slate-500"
                 />
               </div>
             </div>
@@ -294,7 +294,7 @@ function SetupContent() {
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
                     placeholder="e.g. 9876543210"
-                    className="w-full rounded-xl border border-slate-700 bg-[#0B1326] pl-10 pr-3.5 py-3 text-base sm:text-sm text-white focus:border-amber-400 focus:outline-none placeholder-slate-500"
+                    className="w-full rounded-xl border border-slate-700 bg-[#0B1326] pl-10 pr-3.5 py-3 text-base sm:text-sm text-white focus:border-indigo-400 focus:outline-none placeholder-slate-500"
                   />
                 </div>
               </div>
@@ -313,7 +313,7 @@ function SetupContent() {
                     placeholder="4-digit PIN (e.g. 1234)"
                     value={adminPin}
                     onChange={(e) => setAdminPin(e.target.value)}
-                    className="w-full rounded-xl border border-slate-700 bg-[#0B1326] pl-10 pr-3.5 py-3 text-base sm:text-sm text-white focus:border-amber-400 focus:outline-none placeholder-slate-500 font-mono"
+                    className="w-full rounded-xl border border-slate-700 bg-[#0B1326] pl-10 pr-3.5 py-3 text-base sm:text-sm text-white focus:border-indigo-400 focus:outline-none placeholder-slate-500 font-mono"
                   />
                 </div>
               </div>
@@ -331,7 +331,7 @@ function SetupContent() {
                   value={cuisine}
                   onChange={(e) => setCuisine(e.target.value)}
                   placeholder="e.g. Italian, Cafe, North Indian"
-                  className="w-full rounded-xl border border-slate-700 bg-[#0B1326] px-3.5 py-3 text-base sm:text-sm text-white focus:border-amber-400 focus:outline-none placeholder-slate-500"
+                  className="w-full rounded-xl border border-slate-700 bg-[#0B1326] px-3.5 py-3 text-base sm:text-sm text-white focus:border-indigo-400 focus:outline-none placeholder-slate-500"
                 />
               </div>
 
@@ -345,7 +345,7 @@ function SetupContent() {
                   value={tagline}
                   onChange={(e) => setTagline(e.target.value)}
                   placeholder="e.g. Fresh Bites & Great Vibes"
-                  className="w-full rounded-xl border border-slate-700 bg-[#0B1326] px-3.5 py-3 text-base sm:text-sm text-white focus:border-amber-400 focus:outline-none placeholder-slate-500"
+                  className="w-full rounded-xl border border-slate-700 bg-[#0B1326] px-3.5 py-3 text-base sm:text-sm text-white focus:border-indigo-400 focus:outline-none placeholder-slate-500"
                 />
               </div>
             </div>
@@ -354,7 +354,7 @@ function SetupContent() {
             <div>
               <label className="block text-xs font-semibold text-slate-300 mb-1 flex items-center justify-between">
                 <span className="flex items-center gap-1.5">
-                  <UtensilsCrossed className="h-3.5 w-3.5 text-amber-400" />
+                  <UtensilsCrossed className="h-3.5 w-3.5 text-indigo-400" />
                   <span>Signature Dishes (Optional)</span>
                 </span>
                 <span className="text-[10px] text-slate-500">Guests will pick from these</span>
@@ -372,13 +372,13 @@ function SetupContent() {
                     }
                   }}
                   placeholder="e.g. Paneer Tikka, Cold Brew"
-                  className="flex-1 rounded-xl border border-slate-700 bg-[#0B1326] px-3.5 py-2.5 text-base sm:text-xs text-white placeholder-slate-500 focus:border-amber-400 focus:outline-none"
+                  className="flex-1 rounded-xl border border-slate-700 bg-[#0B1326] px-3.5 py-2.5 text-base sm:text-xs text-white placeholder-slate-500 focus:border-indigo-400 focus:outline-none"
                 />
                 <button
                   type="button"
                   onClick={handleAddDish}
                   disabled={!newDishInput.trim()}
-                  className="flex items-center gap-1 rounded-xl bg-amber-400/10 border border-amber-400/30 px-3.5 py-2.5 text-xs font-semibold text-amber-300 hover:bg-amber-400/20 disabled:opacity-40 transition-all"
+                  className="flex items-center gap-1 rounded-xl bg-indigo-400/10 border border-indigo-400/30 px-3.5 py-2.5 text-xs font-semibold text-indigo-300 hover:bg-indigo-400/20 disabled:opacity-40 transition-all"
                 >
                   <Plus className="h-3.5 w-3.5" />
                   <span>Add</span>
@@ -390,7 +390,7 @@ function SetupContent() {
                   {dishTags.map((dish) => (
                     <span
                       key={dish}
-                      className="inline-flex items-center gap-1.5 rounded-full bg-slate-800 border border-slate-700 px-3 py-1 text-xs text-amber-300 font-medium shadow-sm"
+                      className="inline-flex items-center gap-1.5 rounded-full bg-slate-800 border border-slate-700 px-3 py-1 text-xs text-indigo-300 font-medium shadow-sm"
                     >
                       <span>{dish}</span>
                       <button
@@ -409,7 +409,7 @@ function SetupContent() {
             {/* Google Review URL */}
             <div>
               <label className="block text-xs font-semibold text-slate-300 mb-1 flex items-center gap-1.5">
-                <LinkIcon className="h-3.5 w-3.5 text-amber-400" />
+                <LinkIcon className="h-3.5 w-3.5 text-indigo-400" />
                 <span>Google Business Review URL (Optional)</span>
               </label>
               <input
@@ -418,7 +418,7 @@ function SetupContent() {
                 value={googleReviewUrl}
                 onChange={(e) => setGoogleReviewUrl(e.target.value)}
                 placeholder="https://g.page/r/your-restaurant/review"
-                className="w-full rounded-xl border border-slate-700 bg-[#0B1326] px-3.5 py-3 text-base sm:text-sm text-white focus:border-amber-400 focus:outline-none font-mono placeholder-slate-500"
+                className="w-full rounded-xl border border-slate-700 bg-[#0B1326] px-3.5 py-3 text-base sm:text-sm text-white focus:border-indigo-400 focus:outline-none font-mono placeholder-slate-500"
               />
               <p className="mt-1 text-[11px] text-slate-400">
                 Guests tap here after generating their review draft to post directly on Google.
@@ -439,7 +439,7 @@ function SetupContent() {
         </div>
       )}
 
-      <div className="mt-6 text-center text-xs text-zinc-500">
+      <div className="mt-6 text-center text-xs text-slate-500">
         <p>Tap-Bro Tabletop NFC Review Assistant</p>
       </div>
     </div>
@@ -448,9 +448,9 @@ function SetupContent() {
 
 export default function BusinessSetupPage() {
   return (
-    <div className="min-h-[100dvh] bg-page flex flex-col justify-center items-center p-3 sm:p-4 selection:bg-amber-400 selection:text-page relative overflow-x-hidden">
+    <div className="min-h-[100dvh] bg-[#0B1326] flex flex-col justify-center items-center p-3 sm:p-4 selection:bg-indigo-500 selection:text-white relative overflow-x-hidden">
       <div className="ambient-bg pointer-events-none fixed inset-0 z-0" />
-      <Suspense fallback={<div className="text-amber-400 text-xs">Loading Setup Portal...</div>}>
+      <Suspense fallback={<div className="text-indigo-400 text-xs">Loading Setup Portal...</div>}>
         <SetupContent />
       </Suspense>
     </div>

@@ -423,28 +423,28 @@ function RestaurantAdminDashboardContent() {
         <div className="grid grid-cols-2 gap-2.5">
           <div className="glass-card rounded-2xl p-3.5 flex items-center justify-between shadow-md">
             <div>
-              <span className="text-[10px] font-semibold text-text-secondary uppercase tracking-wider block">
+              <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">
                 Total Reviews
               </span>
-              <p className="text-xl font-black text-white mt-0.5">
+              <p className="text-xl font-bold text-white mt-0.5">
                 {restaurant.totalReviewsGenerated || 0}
               </p>
             </div>
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-400/20 border border-amber-400/30 text-amber-400 shadow-sm">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 shadow-sm">
               <Sparkles className="h-4 w-4" />
             </div>
           </div>
 
           <div className="glass-card rounded-2xl p-3.5 flex items-center justify-between shadow-md">
             <div>
-              <span className="text-[10px] font-semibold text-text-secondary uppercase tracking-wider block">
+              <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">
                 Dining Tables
               </span>
-              <p className="text-xl font-black text-amber-400 mt-0.5">
+              <p className="text-xl font-bold text-indigo-400 mt-0.5">
                 {tableCount} Stands
               </p>
             </div>
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/[0.05] border border-white/[0.08] text-amber-400 shadow-sm">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 shadow-sm">
               <Radio className="h-4 w-4" />
             </div>
           </div>
@@ -454,9 +454,9 @@ function RestaurantAdminDashboardContent() {
         {activeTab === 'nfc' && (
           <div className="space-y-4 animate-fade-in">
             {/* Tabletop Acrylic Stand Preview Card */}
-            <div className="glass-card-gold rounded-3xl p-5 space-y-4 shadow-[0_20px_50px_rgba(0,0,0,0.7)]">
+            <div className="glass-card rounded-2xl p-5 space-y-4 shadow-xl border border-slate-800">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-amber-400 uppercase tracking-wider flex items-center gap-1.5">
+                <span className="text-xs font-bold text-indigo-400 uppercase tracking-wider flex items-center gap-1.5">
                   <Radio className="h-4 w-4" />
                   <span>Tabletop NFC &amp; QR Stand</span>
                 </span>
@@ -467,14 +467,14 @@ function RestaurantAdminDashboardContent() {
 
               <div>
                 <h2 className="text-base sm:text-lg font-bold text-white">{name} Table Stands</h2>
-                <p className="text-xs text-text-secondary mt-0.5 leading-relaxed">
+                <p className="text-xs text-slate-400 mt-0.5 leading-relaxed">
                   Guests tap their phone on the NFC stand or scan the QR code to write authentic reviews with AI.
                 </p>
               </div>
 
               {/* QR Stand Preview */}
-              <div className="flex flex-col items-center justify-center p-5 rounded-2xl bg-[#07090E]/80 border border-white/[0.08] space-y-3 shadow-inner">
-                <div className="p-3.5 bg-white rounded-2xl shadow-2xl border-2 border-amber-400/40">
+              <div className="flex flex-col items-center justify-center p-5 rounded-2xl bg-[#0B1326] border border-slate-800 space-y-3 shadow-inner">
+                <div className="p-3.5 bg-white rounded-2xl shadow-2xl border-2 border-indigo-400/40">
                   <img
                     src={`/api/restaurants/${slug}/qr`}
                     alt={`${name} QR Code`}
@@ -483,10 +483,10 @@ function RestaurantAdminDashboardContent() {
                 </div>
                 <div className="text-center space-y-1">
                   <p className="text-xs font-bold text-white flex items-center justify-center gap-1">
-                    <QrCode className="h-3.5 w-3.5 text-amber-400" />
+                    <QrCode className="h-3.5 w-3.5 text-indigo-400" />
                     <span>Tabletop Review Stand QR</span>
                   </p>
-                  <p className="text-[11px] text-zinc-400 font-mono break-all max-w-xs">
+                  <p className="text-[11px] text-slate-400 font-mono break-all max-w-xs">
                     {destinationUrl}
                   </p>
                 </div>
@@ -504,15 +504,15 @@ function RestaurantAdminDashboardContent() {
                 <button
                   type="button"
                   onClick={handleDownloadQr}
-                  className="flex items-center justify-center gap-1.5 rounded-xl border border-amber-500/40 bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 py-2.5 px-3 text-xs font-semibold active:scale-95 transition"
+                  className="flex items-center justify-center gap-1.5 rounded-xl border border-indigo-500/30 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-300 py-2.5 px-3 text-xs font-semibold active:scale-95 transition"
                 >
                   <span>Download Stand QR</span>
                 </button>
               </div>
 
               {/* URL Copy Bar */}
-              <div className="rounded-xl bg-[#0B0C12]/80 p-3 border border-white/[0.08] space-y-1.5">
-                <span className="text-[11px] text-zinc-400 font-medium block">
+              <div className="rounded-xl bg-[#0B1326] p-3 border border-slate-800 space-y-1.5">
+                <span className="text-[11px] text-slate-400 font-medium block">
                   Direct Station URL:
                 </span>
                 <div className="flex items-center gap-2">
@@ -520,7 +520,7 @@ function RestaurantAdminDashboardContent() {
                     type="text"
                     readOnly
                     value={destinationUrl}
-                    className="flex-1 rounded-lg border border-white/[0.06] bg-[#07090E] px-2.5 py-2 text-xs text-white font-mono truncate"
+                    className="flex-1 rounded-lg border border-slate-700 bg-[#0F172A] px-2.5 py-2 text-xs text-white font-mono truncate"
                   />
                   <button
                     type="button"
@@ -534,10 +534,10 @@ function RestaurantAdminDashboardContent() {
               </div>
 
               {/* Table Count Setting */}
-              <div className="pt-2 border-t border-white/[0.06] flex items-center justify-between">
+              <div className="pt-2 border-t border-slate-800 flex items-center justify-between">
                 <div>
                   <span className="text-xs font-semibold text-white block">Active Table Stands</span>
-                  <p className="text-[11px] text-text-secondary">Number of dining tables</p>
+                  <p className="text-[11px] text-slate-400">Number of dining tables</p>
                 </div>
                 <input
                   type="number"
@@ -545,14 +545,14 @@ function RestaurantAdminDashboardContent() {
                   max={200}
                   value={tableCount}
                   onChange={(e) => setTableCount(Number(e.target.value))}
-                  className="w-16 rounded-xl border border-white/[0.08] bg-[#0B0C12] px-2.5 py-2 text-sm text-white text-center font-bold focus:border-amber-400/80 focus:ring-1 focus:ring-amber-400/30 focus:outline-none"
+                  className="w-16 rounded-xl border border-slate-700 bg-[#0B1326] px-2.5 py-2 text-sm text-white text-center font-bold focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400/30 focus:outline-none"
                 />
               </div>
 
               <button
                 type="button"
                 onClick={() => window.open(`/r/${slug}`, '_blank')}
-                className="btn-gold w-full flex items-center justify-center gap-2 rounded-xl py-3.5 font-black text-xs sm:text-sm transition"
+                className="btn-gold w-full flex items-center justify-center gap-2 rounded-xl py-3.5 font-bold text-xs sm:text-sm transition"
               >
                 <Eye className="h-4 w-4" />
                 <span>Test Live Diner Flow on Phone</span>
@@ -562,10 +562,10 @@ function RestaurantAdminDashboardContent() {
             {/* Quick NFC Programming Guide for Mobile */}
             <div className="glass-card rounded-2xl p-4 space-y-3 shadow-lg">
               <h3 className="text-xs font-bold text-white flex items-center gap-2 uppercase tracking-wide">
-                <Radio className="h-3.5 w-3.5 text-amber-400" />
+                <Radio className="h-3.5 w-3.5 text-indigo-400" />
                 <span>Program NFC Tag from Phone</span>
               </h3>
-              <ol className="text-xs text-zinc-300 space-y-2 list-decimal list-inside leading-relaxed">
+              <ol className="text-xs text-slate-300 space-y-2 list-decimal list-inside leading-relaxed">
                 <li>Download free <strong className="text-white">NFC Tools</strong> app on your iPhone or Android.</li>
                 <li>Tap <strong className="text-white">Write</strong> ➔ <strong className="text-white">Add a record</strong> ➔ <strong className="text-white">URL</strong>.</li>
                 <li>Paste the copied tabletop URL above.</li>
@@ -577,38 +577,38 @@ function RestaurantAdminDashboardContent() {
 
         {/* Tab 2: Restaurant Profile & Google Link */}
         {activeTab === 'details' && (
-          <div className="glass-card-gold rounded-3xl p-5 space-y-4 animate-fade-in shadow-[0_20px_50px_rgba(0,0,0,0.7)]">
-            <h2 className="text-sm font-bold text-white uppercase tracking-wider text-amber-400">
+          <div className="glass-card rounded-2xl p-5 space-y-4 animate-fade-in shadow-xl border border-slate-800">
+            <h2 className="text-sm font-bold text-cyan-400 uppercase tracking-wider">
               Restaurant Profile & Link
             </h2>
 
             <div className="space-y-3">
               <div>
-                <label className="block text-xs font-semibold text-zinc-300 mb-1">
+                <label className="block text-xs font-semibold text-slate-300 mb-1">
                   Restaurant Display Name
                 </label>
                 <input
                   type="text"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="w-full rounded-xl border border-white/[0.08] bg-[#0B0C12]/80 px-3.5 py-2.5 text-base sm:text-xs text-white focus:border-amber-400/80 focus:ring-1 focus:ring-amber-400/30 focus:outline-none transition-all placeholder-zinc-500"
+                  className="w-full rounded-xl border border-slate-700 bg-[#0B1326] px-3.5 py-2.5 text-base sm:text-xs text-white focus:border-indigo-400 focus:outline-none transition-all placeholder-slate-500"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-zinc-300 mb-1">
+                <label className="block text-xs font-semibold text-slate-300 mb-1">
                   Cuisine / Category
                 </label>
                 <input
                   type="text"
                   value={cuisine}
                   onChange={(e) => setCuisine(e.target.value)}
-                  className="w-full rounded-xl border border-white/[0.08] bg-[#0B0C12]/80 px-3.5 py-2.5 text-base sm:text-xs text-white focus:border-amber-400/80 focus:ring-1 focus:ring-amber-400/30 focus:outline-none transition-all placeholder-zinc-500"
+                  className="w-full rounded-xl border border-slate-700 bg-[#0B1326] px-3.5 py-2.5 text-base sm:text-xs text-white focus:border-indigo-400 focus:outline-none transition-all placeholder-slate-500"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-zinc-300 mb-1">
+                <label className="block text-xs font-semibold text-slate-300 mb-1">
                   Admin PIN (4-digit)
                 </label>
                 <input
@@ -616,26 +616,26 @@ function RestaurantAdminDashboardContent() {
                   maxLength={8}
                   value={adminPin}
                   onChange={(e) => setAdminPin(e.target.value)}
-                  className="w-full rounded-xl border border-white/[0.08] bg-[#0B0C12]/80 px-3.5 py-2.5 text-base sm:text-xs text-white focus:border-amber-400/80 focus:ring-1 focus:ring-amber-400/30 focus:outline-none font-mono transition-all"
+                  className="w-full rounded-xl border border-slate-700 bg-[#0B1326] px-3.5 py-2.5 text-base sm:text-xs text-white focus:border-indigo-400 focus:outline-none font-mono transition-all"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-zinc-300 mb-1">
+                <label className="block text-xs font-semibold text-slate-300 mb-1">
                   Tagline / Catchphrase
                 </label>
                 <input
                   type="text"
                   value={tagline}
                   onChange={(e) => setTagline(e.target.value)}
-                  className="w-full rounded-xl border border-white/[0.08] bg-[#0B0C12]/80 px-3.5 py-2.5 text-base sm:text-xs text-white focus:border-amber-400/80 focus:ring-1 focus:ring-amber-400/30 focus:outline-none transition-all placeholder-zinc-500"
+                  className="w-full rounded-xl border border-slate-700 bg-[#0B1326] px-3.5 py-2.5 text-base sm:text-xs text-white focus:border-indigo-400 focus:outline-none transition-all placeholder-slate-500"
                 />
               </div>
 
               <div>
                 <div className="flex items-center justify-between mb-1">
-                  <label className="text-xs font-semibold text-zinc-300 flex items-center gap-1.5">
-                    <LinkIcon className="h-3 w-3 text-amber-400" />
+                  <label className="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
+                    <LinkIcon className="h-3 w-3 text-cyan-400" />
                     <span>Google Review URL</span>
                   </label>
                   {googleReviewUrl && (
@@ -643,7 +643,7 @@ function RestaurantAdminDashboardContent() {
                       href={googleReviewUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-[11px] text-amber-400 hover:underline flex items-center gap-0.5"
+                      className="text-[11px] text-cyan-400 hover:underline flex items-center gap-0.5"
                     >
                       <span>Test</span>
                       <ExternalLink className="h-2.5 w-2.5" />
@@ -655,7 +655,7 @@ function RestaurantAdminDashboardContent() {
                   value={googleReviewUrl}
                   onChange={(e) => setGoogleReviewUrl(e.target.value)}
                   placeholder="https://search.google.com/local/writereview?placeid=..."
-                  className="w-full rounded-xl border border-white/[0.08] bg-[#0B0C12]/80 px-3.5 py-2.5 text-base sm:text-xs text-white focus:border-amber-400/80 focus:ring-1 focus:ring-amber-400/30 focus:outline-none font-mono transition-all placeholder-zinc-500"
+                  className="w-full rounded-xl border border-slate-700 bg-[#0B1326] px-3.5 py-2.5 text-base sm:text-xs text-white focus:border-indigo-400 focus:outline-none font-mono transition-all placeholder-slate-500"
                 />
               </div>
 
@@ -678,10 +678,10 @@ function RestaurantAdminDashboardContent() {
           <div className="space-y-4 animate-fade-in">
             <div className="flex items-center justify-between">
               <div>
-                <h2 className="text-sm font-bold text-white uppercase tracking-wider text-amber-400">
+                <h2 className="text-sm font-bold text-cyan-400 uppercase tracking-wider">
                   Menu & Dishes
                 </h2>
-                <p className="text-[11px] text-text-secondary">
+                <p className="text-[11px] text-slate-400">
                   Diners pick these dishes in their review.
                 </p>
               </div>
@@ -705,13 +705,13 @@ function RestaurantAdminDashboardContent() {
                     <div className="flex items-center gap-1.5">
                       <span className="text-base">{cat.icon || '🍽️'}</span>
                       <h3 className="text-xs font-bold text-white">{cat.name}</h3>
-                      <span className="text-[10px] text-zinc-500 font-mono">({cat.items.length})</span>
+                      <span className="text-[10px] text-slate-500 font-mono">({cat.items.length})</span>
                     </div>
                     <div className="flex items-center gap-1.5">
                       <button
                         type="button"
                         onClick={() => handleAddDish(catIndex)}
-                        className="rounded-lg border border-amber-400/30 bg-amber-400/10 px-2.5 py-1 text-[11px] text-amber-300 hover:text-white flex items-center gap-0.5 transition"
+                        className="rounded-lg border border-indigo-400/30 bg-indigo-400/10 px-2.5 py-1 text-[11px] text-indigo-300 hover:text-white flex items-center gap-0.5 transition"
                       >
                         <Plus className="h-3 w-3" />
                         <span>Add</span>
@@ -719,7 +719,7 @@ function RestaurantAdminDashboardContent() {
                       <button
                         type="button"
                         onClick={() => handleRemoveCategory(catIndex)}
-                        className="text-zinc-500 hover:text-red-400 p-1 transition"
+                        className="text-slate-500 hover:text-red-400 p-1 transition"
                       >
                         <Trash2 className="h-3.5 w-3.5" />
                       </button>
@@ -730,20 +730,20 @@ function RestaurantAdminDashboardContent() {
                     {cat.items.map((dish, dishIndex) => (
                       <span
                         key={dishIndex}
-                        className="inline-flex items-center gap-1.5 rounded-full bg-white/[0.04] border border-white/[0.08] px-3 py-1 text-[11px] text-zinc-200"
+                        className="inline-flex items-center gap-1.5 rounded-full bg-slate-800 border border-slate-700 px-3 py-1 text-[11px] text-slate-200"
                       >
                         <span>{dish}</span>
                         <button
                           type="button"
                           onClick={() => handleRemoveDish(catIndex, dishIndex)}
-                          className="text-zinc-400 hover:text-red-400 text-[10px] ml-0.5"
+                          className="text-slate-400 hover:text-red-400 text-[10px] ml-0.5"
                         >
                           ✕
                         </button>
                       </span>
                     ))}
                     {cat.items.length === 0 && (
-                      <span className="text-[11px] text-zinc-500 italic">
+                      <span className="text-[11px] text-slate-500 italic">
                         Empty category. Tap &quot;Add&quot; to insert items.
                       </span>
                     )}
@@ -765,20 +765,20 @@ function RestaurantAdminDashboardContent() {
 
         {/* Tab 4: AI Review Simulator (On Phone) */}
         {activeTab === 'simulator' && (
-          <div className="glass-card-gold rounded-3xl p-5 space-y-4 animate-fade-in shadow-[0_20px_50px_rgba(0,0,0,0.7)]">
+          <div className="glass-card rounded-2xl p-5 space-y-4 animate-fade-in shadow-xl border border-slate-800">
             <div className="flex items-center gap-2">
-              <Sparkles className="h-4 w-4 text-amber-400" />
-              <h2 className="text-sm font-bold text-white uppercase tracking-wider text-amber-400">
+              <Sparkles className="h-4 w-4 text-indigo-400" />
+              <h2 className="text-sm font-bold text-cyan-400 uppercase tracking-wider">
                 AI Review Simulator
               </h2>
             </div>
-            <p className="text-xs text-text-secondary leading-relaxed">
+            <p className="text-xs text-slate-400 leading-relaxed">
               Test how Tap-Bro AI crafts reviews for your restaurant in English or Hinglish right on your phone.
             </p>
 
             <div className="space-y-3 pt-1">
               <div>
-                <label className="block text-xs font-semibold text-zinc-300 mb-1">
+                <label className="block text-xs font-semibold text-slate-300 mb-1">
                   Sample Dish
                 </label>
                 <input
@@ -786,28 +786,28 @@ function RestaurantAdminDashboardContent() {
                   value={simDish}
                   onChange={(e) => setSimDish(e.target.value)}
                   placeholder="e.g. Banarasi Tamatar Chaat"
-                  className="w-full rounded-xl border border-white/[0.08] bg-[#0B0C12]/80 px-3.5 py-2 text-xs text-white focus:border-amber-400/80 focus:ring-1 focus:ring-amber-400/30 focus:outline-none transition-all placeholder-zinc-500"
+                  className="w-full rounded-xl border border-slate-700 bg-[#0B1326] px-3.5 py-2 text-xs text-white focus:border-indigo-400 focus:outline-none transition-all placeholder-slate-500"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-2.5">
                 <div>
-                  <label className="block text-[11px] font-semibold text-zinc-300 mb-1">Language</label>
+                  <label className="block text-[11px] font-semibold text-slate-300 mb-1">Language</label>
                   <select
                     value={simLang}
                     onChange={(e) => setSimLang(e.target.value as any)}
-                    className="w-full rounded-xl border border-white/[0.08] bg-[#0B0C12]/80 px-2.5 py-2 text-xs text-white focus:border-amber-400/80 focus:ring-1 focus:ring-amber-400/30 focus:outline-none transition-all"
+                    className="w-full rounded-xl border border-slate-700 bg-[#0B1326] px-2.5 py-2 text-xs text-white focus:border-indigo-400 focus:outline-none transition-all"
                   >
                     <option value="hinglish">🇮🇳 Hinglish</option>
                     <option value="en">🇬🇧 English</option>
                   </select>
                 </div>
                 <div>
-                  <label className="block text-[11px] font-semibold text-zinc-300 mb-1">Tone</label>
+                  <label className="block text-[11px] font-semibold text-slate-300 mb-1">Tone</label>
                   <select
                     value={simTone}
                     onChange={(e) => setSimTone(e.target.value as any)}
-                    className="w-full rounded-xl border border-white/[0.08] bg-[#0B0C12]/80 px-2.5 py-2 text-xs text-white focus:border-amber-400/80 focus:ring-1 focus:ring-amber-400/30 focus:outline-none transition-all"
+                    className="w-full rounded-xl border border-slate-700 bg-[#0B1326] px-2.5 py-2 text-xs text-white focus:border-indigo-400 focus:outline-none transition-all"
                   >
                     <option value="flavorful">Flavorful</option>
                     <option value="concise">Quick/Crisp</option>
@@ -828,11 +828,11 @@ function RestaurantAdminDashboardContent() {
               </button>
 
               {simDraft && (
-                <div className="rounded-2xl border border-amber-500/30 bg-[#07090E]/80 p-4 space-y-1.5 animate-fade-in shadow-inner">
-                  <span className="text-[10px] font-semibold text-amber-300 uppercase tracking-wider block">
+                <div className="rounded-2xl border border-indigo-500/30 bg-[#0B1326] p-4 space-y-1.5 animate-fade-in shadow-inner">
+                  <span className="text-[10px] font-semibold text-indigo-300 uppercase tracking-wider block">
                     AI Review Draft:
                   </span>
-                  <p className="text-xs text-zinc-200 leading-relaxed italic">
+                  <p className="text-xs text-slate-200 leading-relaxed italic">
                     &quot;{simDraft}&quot;
                   </p>
                 </div>
@@ -843,30 +843,30 @@ function RestaurantAdminDashboardContent() {
 
         {/* Tab 5: Staff Tabletop Script */}
         {activeTab === 'staff' && (
-          <div className="glass-card-gold rounded-3xl p-5 space-y-4 animate-fade-in shadow-[0_20px_50px_rgba(0,0,0,0.7)]">
+          <div className="glass-card rounded-2xl p-5 space-y-4 animate-fade-in shadow-xl border border-slate-800">
             <div className="flex items-center gap-2">
-              <BookOpen className="h-4 w-4 text-amber-400" />
-              <h2 className="text-sm font-bold text-white uppercase tracking-wider text-amber-400">
+              <BookOpen className="h-4 w-4 text-indigo-400" />
+              <h2 className="text-sm font-bold text-cyan-400 uppercase tracking-wider">
                 Staff Cheat Sheet & Script
               </h2>
             </div>
-            <p className="text-xs text-text-secondary leading-relaxed">
+            <p className="text-xs text-slate-400 leading-relaxed">
               Show this to your service staff and captains on their phones:
             </p>
 
             <div className="space-y-3">
-              <div className="rounded-2xl border border-amber-500/30 bg-amber-500/5 p-4 space-y-1.5 shadow-sm">
-                <span className="text-[11px] font-bold text-amber-300 uppercase block">
+              <div className="rounded-2xl border border-indigo-500/30 bg-indigo-500/5 p-4 space-y-1.5 shadow-sm">
+                <span className="text-[11px] font-bold text-indigo-300 uppercase block">
                   ⭐ 10-Second Waiter Script:
                 </span>
-                <p className="text-xs text-zinc-200 leading-relaxed italic bg-[#0B0C12]/80 p-3 rounded-xl border border-white/[0.06]">
+                <p className="text-xs text-slate-200 leading-relaxed italic bg-[#0B1326] p-3 rounded-xl border border-slate-800">
                   &quot;Sir / Ma&apos;am, if you enjoyed our {simDish || 'food'}, please tap your phone on this tabletop stand! Tap-Bro AI will craft your review in 10 seconds without typing.&quot;
                 </p>
               </div>
 
-              <div className="space-y-2 text-xs text-zinc-300 leading-relaxed">
+              <div className="space-y-2 text-xs text-slate-300 leading-relaxed">
                 <h4 className="font-semibold text-white">Guidelines:</h4>
-                <ul className="list-disc list-inside space-y-1 text-zinc-400">
+                <ul className="list-disc list-inside space-y-1 text-slate-400">
                   <li>Present when handing over the bill or after desserts.</li>
                   <li>Tap phone on top of the NFC card (top rear on iPhone, middle rear on Android).</li>
                   <li>Reassure diners that AI drafts the review for them in 1 tap!</li>
@@ -895,11 +895,11 @@ function RestaurantAdminDashboardContent() {
                 onClick={() => setActiveTab(tab.id as any)}
                 className={`flex flex-col items-center justify-center py-1.5 px-3 rounded-2xl transition-all ${
                   isActive
-                    ? 'text-amber-300 bg-amber-400/10 ring-1 ring-amber-400/30 font-bold scale-105 shadow-sm'
-                    : 'text-zinc-500 hover:text-zinc-300'
+                    ? 'text-indigo-400 bg-indigo-500/10 ring-1 ring-indigo-500/30 font-bold scale-105 shadow-sm'
+                    : 'text-slate-500 hover:text-slate-300'
                 }`}
               >
-                <Icon className={`h-4.5 w-4.5 mb-0.5 ${isActive ? 'stroke-[2.5] text-amber-400' : 'stroke-[1.8]'}`} />
+                <Icon className={`h-4.5 w-4.5 mb-0.5 ${isActive ? 'stroke-[2.5] text-indigo-400' : 'stroke-[1.8]'}`} />
                 <span className="text-[10px] tracking-tight">{tab.label}</span>
               </button>
             );
@@ -912,7 +912,7 @@ function RestaurantAdminDashboardContent() {
 
 export default function RestaurantAdminDashboard() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-page flex items-center justify-center p-4 text-amber-400 text-xs">Loading Tap-Bro Portal...</div>}>
+    <Suspense fallback={<div className="min-h-screen bg-[#0B1326] flex items-center justify-center p-4 text-indigo-400 text-xs">Loading Tap-Bro Portal...</div>}>
       <RestaurantAdminDashboardContent />
     </Suspense>
   );

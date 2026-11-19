@@ -49,7 +49,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
       <div className="w-full max-w-md rounded-2xl border border-border bg-surface-card p-5 sm:p-6 shadow-2xl relative">
         <div className="flex items-center justify-between pb-3 border-b border-border/60">
           <div className="flex items-center gap-2">
-            <Store className="h-5 w-5 text-amber-400" />
+            <Store className="h-5 w-5 text-indigo-400" />
             <h3 className="text-base font-bold text-white">Restaurant Setup</h3>
           </div>
           <button
@@ -70,7 +70,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="w-full rounded-xl border border-border bg-surface px-3 py-2 text-xs sm:text-sm text-white focus:border-amber-400 focus:outline-none"
+              className="w-full rounded-xl border border-border bg-surface px-3 py-2 text-xs sm:text-sm text-white focus:border-indigo-400 focus:outline-none"
               placeholder="e.g. Saffron & Spice Bistro"
             />
           </div>
@@ -83,7 +83,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               type="text"
               value={cuisine}
               onChange={(e) => setCuisine(e.target.value)}
-              className="w-full rounded-xl border border-border bg-surface px-3 py-2 text-xs sm:text-sm text-white focus:border-amber-400 focus:outline-none"
+              className="w-full rounded-xl border border-border bg-surface px-3 py-2 text-xs sm:text-sm text-white focus:border-indigo-400 focus:outline-none"
               placeholder="e.g. North Indian & Chaat Bistro"
             />
           </div>
@@ -96,21 +96,21 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               type="text"
               value={tagline}
               onChange={(e) => setTagline(e.target.value)}
-              className="w-full rounded-xl border border-border bg-surface px-3 py-2 text-xs sm:text-sm text-white focus:border-amber-400 focus:outline-none"
+              className="w-full rounded-xl border border-border bg-surface px-3 py-2 text-xs sm:text-sm text-white focus:border-indigo-400 focus:outline-none"
               placeholder="e.g. Artisanal Indian Cuisine & Heritage Chaat"
             />
           </div>
 
           <div>
             <label className="block text-xs font-semibold text-zinc-300 mb-1 flex items-center gap-1.5">
-              <LinkIcon className="h-3 w-3 text-amber-400" />
+              <LinkIcon className="h-3 w-3 text-cyan-400" />
               <span>Direct Google Review URL</span>
             </label>
             <input
               type="url"
               value={googleReviewUrl}
               onChange={(e) => setGoogleReviewUrl(e.target.value)}
-              className="w-full rounded-xl border border-border bg-surface px-3 py-2 text-xs sm:text-sm text-white focus:border-amber-400 focus:outline-none font-mono"
+              className="w-full rounded-xl border border-border bg-surface px-3 py-2 text-xs sm:text-sm text-white focus:border-indigo-400 focus:outline-none font-mono"
               placeholder="https://search.google.com/local/writereview?placeid=..."
             />
             <p className="mt-1 text-[11px] text-zinc-400 leading-tight">
@@ -145,7 +145,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               </button>
               <button
                 type="submit"
-                className="flex items-center gap-1.5 rounded-xl bg-amber-400 px-4 py-2 text-xs font-semibold text-page hover:bg-amber-300 transition shadow-md shadow-amber-400/20"
+                className="flex items-center gap-1.5 rounded-xl btn-gold px-4 py-2 text-xs font-semibold text-white transition shadow-md"
               >
                 <Save className="h-3.5 w-3.5" />
                 <span>Save Settings</span>

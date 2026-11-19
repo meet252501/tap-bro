@@ -70,7 +70,7 @@ select {
   border-radius: 9999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #F5C84C;
+  background: #6366F1;
 }
 
 /* Star glow transition */
@@ -107,30 +107,32 @@ select {
 /* Stitch Highlighted Active Card with clean border definition */
 .glass-card-gold {
   background: #17213A;
-  border: 1px solid rgba(245, 158, 11, 0.35);
+  border: 1px solid #334155;
   box-shadow: 0 8px 28px -4px rgba(0, 0, 0, 0.6);
 }
 
-/* Stitch High-Contrast Crisp Action Button */
+/* Stitch Authentic Electric Indigo Primary Action Button */
 .btn-gold {
-  background: #F59E0B;
-  color: #0B1326;
+  background: #6366F1;
+  color: #FFFFFF;
   font-weight: 700;
   border: 1px solid rgba(255, 255, 255, 0.2);
-  box-shadow: 0 2px 10px rgba(245, 158, 11, 0.25);
+  box-shadow: 0 4px 14px rgba(99, 102, 241, 0.35);
   transition: all 0.15s ease;
 }
 .btn-gold:hover {
-  background: #FBBF24;
-  box-shadow: 0 4px 14px rgba(245, 158, 11, 0.35);
+  background: #4F46E5;
+  box-shadow: 0 6px 20px rgba(99, 102, 241, 0.45);
 }
 .btn-gold:active {
   transform: scale(0.98);
 }
 
-/* Crisp Clean Accent Text */
+/* Stitch Cyan-Indigo Gradient Accent Text */
 .text-gold-gradient {
-  color: #FBBF24;
+  background: linear-gradient(135deg, #818CF8 0%, #22D3EE 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
 /* Stitch Clean Precision Star Tiles */
@@ -141,14 +143,15 @@ select {
   transition: all 0.15s ease;
 }
 .star-tile-empty:hover, .star-tile-empty:active {
-  border-color: #F59E0B;
-  color: #F59E0B;
+  border-color: #FFB95F;
+  color: #FFB95F;
   transform: scale(1.05);
 }
 .star-tile-filled {
-  background: rgba(245, 158, 11, 0.15);
-  border: 1px solid #F59E0B;
-  color: #F59E0B;
+  background: rgba(255, 185, 95, 0.12);
+  border: 1px solid rgba(255, 185, 95, 0.5);
+  color: #FFB95F;
+  box-shadow: 0 0 12px rgba(255, 185, 95, 0.2);
   transform: scale(1.05);
 }
 

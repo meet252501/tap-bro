@@ -31,7 +31,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="dark h-full">
-      <body className="min-h-[100dvh] bg-page text-text-primary antialiased selection:bg-amber-400 selection:text-page overflow-x-hidden">
+      <body className="min-h-[100dvh] bg-page text-text-primary antialiased selection:bg-indigo-500 selection:text-white overflow-x-hidden">
         {children}
       </body>
     </html>

@@ -162,8 +162,8 @@ export default function RestaurantDinerPage() {
     return (
       <div className="min-h-screen bg-page flex items-center justify-center p-4">
         <div className="flex flex-col items-center gap-3">
-          <div className="h-10 w-10 animate-spin rounded-full border-2 border-amber-400/20 border-t-amber-400" />
-          <p className="text-xs font-medium text-amber-300">Loading restaurant review station...</p>
+          <div className="h-10 w-10 animate-spin rounded-full border-2 border-indigo-400/20 border-t-indigo-400" />
+          <p className="text-xs font-medium text-indigo-300">Loading restaurant review station...</p>
         </div>
       </div>
     );
@@ -193,7 +193,7 @@ export default function RestaurantDinerPage() {
   }
 
   return (
-    <div className="min-h-[100dvh] bg-page flex flex-col justify-between selection:bg-amber-400 selection:text-page relative overflow-x-hidden">
+    <div className="min-h-[100dvh] bg-page flex flex-col justify-between selection:bg-indigo-500 selection:text-white relative overflow-x-hidden">
       {/* Ambient background glow */}
       <div className="ambient-bg pointer-events-none fixed inset-0 z-0" />
 

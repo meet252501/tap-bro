@@ -81,13 +81,13 @@ function AdminPortalContent() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0B1326] flex flex-col justify-center items-center p-4 selection:bg-amber-400 selection:text-[#0B1326] relative">
+    <div className="min-h-screen bg-[#0B1326] flex flex-col justify-center items-center p-4 selection:bg-indigo-500 selection:text-white relative">
       <div className="ambient-bg pointer-events-none fixed inset-0 z-0" />
 
       <div className="relative z-10 w-full max-w-md">
         {/* Branding Banner */}
         <div className="text-center mb-6">
-          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-400 shadow-lg mb-3">
+          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-indigo-500/10 border border-indigo-500/30 text-indigo-400 shadow-lg mb-3">
             <Radio className="h-7 w-7" />
           </div>
           <h1 className="text-2xl font-bold tracking-tight text-white">
@@ -100,7 +100,7 @@ function AdminPortalContent() {
 
         {/* Security Invite-Only Badge */}
         <div className="mb-4 flex items-center justify-center gap-2 rounded-xl bg-slate-900/80 border border-slate-800 p-2.5 text-xs text-slate-300">
-          <Lock className="h-3.5 w-3.5 text-amber-400 shrink-0" />
+          <Lock className="h-3.5 w-3.5 text-indigo-400 shrink-0" />
           <span>Strictly Invite-Only • Verified Partner Access</span>
         </div>
 
@@ -108,7 +108,7 @@ function AdminPortalContent() {
         <div className="rounded-2xl border border-slate-800 bg-[#131B2E] p-6 sm:p-7 shadow-2xl space-y-5 animate-fade-in">
           <div>
             <h2 className="text-base font-bold text-white flex items-center gap-2">
-              <ShieldCheck className="h-4 w-4 text-amber-400" />
+              <ShieldCheck className="h-4 w-4 text-indigo-400" />
               <span>Partner Sign In</span>
             </h2>
             <p className="text-xs text-slate-400 mt-0.5">
@@ -117,8 +117,8 @@ function AdminPortalContent() {
           </div>
 
           {autoLoggingIn && (
-            <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 p-3 text-xs text-amber-300 flex items-center gap-2">
-              <div className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-amber-400 border-t-transparent" />
+            <div className="rounded-xl border border-indigo-500/30 bg-indigo-500/10 p-3 text-xs text-indigo-300 flex items-center gap-2">
+              <div className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-indigo-400 border-t-transparent" />
               <span>Verifying your email invitation link...</span>
             </div>
           )}
@@ -143,7 +143,7 @@ function AdminPortalContent() {
                   value={loginPhoneOrEmail}
                   onChange={(e) => setLoginPhoneOrEmail(e.target.value)}
                   placeholder="e.g. manager@tajdining.com or 9876543210"
-                  className="w-full rounded-xl border border-slate-700 bg-[#0F172A] pl-10 pr-3.5 py-3 text-base sm:text-sm text-white focus:border-amber-400 focus:outline-none placeholder-slate-500 transition-all"
+                  className="w-full rounded-xl border border-slate-700 bg-[#0F172A] pl-10 pr-3.5 py-3 text-base sm:text-sm text-white focus:border-indigo-400 focus:outline-none placeholder-slate-500 transition-all"
                 />
               </div>
             </div>
@@ -160,7 +160,7 @@ function AdminPortalContent() {
                   value={loginPinOrPass}
                   onChange={(e) => setLoginPinOrPass(e.target.value)}
                   placeholder="e.g. TAP-1234 or 4-digit PIN"
-                  className="w-full rounded-xl border border-slate-700 bg-[#0F172A] pl-10 pr-3.5 py-3 text-base sm:text-sm text-white focus:border-amber-400 focus:outline-none placeholder-slate-500 transition-all font-mono"
+                  className="w-full rounded-xl border border-slate-700 bg-[#0F172A] pl-10 pr-3.5 py-3 text-base sm:text-sm text-white focus:border-indigo-400 focus:outline-none placeholder-slate-500 transition-all font-mono"
                 />
               </div>
             </div>
@@ -197,7 +197,7 @@ function AdminPortalContent() {
 
 export default function AdminPortalPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-[#0B1326] flex items-center justify-center text-amber-400 text-xs">Loading Partner Portal...</div>}>
+    <Suspense fallback={<div className="min-h-screen bg-[#0B1326] flex items-center justify-center text-indigo-400 text-xs">Loading Partner Portal...</div>}>
       <AdminPortalContent />
     </Suspense>
   );

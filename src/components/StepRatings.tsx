@@ -68,11 +68,11 @@ export const StepRatings: React.FC<StepRatingsProps> = ({ ratings, onChange, onN
       {/* Intro Banner */}
       <div className="rounded-2xl border border-slate-800 bg-[#131B2E] p-5 shadow-lg relative overflow-hidden">
         <div className="flex items-center justify-between">
-          <span className="text-[11px] font-bold uppercase tracking-wider text-amber-400 flex items-center gap-1.5">
-            <Sparkles className="h-3 w-3 text-amber-400" />
+          <span className="text-[11px] font-bold uppercase tracking-wider text-indigo-400 flex items-center gap-1.5">
+            <Sparkles className="h-3 w-3 text-cyan-400" />
             <span>Step 1 of 3 • Quick Ratings</span>
           </span>
-          <span className="text-[10px] text-amber-300 font-mono bg-amber-500/10 border border-amber-500/20 px-2.5 py-0.5 rounded-full">
+          <span className="text-[10px] text-cyan-300 font-mono bg-cyan-500/10 border border-cyan-500/20 px-2.5 py-0.5 rounded-full">
             10-sec review
           </span>
         </div>
@@ -96,7 +96,7 @@ export const StepRatings: React.FC<StepRatingsProps> = ({ ratings, onChange, onN
               key={cat.key}
               className={`rounded-2xl p-4 transition-all duration-200 ${
                 isRated
-                  ? 'border border-amber-500/40 bg-[#17213A] shadow-lg'
+                  ? 'border border-indigo-500/50 bg-[#17213A] shadow-[0_0_16px_rgba(99,102,241,0.15)]'
                   : 'border border-slate-800 bg-[#131B2E] shadow-sm'
               }`}
             >
@@ -104,7 +104,7 @@ export const StepRatings: React.FC<StepRatingsProps> = ({ ratings, onChange, onN
                 <div className="flex items-center gap-3 min-w-0">
                   <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border transition-colors ${
                     isRated
-                      ? 'bg-amber-500/20 border-amber-500/40 text-amber-300'
+                      ? 'bg-indigo-500/20 border-indigo-500/40 text-indigo-300'
                       : 'bg-slate-800/60 border-slate-700 text-slate-400'
                   }`}>
                     <Icon className="h-4 w-4" />
@@ -117,7 +117,7 @@ export const StepRatings: React.FC<StepRatingsProps> = ({ ratings, onChange, onN
 
                 {/* Selected Status Badge */}
                 {selectedValue > 0 && (
-                  <span className="shrink-0 rounded-full bg-amber-500/10 border border-amber-500/30 px-2.5 py-1 text-[10px] sm:text-[11px] font-bold text-amber-300 animate-fade-in">
+                  <span className="shrink-0 rounded-full bg-indigo-500/10 border border-indigo-500/30 px-2.5 py-1 text-[10px] sm:text-[11px] font-bold text-indigo-200 animate-fade-in">
                     {RATING_DESCRIPTIONS[selectedValue]}
                   </span>
                 )}
@@ -141,7 +141,7 @@ export const StepRatings: React.FC<StepRatingsProps> = ({ ratings, onChange, onN
                         <Star
                           className={`h-5 w-5 transition-transform ${
                             isFilled
-                              ? 'fill-amber-400 stroke-amber-300 drop-shadow-[0_2px_8px_rgba(245,186,66,0.6)] scale-110'
+                              ? 'fill-[#FFB95F] stroke-[#F59E0B] drop-shadow-[0_0_8px_rgba(255,185,95,0.7)] scale-110'
                               : 'stroke-current opacity-40'
                           }`}
                         />
@@ -160,14 +160,14 @@ export const StepRatings: React.FC<StepRatingsProps> = ({ ratings, onChange, onN
         <button
           type="button"
           onClick={onNext}
-          className="group flex w-full items-center justify-center gap-2 rounded-2xl btn-gold py-4 px-6 font-black text-sm sm:text-base shadow-xl transition-all duration-200 active:scale-[0.98]"
+          className="group flex w-full items-center justify-center gap-2 rounded-2xl btn-gold py-4 px-6 font-bold text-sm sm:text-base shadow-xl transition-all duration-200 active:scale-[0.98]"
         >
           <span>Continue to Dishes &amp; Notes ➔</span>
           <ChevronRight className="h-4 w-4 transition-transform group-hover:translate-x-1 stroke-[3]" />
         </button>
 
         {!hasAtLeastOneRating && (
-          <p className="mt-2.5 text-center text-[11px] text-zinc-500 font-medium">
+          <p className="mt-2.5 text-center text-[11px] text-slate-500 font-medium">
             You can proceed even without rating all categories.
           </p>
         )}
