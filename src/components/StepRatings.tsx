@@ -66,54 +66,67 @@ export const StepRatings: React.FC<StepRatingsProps> = ({ ratings, onChange, onN
   return (
     <div className="space-y-4 sm:space-y-5 animate-fade-in pb-8">
       {/* Intro Banner */}
-      <div className="rounded-2xl border border-amber-500/20 bg-gradient-to-b from-surface-card to-surface-card/80 p-4 sm:p-5 backdrop-blur-md shadow-xl relative overflow-hidden">
-        <div className="flex items-center justify-between">
-          <span className="text-[11px] font-bold uppercase tracking-wider text-amber-400">
-            Step 1 of 3 • Quick Ratings
+      <div className="rounded-3xl border border-amber-400/30 bg-gradient-to-b from-[#241E15]/95 via-[#181514]/90 to-[#0F0E12]/95 p-5 backdrop-blur-2xl shadow-[0_16px_40px_rgba(0,0,0,0.6),0_0_30px_rgba(245,186,66,0.12)] relative overflow-hidden">
+        <div className="absolute top-0 right-0 -mr-8 -mt-8 h-32 w-32 rounded-full bg-amber-500/15 blur-2xl pointer-events-none" />
+        <div className="flex items-center justify-between relative z-10">
+          <span className="text-[11px] font-black uppercase tracking-wider text-amber-400 flex items-center gap-1.5">
+            <Sparkles className="h-3 w-3 text-amber-400 animate-pulse" />
+            <span>Step 1 of 3 • Quick Ratings</span>
           </span>
-          <span className="text-[10px] text-zinc-500 font-mono">10-sec review</span>
+          <span className="text-[10px] text-amber-300/80 font-mono bg-amber-400/10 border border-amber-400/20 px-2 py-0.5 rounded-full">
+            10-sec review
+          </span>
         </div>
-        <h2 className="mt-1 text-base sm:text-lg font-extrabold text-white">
+        <h2 className="mt-2 text-lg sm:text-xl font-black text-white relative z-10 tracking-tight">
           How was your meal today?
         </h2>
-        <p className="mt-0.5 text-xs text-text-secondary leading-relaxed">
-          Tap the stars below to share your genuine experience.
+        <p className="mt-1 text-xs text-zinc-300 leading-relaxed relative z-10">
+          Tap the stars below to share your genuine dining experience.
         </p>
       </div>
 
       {/* Rating Cards with Large Touch Targets */}
-      <div className="space-y-3">
+      <div className="space-y-3.5">
         {CATEGORIES.map((cat) => {
           const Icon = cat.icon;
           const selectedValue = ratings[cat.key] || 0;
+          const isRated = selectedValue > 0;
 
           return (
             <div
               key={cat.key}
-              className="rounded-2xl border border-border/80 bg-surface-card/70 p-3.5 sm:p-4 backdrop-blur-sm transition-all shadow-md hover:border-amber-500/30"
+              className={`rounded-2xl p-4 backdrop-blur-xl transition-all duration-200 ${
+                isRated
+                  ? 'border border-amber-400/40 bg-gradient-to-br from-[#1E1912]/90 to-[#12131C]/95 shadow-[0_12px_32px_rgba(0,0,0,0.5),0_0_20px_rgba(245,186,66,0.12)]'
+                  : 'border border-white/[0.08] bg-gradient-to-br from-[#161822]/80 to-[#0F1118]/90 shadow-[0_8px_24px_rgba(0,0,0,0.4)]'
+              }`}
             >
               <div className="flex items-center justify-between gap-2">
-                <div className="flex items-center gap-2.5 min-w-0">
-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-surface-raised border border-border text-amber-400">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border transition-colors ${
+                    isRated
+                      ? 'bg-gradient-to-br from-amber-400/30 to-amber-600/15 border-amber-400/50 text-amber-300 shadow-[0_0_12px_rgba(245,186,66,0.25)]'
+                      : 'bg-white/[0.04] border-white/[0.08] text-amber-400/80'
+                  }`}>
                     <Icon className="h-4 w-4" />
                   </div>
                   <div className="min-w-0">
-                    <h3 className="text-xs sm:text-sm font-bold text-white truncate">{cat.title}</h3>
+                    <h3 className="text-xs sm:text-sm font-extrabold text-white truncate tracking-tight">{cat.title}</h3>
                     <p className="text-[10px] sm:text-[11px] text-zinc-400 truncate">{cat.subtitle}</p>
                   </div>
                 </div>
 
                 {/* Selected Status Badge */}
                 {selectedValue > 0 && (
-                  <span className="shrink-0 rounded-full bg-amber-400/10 px-2 py-0.5 text-[10px] sm:text-[11px] font-bold text-amber-300 border border-amber-400/20 animate-fade-in">
+                  <span className="shrink-0 rounded-full bg-gradient-to-r from-amber-500/25 to-amber-400/15 px-2.5 py-1 text-[10px] sm:text-[11px] font-extrabold text-amber-200 border border-amber-400/40 shadow-[0_0_12px_rgba(245,186,66,0.2)] animate-fade-in">
                     {RATING_DESCRIPTIONS[selectedValue]}
                   </span>
                 )}
               </div>
 
               {/* Big Touch-Friendly Star Rating Buttons */}
-              <div className="mt-3 pt-2.5 border-t border-border/40">
-                <div className="flex items-center justify-between gap-1">
+              <div className="mt-3.5 pt-3 border-t border-white/[0.06]">
+                <div className="flex items-center justify-between gap-1.5">
                   {[1, 2, 3, 4, 5].map((star) => {
                     const isFilled = star <= selectedValue;
                     return (
@@ -122,15 +135,15 @@ export const StepRatings: React.FC<StepRatingsProps> = ({ ratings, onChange, onN
                         type="button"
                         onClick={() => handleStarClick(cat.key, star)}
                         className={`star-btn flex-1 flex h-11 items-center justify-center rounded-xl transition-all duration-150 active:scale-95 focus:outline-none ${
-                          isFilled
-                            ? 'bg-amber-400/20 text-amber-400 border border-amber-400/40 shadow-sm shadow-amber-400/15'
-                            : 'bg-surface text-zinc-600 hover:text-zinc-400 border border-border/70'
+                          isFilled ? 'star-tile-filled' : 'star-tile-empty'
                         }`}
                         aria-label={`Rate ${cat.title} ${star} out of 5 stars`}
                       >
                         <Star
                           className={`h-5 w-5 transition-transform ${
-                            isFilled ? 'fill-amber-400 stroke-amber-400 scale-110' : 'stroke-current'
+                            isFilled
+                              ? 'fill-amber-400 stroke-amber-300 drop-shadow-[0_2px_8px_rgba(245,186,66,0.6)] scale-110'
+                              : 'stroke-current opacity-40'
                           }`}
                         />
                       </button>
@@ -144,18 +157,18 @@ export const StepRatings: React.FC<StepRatingsProps> = ({ ratings, onChange, onN
       </div>
 
       {/* Prominent Action CTA */}
-      <div className="pt-2">
+      <div className="pt-3">
         <button
           type="button"
           onClick={onNext}
-          className="group flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-amber-400 to-amber-500 py-4 px-6 font-extrabold text-sm sm:text-base text-page shadow-xl shadow-amber-500/20 transition-all duration-150 hover:from-amber-300 hover:to-amber-400 active:scale-[0.98]"
+          className="group flex w-full items-center justify-center gap-2 rounded-2xl btn-gold py-4 px-6 font-black text-sm sm:text-base shadow-xl transition-all duration-200 active:scale-[0.98]"
         >
           <span>Continue to Dishes &amp; Notes ➔</span>
-          <ChevronRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+          <ChevronRight className="h-4 w-4 transition-transform group-hover:translate-x-1 stroke-[3]" />
         </button>
 
         {!hasAtLeastOneRating && (
-          <p className="mt-2 text-center text-[11px] text-zinc-500">
+          <p className="mt-2.5 text-center text-[11px] text-zinc-500 font-medium">
             You can proceed even without rating all categories.
           </p>
         )}

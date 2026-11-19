@@ -116,14 +116,14 @@ export default function AdminPortalPage() {
         </div>
 
         {/* Tab Toggle */}
-        <div className="grid grid-cols-2 rounded-xl bg-surface-card border border-border p-1 mb-5">
+        <div className="grid grid-cols-2 rounded-2xl bg-[#07090E]/80 border border-white/[0.08] p-1.5 mb-5 backdrop-blur-xl shadow-lg">
           <button
             type="button"
             onClick={() => setMode('login')}
-            className={`flex items-center justify-center gap-1.5 rounded-lg py-2 text-xs font-semibold transition ${
+            className={`flex items-center justify-center gap-1.5 rounded-xl py-2.5 text-xs font-bold transition-all ${
               mode === 'login'
-                ? 'bg-amber-400 text-page shadow-sm'
-                : 'text-text-secondary hover:text-white'
+                ? 'btn-gold shadow-md'
+                : 'text-zinc-400 hover:text-white hover:bg-white/[0.04]'
             }`}
           >
             <LogIn className="h-3.5 w-3.5" />
@@ -132,10 +132,10 @@ export default function AdminPortalPage() {
           <button
             type="button"
             onClick={() => setMode('register')}
-            className={`flex items-center justify-center gap-1.5 rounded-lg py-2 text-xs font-semibold transition ${
+            className={`flex items-center justify-center gap-1.5 rounded-xl py-2.5 text-xs font-bold transition-all ${
               mode === 'register'
-                ? 'bg-amber-400 text-page shadow-sm'
-                : 'text-text-secondary hover:text-white'
+                ? 'btn-gold shadow-md'
+                : 'text-zinc-400 hover:text-white hover:bg-white/[0.04]'
             }`}
           >
             <PlusCircle className="h-3.5 w-3.5" />
@@ -145,9 +145,9 @@ export default function AdminPortalPage() {
 
         {/* Login Form */}
         {mode === 'login' && (
-          <div className="rounded-2xl border border-border bg-surface-card p-6 shadow-2xl space-y-5 animate-fade-in">
+          <div className="glass-card-gold rounded-3xl p-6 sm:p-7 shadow-[0_20px_50px_rgba(0,0,0,0.7)] space-y-5 animate-fade-in">
             <div>
-              <h2 className="text-base font-bold text-white">Access Your Restaurant Hub</h2>
+              <h2 className="text-base sm:text-lg font-bold text-white">Access Your Restaurant Hub</h2>
               <p className="text-xs text-text-secondary mt-0.5">
                 Log in with your registered phone number and unique PIN or Restaurant ID.
               </p>
@@ -172,7 +172,7 @@ export default function AdminPortalPage() {
                     value={loginPhone}
                     onChange={(e) => setLoginPhone(e.target.value)}
                     placeholder="e.g. 9876543210"
-                    className="w-full rounded-xl border border-border bg-surface pl-10 pr-3.5 py-3 text-base sm:text-sm text-white focus:border-amber-400 focus:outline-none"
+                    className="w-full rounded-xl border border-white/[0.08] bg-[#0B0C12]/80 pl-10 pr-3.5 py-3 text-base sm:text-sm text-white focus:border-amber-400/80 focus:ring-1 focus:ring-amber-400/30 focus:outline-none placeholder-zinc-500 transition-all"
                   />
                 </div>
               </div>
@@ -189,7 +189,7 @@ export default function AdminPortalPage() {
                     value={loginPin}
                     onChange={(e) => setLoginPin(e.target.value)}
                     placeholder="e.g. 1234 or REST_SAFFRON_01"
-                    className="w-full rounded-xl border border-border bg-surface pl-10 pr-3.5 py-3 text-base sm:text-sm text-white focus:border-amber-400 focus:outline-none"
+                    className="w-full rounded-xl border border-white/[0.08] bg-[#0B0C12]/80 pl-10 pr-3.5 py-3 text-base sm:text-sm text-white focus:border-amber-400/80 focus:ring-1 focus:ring-amber-400/30 focus:outline-none placeholder-zinc-500 transition-all"
                   />
                 </div>
               </div>
@@ -198,16 +198,16 @@ export default function AdminPortalPage() {
                 <button
                   type="submit"
                   disabled={loginLoading}
-                  className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-amber-400 to-amber-500 py-3.5 px-4 font-bold text-page shadow-lg shadow-amber-500/20 hover:from-amber-300 hover:to-amber-400 transition active:scale-[0.98] disabled:opacity-50 text-sm"
+                  className="btn-gold flex w-full items-center justify-center gap-2 rounded-xl py-3.5 px-4 font-black transition text-sm disabled:opacity-50"
                 >
                   <LogIn className="h-4 w-4" />
                   <span>{loginLoading ? 'Authenticating...' : 'Sign In to Dashboard'}</span>
                 </button>
               </div>
 
-              <div className="rounded-xl bg-surface-raised/70 border border-border/80 p-3 text-[11px] text-zinc-400 space-y-1">
+              <div className="rounded-xl bg-white/[0.03] border border-white/[0.06] p-3 text-[11px] text-zinc-400 space-y-1">
                 <span className="font-semibold text-amber-400 block">Sample Demo Account:</span>
-                <div>Phone: <code className="text-white font-mono">9876543210</code> | PIN: <code className="text-white font-mono">1234</code></div>
+                <div>Phone: <code className="text-white font-mono bg-white/[0.06] px-1.5 py-0.5 rounded">9876543210</code> | PIN: <code className="text-white font-mono bg-white/[0.06] px-1.5 py-0.5 rounded">1234</code></div>
               </div>
             </form>
           </div>
@@ -215,9 +215,9 @@ export default function AdminPortalPage() {
 
         {/* Register New Restaurant Form */}
         {mode === 'register' && (
-          <div className="rounded-2xl border border-border bg-surface-card p-6 shadow-2xl space-y-5 animate-fade-in">
+          <div className="glass-card-gold rounded-3xl p-6 sm:p-7 shadow-[0_20px_50px_rgba(0,0,0,0.7)] space-y-5 animate-fade-in">
             <div>
-              <h2 className="text-base font-bold text-white">Register a New Business on Tap-Bro</h2>
+              <h2 className="text-base sm:text-lg font-bold text-white">Register a New Business on Tap-Bro</h2>
               <p className="text-xs text-text-secondary mt-0.5">
                 Generates unique ID, instant tabletop QR code, and dispatches confirmation email.
               </p>
@@ -240,7 +240,7 @@ export default function AdminPortalPage() {
                   value={regName}
                   onChange={(e) => setRegName(e.target.value)}
                   placeholder="e.g. Haveli Fine Dining & Sweets"
-                  className="w-full rounded-xl border border-border bg-surface px-3.5 py-2 text-xs sm:text-sm text-white focus:border-amber-400 focus:outline-none"
+                  className="w-full rounded-xl border border-white/[0.08] bg-[#0B0C12]/80 px-3.5 py-2.5 text-base sm:text-sm text-white focus:border-amber-400/80 focus:ring-1 focus:ring-amber-400/30 focus:outline-none placeholder-zinc-500 transition-all"
                 />
               </div>
 
@@ -249,14 +249,14 @@ export default function AdminPortalPage() {
                   Owner Email Address * (Welcome credentials sent here)
                 </label>
                 <div className="relative">
-                  <Mail className="h-4 w-4 text-zinc-500 absolute left-3.5 top-2.5" />
+                  <Mail className="h-4 w-4 text-zinc-500 absolute left-3.5 top-3" />
                   <input
                     type="email"
                     required
                     value={regEmail}
                     onChange={(e) => setRegEmail(e.target.value)}
                     placeholder="e.g. owner@havelibistro.com"
-                    className="w-full rounded-xl border border-border bg-surface pl-10 pr-3.5 py-2 text-xs sm:text-sm text-white focus:border-amber-400 focus:outline-none"
+                    className="w-full rounded-xl border border-white/[0.08] bg-[#0B0C12]/80 pl-10 pr-3.5 py-2.5 text-base sm:text-sm text-white focus:border-amber-400/80 focus:ring-1 focus:ring-amber-400/30 focus:outline-none placeholder-zinc-500 transition-all"
                   />
                 </div>
               </div>
@@ -272,7 +272,7 @@ export default function AdminPortalPage() {
                     value={regPhone}
                     onChange={(e) => setRegPhone(e.target.value)}
                     placeholder="e.g. 9811223344"
-                    className="w-full rounded-xl border border-border bg-surface px-3.5 py-2 text-xs sm:text-sm text-white focus:border-amber-400 focus:outline-none"
+                    className="w-full rounded-xl border border-white/[0.08] bg-[#0B0C12]/80 px-3.5 py-2.5 text-base sm:text-sm text-white focus:border-amber-400/80 focus:ring-1 focus:ring-amber-400/30 focus:outline-none placeholder-zinc-500 transition-all"
                   />
                 </div>
                 <div>
@@ -286,7 +286,7 @@ export default function AdminPortalPage() {
                     onChange={(e) => setRegPin(e.target.value)}
                     placeholder="4-digit PIN"
                     maxLength={8}
-                    className="w-full rounded-xl border border-border bg-surface px-3.5 py-2 text-xs sm:text-sm text-white focus:border-amber-400 focus:outline-none"
+                    className="w-full rounded-xl border border-white/[0.08] bg-[#0B0C12]/80 px-3.5 py-2.5 text-base sm:text-sm text-white focus:border-amber-400/80 focus:ring-1 focus:ring-amber-400/30 focus:outline-none placeholder-zinc-500 transition-all"
                   />
                 </div>
               </div>
@@ -300,7 +300,7 @@ export default function AdminPortalPage() {
                   value={regCuisine}
                   onChange={(e) => setRegCuisine(e.target.value)}
                   placeholder="e.g. Traditional Awadhi & Chaat"
-                  className="w-full rounded-xl border border-border bg-surface px-3.5 py-2 text-xs sm:text-sm text-white focus:border-amber-400 focus:outline-none"
+                  className="w-full rounded-xl border border-white/[0.08] bg-[#0B0C12]/80 px-3.5 py-2.5 text-base sm:text-sm text-white focus:border-amber-400/80 focus:ring-1 focus:ring-amber-400/30 focus:outline-none placeholder-zinc-500 transition-all"
                 />
               </div>
 
@@ -313,15 +313,15 @@ export default function AdminPortalPage() {
                   value={regGoogleUrl}
                   onChange={(e) => setRegGoogleUrl(e.target.value)}
                   placeholder="https://search.google.com/local/writereview?placeid=..."
-                  className="w-full rounded-xl border border-border bg-surface px-3.5 py-2 text-xs sm:text-sm text-white focus:border-amber-400 focus:outline-none font-mono"
+                  className="w-full rounded-xl border border-white/[0.08] bg-[#0B0C12]/80 px-3.5 py-2.5 text-base sm:text-sm text-white focus:border-amber-400/80 focus:ring-1 focus:ring-amber-400/30 focus:outline-none font-mono placeholder-zinc-500 transition-all"
                 />
               </div>
 
               {/* Super Admin Notice */}
-              <div className="rounded-xl bg-surface-raised p-2.5 border border-border/80 text-[11px] text-zinc-400 flex items-center gap-2">
+              <div className="rounded-xl bg-white/[0.03] p-2.5 border border-white/[0.06] text-[11px] text-zinc-400 flex items-center gap-2">
                 <Send className="h-3.5 w-3.5 text-amber-400 shrink-0" />
                 <span>
-                  Notification automatically delivered to Super Admin: <code className="text-amber-300">princesharma9955a@gmail.com</code>
+                  Notification automatically delivered to Super Admin: <code className="text-amber-300 font-mono">princesharma9955a@gmail.com</code>
                 </span>
               </div>
 
@@ -329,7 +329,7 @@ export default function AdminPortalPage() {
                 <button
                   type="submit"
                   disabled={regLoading}
-                  className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-amber-400 to-amber-500 py-3 px-4 font-semibold text-page shadow-lg shadow-amber-500/20 hover:from-amber-300 hover:to-amber-400 transition active:scale-[0.99] disabled:opacity-50 text-xs sm:text-sm"
+                  className="btn-gold flex w-full items-center justify-center gap-2 rounded-xl py-3 px-4 font-black transition text-xs sm:text-sm disabled:opacity-50"
                 >
                   <Sparkles className="h-4 w-4" />
                   <span>{regLoading ? 'Registering & Sending Email...' : 'Register on Tap-Bro & Generate QR'}</span>

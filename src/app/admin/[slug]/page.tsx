@@ -252,12 +252,12 @@ function RestaurantAdminDashboardContent() {
       <div className="ambient-bg pointer-events-none fixed inset-0 z-0" />
 
       {/* Phone-Optimized Top App Bar */}
-      <header className="sticky top-0 z-30 border-b border-border/80 bg-surface/95 backdrop-blur-md px-4 py-3">
+      <header className="sticky top-0 z-30 border-b border-white/[0.08] bg-[#0A0C12]/90 backdrop-blur-2xl px-4 py-3 shadow-lg">
         <div className="mx-auto flex max-w-md items-center justify-between">
           <div className="flex items-center gap-2.5 min-w-0">
             <button
               onClick={() => router.push('/admin')}
-              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-border bg-surface-raised text-text-secondary hover:text-white"
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-white/[0.08] bg-[#0B0C12]/80 text-text-secondary hover:text-white transition"
             >
               <ArrowLeft className="h-4 w-4" />
             </button>
@@ -277,7 +277,7 @@ function RestaurantAdminDashboardContent() {
             <button
               type="button"
               onClick={() => window.open(`/r/${slug}`, '_blank')}
-              className="flex h-9 w-9 items-center justify-center rounded-xl border border-border bg-surface-raised text-amber-400 hover:text-white hover:bg-surface-highlight transition"
+              className="flex h-9 w-9 items-center justify-center rounded-xl border border-white/[0.08] bg-[#0B0C12]/80 text-amber-400 hover:text-white hover:bg-white/[0.05] transition"
               title="Preview Diner View"
             >
               <Eye className="h-4 w-4" />
@@ -286,10 +286,10 @@ function RestaurantAdminDashboardContent() {
               type="button"
               onClick={() => handleSave()}
               disabled={saving}
-              className={`flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-xs font-semibold transition shadow-md ${
+              className={`flex items-center gap-1.5 rounded-xl px-4 py-2 text-xs font-bold transition shadow-md ${
                 savedSuccess
                   ? 'bg-emerald-500 text-white'
-                  : 'bg-amber-400 text-page hover:bg-amber-300 shadow-amber-400/20'
+                  : 'btn-gold shadow-amber-400/20'
               }`}
             >
               {savedSuccess ? <Check className="h-3.5 w-3.5" /> : <Save className="h-3.5 w-3.5" />}
@@ -316,30 +316,30 @@ function RestaurantAdminDashboardContent() {
 
         {/* Quick Phone Stats Widget */}
         <div className="grid grid-cols-2 gap-2.5">
-          <div className="rounded-2xl border border-amber-500/20 bg-surface-card p-3.5 flex items-center justify-between">
+          <div className="glass-card rounded-2xl p-3.5 flex items-center justify-between shadow-md">
             <div>
               <span className="text-[10px] font-semibold text-text-secondary uppercase tracking-wider block">
                 Total Reviews
               </span>
-              <p className="text-xl font-bold text-white mt-0.5">
+              <p className="text-xl font-black text-white mt-0.5">
                 {restaurant.totalReviewsGenerated || 0}
               </p>
             </div>
-            <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-amber-400/20 text-amber-400">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-400/20 border border-amber-400/30 text-amber-400 shadow-sm">
               <Sparkles className="h-4 w-4" />
             </div>
           </div>
 
-          <div className="rounded-2xl border border-border bg-surface-card p-3.5 flex items-center justify-between">
+          <div className="glass-card rounded-2xl p-3.5 flex items-center justify-between shadow-md">
             <div>
               <span className="text-[10px] font-semibold text-text-secondary uppercase tracking-wider block">
                 Dining Tables
               </span>
-              <p className="text-xl font-bold text-amber-400 mt-0.5">
+              <p className="text-xl font-black text-amber-400 mt-0.5">
                 {tableCount} Stands
               </p>
             </div>
-            <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-surface-raised text-amber-400">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/[0.05] border border-white/[0.08] text-amber-400 shadow-sm">
               <Radio className="h-4 w-4" />
             </div>
           </div>
@@ -349,27 +349,27 @@ function RestaurantAdminDashboardContent() {
         {activeTab === 'nfc' && (
           <div className="space-y-4 animate-fade-in">
             {/* Tabletop Acrylic Stand Preview Card */}
-            <div className="rounded-2xl border border-border bg-surface-card p-4 space-y-4 shadow-xl">
+            <div className="glass-card-gold rounded-3xl p-5 space-y-4 shadow-[0_20px_50px_rgba(0,0,0,0.7)]">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold text-amber-400 uppercase tracking-wider flex items-center gap-1.5">
                   <Radio className="h-4 w-4" />
                   <span>Tabletop NFC &amp; QR Stand</span>
                 </span>
-                <span className="rounded-full bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 text-[10px] font-semibold text-emerald-300">
+                <span className="rounded-full bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-0.5 text-[10px] font-semibold text-emerald-300">
                   Ready to Tap
                 </span>
               </div>
 
               <div>
-                <h2 className="text-base font-bold text-white">{name} Table Stands</h2>
+                <h2 className="text-base sm:text-lg font-bold text-white">{name} Table Stands</h2>
                 <p className="text-xs text-text-secondary mt-0.5 leading-relaxed">
                   Guests tap their phone on the NFC stand or scan the QR code to write authentic reviews with AI.
                 </p>
               </div>
 
               {/* QR Stand Preview */}
-              <div className="flex flex-col items-center justify-center p-4 rounded-xl bg-surface border border-border/70 space-y-3">
-                <div className="p-3 bg-white rounded-2xl shadow-lg border border-amber-400/40">
+              <div className="flex flex-col items-center justify-center p-5 rounded-2xl bg-[#07090E]/80 border border-white/[0.08] space-y-3 shadow-inner">
+                <div className="p-3.5 bg-white rounded-2xl shadow-2xl border-2 border-amber-400/40">
                   <img
                     src={`/api/restaurants/${slug}/qr`}
                     alt={`${name} QR Code`}
@@ -406,7 +406,7 @@ function RestaurantAdminDashboardContent() {
               </div>
 
               {/* URL Copy Bar */}
-              <div className="rounded-xl bg-surface p-3 border border-border/80 space-y-1.5">
+              <div className="rounded-xl bg-[#0B0C12]/80 p-3 border border-white/[0.08] space-y-1.5">
                 <span className="text-[11px] text-zinc-400 font-medium block">
                   Direct Station URL:
                 </span>
@@ -415,12 +415,12 @@ function RestaurantAdminDashboardContent() {
                     type="text"
                     readOnly
                     value={destinationUrl}
-                    className="flex-1 rounded-lg border border-border/60 bg-surface-raised px-2.5 py-2 text-xs text-white font-mono truncate"
+                    className="flex-1 rounded-lg border border-white/[0.06] bg-[#07090E] px-2.5 py-2 text-xs text-white font-mono truncate"
                   />
                   <button
                     type="button"
                     onClick={handleCopyNfcUrl}
-                    className="rounded-lg bg-amber-400 text-page px-3 py-2 text-xs font-semibold flex items-center gap-1 shrink-0"
+                    className="btn-gold rounded-lg px-3 py-2 text-xs font-bold flex items-center gap-1 shrink-0"
                   >
                     {copiedNfc ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
                     <span>{copiedNfc ? 'Copied' : 'Copy'}</span>
@@ -429,7 +429,7 @@ function RestaurantAdminDashboardContent() {
               </div>
 
               {/* Table Count Setting */}
-              <div className="pt-2 border-t border-border/40 flex items-center justify-between">
+              <div className="pt-2 border-t border-white/[0.06] flex items-center justify-between">
                 <div>
                   <span className="text-xs font-semibold text-white block">Active Table Stands</span>
                   <p className="text-[11px] text-text-secondary">Number of dining tables</p>
@@ -440,14 +440,14 @@ function RestaurantAdminDashboardContent() {
                   max={200}
                   value={tableCount}
                   onChange={(e) => setTableCount(Number(e.target.value))}
-                  className="w-16 rounded-xl border border-border bg-surface px-2.5 py-2 text-sm text-white text-center font-bold focus:border-amber-400 focus:outline-none"
+                  className="w-16 rounded-xl border border-white/[0.08] bg-[#0B0C12] px-2.5 py-2 text-sm text-white text-center font-bold focus:border-amber-400/80 focus:ring-1 focus:ring-amber-400/30 focus:outline-none"
                 />
               </div>
 
               <button
                 type="button"
                 onClick={() => window.open(`/r/${slug}`, '_blank')}
-                className="w-full flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-amber-400 to-amber-500 py-3.5 font-bold text-page shadow-md shadow-amber-500/20 text-xs sm:text-sm active:scale-[0.99] transition"
+                className="btn-gold w-full flex items-center justify-center gap-2 rounded-xl py-3.5 font-black text-xs sm:text-sm transition"
               >
                 <Eye className="h-4 w-4" />
                 <span>Test Live Diner Flow on Phone</span>
@@ -455,7 +455,7 @@ function RestaurantAdminDashboardContent() {
             </div>
 
             {/* Quick NFC Programming Guide for Mobile */}
-            <div className="rounded-2xl border border-border bg-surface-card p-4 space-y-3 shadow-xl">
+            <div className="glass-card rounded-2xl p-4 space-y-3 shadow-lg">
               <h3 className="text-xs font-bold text-white flex items-center gap-2 uppercase tracking-wide">
                 <Radio className="h-3.5 w-3.5 text-amber-400" />
                 <span>Program NFC Tag from Phone</span>
@@ -472,7 +472,7 @@ function RestaurantAdminDashboardContent() {
 
         {/* Tab 2: Restaurant Profile & Google Link */}
         {activeTab === 'details' && (
-          <div className="rounded-2xl border border-border bg-surface-card p-4 space-y-4 animate-fade-in shadow-xl">
+          <div className="glass-card-gold rounded-3xl p-5 space-y-4 animate-fade-in shadow-[0_20px_50px_rgba(0,0,0,0.7)]">
             <h2 className="text-sm font-bold text-white uppercase tracking-wider text-amber-400">
               Restaurant Profile & Link
             </h2>
@@ -486,7 +486,7 @@ function RestaurantAdminDashboardContent() {
                   type="text"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="w-full rounded-xl border border-border bg-surface px-3 py-2.5 text-base sm:text-xs text-white focus:border-amber-400 focus:outline-none"
+                  className="w-full rounded-xl border border-white/[0.08] bg-[#0B0C12]/80 px-3.5 py-2.5 text-base sm:text-xs text-white focus:border-amber-400/80 focus:ring-1 focus:ring-amber-400/30 focus:outline-none transition-all placeholder-zinc-500"
                 />
               </div>
 
@@ -498,7 +498,7 @@ function RestaurantAdminDashboardContent() {
                   type="text"
                   value={cuisine}
                   onChange={(e) => setCuisine(e.target.value)}
-                  className="w-full rounded-xl border border-border bg-surface px-3 py-2.5 text-base sm:text-xs text-white focus:border-amber-400 focus:outline-none"
+                  className="w-full rounded-xl border border-white/[0.08] bg-[#0B0C12]/80 px-3.5 py-2.5 text-base sm:text-xs text-white focus:border-amber-400/80 focus:ring-1 focus:ring-amber-400/30 focus:outline-none transition-all placeholder-zinc-500"
                 />
               </div>
 
@@ -511,7 +511,7 @@ function RestaurantAdminDashboardContent() {
                   maxLength={8}
                   value={adminPin}
                   onChange={(e) => setAdminPin(e.target.value)}
-                  className="w-full rounded-xl border border-border bg-surface px-3 py-2.5 text-base sm:text-xs text-white focus:border-amber-400 focus:outline-none font-mono"
+                  className="w-full rounded-xl border border-white/[0.08] bg-[#0B0C12]/80 px-3.5 py-2.5 text-base sm:text-xs text-white focus:border-amber-400/80 focus:ring-1 focus:ring-amber-400/30 focus:outline-none font-mono transition-all"
                 />
               </div>
 
@@ -523,7 +523,7 @@ function RestaurantAdminDashboardContent() {
                   type="text"
                   value={tagline}
                   onChange={(e) => setTagline(e.target.value)}
-                  className="w-full rounded-xl border border-border bg-surface px-3 py-2.5 text-base sm:text-xs text-white focus:border-amber-400 focus:outline-none"
+                  className="w-full rounded-xl border border-white/[0.08] bg-[#0B0C12]/80 px-3.5 py-2.5 text-base sm:text-xs text-white focus:border-amber-400/80 focus:ring-1 focus:ring-amber-400/30 focus:outline-none transition-all placeholder-zinc-500"
                 />
               </div>
 
@@ -550,7 +550,7 @@ function RestaurantAdminDashboardContent() {
                   value={googleReviewUrl}
                   onChange={(e) => setGoogleReviewUrl(e.target.value)}
                   placeholder="https://search.google.com/local/writereview?placeid=..."
-                  className="w-full rounded-xl border border-border bg-surface px-3 py-2.5 text-base sm:text-xs text-white focus:border-amber-400 focus:outline-none font-mono"
+                  className="w-full rounded-xl border border-white/[0.08] bg-[#0B0C12]/80 px-3.5 py-2.5 text-base sm:text-xs text-white focus:border-amber-400/80 focus:ring-1 focus:ring-amber-400/30 focus:outline-none font-mono transition-all placeholder-zinc-500"
                 />
               </div>
 
@@ -559,7 +559,7 @@ function RestaurantAdminDashboardContent() {
                   type="button"
                   onClick={() => handleSave()}
                   disabled={saving}
-                  className="w-full rounded-xl bg-amber-400 py-3 text-xs font-semibold text-page hover:bg-amber-300 transition"
+                  className="btn-gold w-full rounded-xl py-3 text-xs font-bold transition"
                 >
                   {saving ? 'Saving...' : 'Save Profile Changes'}
                 </button>
@@ -583,7 +583,7 @@ function RestaurantAdminDashboardContent() {
               <button
                 type="button"
                 onClick={handleAddCategory}
-                className="flex items-center gap-1 rounded-xl bg-amber-400 px-3 py-1.5 text-xs font-semibold text-page hover:bg-amber-300 transition"
+                className="btn-gold flex items-center gap-1 rounded-xl px-3.5 py-1.5 text-xs font-bold transition shadow-sm"
               >
                 <Plus className="h-3.5 w-3.5" />
                 <span>Category</span>
@@ -594,7 +594,7 @@ function RestaurantAdminDashboardContent() {
               {menuCategories.map((cat, catIndex) => (
                 <div
                   key={catIndex}
-                  className="rounded-2xl border border-border bg-surface-card p-3.5 space-y-2.5 shadow-sm"
+                  className="glass-card rounded-2xl p-4 space-y-2.5 shadow-md"
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-1.5">
@@ -606,7 +606,7 @@ function RestaurantAdminDashboardContent() {
                       <button
                         type="button"
                         onClick={() => handleAddDish(catIndex)}
-                        className="rounded-lg border border-border bg-surface-raised px-2 py-1 text-[11px] text-amber-300 hover:text-white flex items-center gap-0.5"
+                        className="rounded-lg border border-amber-400/30 bg-amber-400/10 px-2.5 py-1 text-[11px] text-amber-300 hover:text-white flex items-center gap-0.5 transition"
                       >
                         <Plus className="h-3 w-3" />
                         <span>Add</span>
@@ -614,7 +614,7 @@ function RestaurantAdminDashboardContent() {
                       <button
                         type="button"
                         onClick={() => handleRemoveCategory(catIndex)}
-                        className="text-zinc-500 hover:text-red-400 p-1"
+                        className="text-zinc-500 hover:text-red-400 p-1 transition"
                       >
                         <Trash2 className="h-3.5 w-3.5" />
                       </button>
@@ -625,7 +625,7 @@ function RestaurantAdminDashboardContent() {
                     {cat.items.map((dish, dishIndex) => (
                       <span
                         key={dishIndex}
-                        className="inline-flex items-center gap-1 rounded-full bg-surface-raised border border-border/80 px-2.5 py-1 text-[11px] text-zinc-200"
+                        className="inline-flex items-center gap-1.5 rounded-full bg-white/[0.04] border border-white/[0.08] px-3 py-1 text-[11px] text-zinc-200"
                       >
                         <span>{dish}</span>
                         <button
@@ -651,7 +651,7 @@ function RestaurantAdminDashboardContent() {
               type="button"
               onClick={() => handleSave()}
               disabled={saving}
-              className="w-full rounded-xl bg-amber-400 py-3 text-xs font-semibold text-page hover:bg-amber-300 transition"
+              className="btn-gold w-full rounded-xl py-3 text-xs font-bold transition"
             >
               {saving ? 'Saving...' : 'Save Menu Changes'}
             </button>
@@ -660,7 +660,7 @@ function RestaurantAdminDashboardContent() {
 
         {/* Tab 4: AI Review Simulator (On Phone) */}
         {activeTab === 'simulator' && (
-          <div className="rounded-2xl border border-border bg-surface-card p-4 space-y-4 animate-fade-in shadow-xl">
+          <div className="glass-card-gold rounded-3xl p-5 space-y-4 animate-fade-in shadow-[0_20px_50px_rgba(0,0,0,0.7)]">
             <div className="flex items-center gap-2">
               <Sparkles className="h-4 w-4 text-amber-400" />
               <h2 className="text-sm font-bold text-white uppercase tracking-wider text-amber-400">
@@ -681,7 +681,7 @@ function RestaurantAdminDashboardContent() {
                   value={simDish}
                   onChange={(e) => setSimDish(e.target.value)}
                   placeholder="e.g. Banarasi Tamatar Chaat"
-                  className="w-full rounded-xl border border-border bg-surface px-3 py-2 text-xs text-white focus:border-amber-400 focus:outline-none"
+                  className="w-full rounded-xl border border-white/[0.08] bg-[#0B0C12]/80 px-3.5 py-2 text-xs text-white focus:border-amber-400/80 focus:ring-1 focus:ring-amber-400/30 focus:outline-none transition-all placeholder-zinc-500"
                 />
               </div>
 
@@ -691,7 +691,7 @@ function RestaurantAdminDashboardContent() {
                   <select
                     value={simLang}
                     onChange={(e) => setSimLang(e.target.value as any)}
-                    className="w-full rounded-xl border border-border bg-surface px-2.5 py-2 text-xs text-white focus:border-amber-400 focus:outline-none"
+                    className="w-full rounded-xl border border-white/[0.08] bg-[#0B0C12]/80 px-2.5 py-2 text-xs text-white focus:border-amber-400/80 focus:ring-1 focus:ring-amber-400/30 focus:outline-none transition-all"
                   >
                     <option value="hinglish">🇮🇳 Hinglish</option>
                     <option value="en">🇬🇧 English</option>
@@ -702,7 +702,7 @@ function RestaurantAdminDashboardContent() {
                   <select
                     value={simTone}
                     onChange={(e) => setSimTone(e.target.value as any)}
-                    className="w-full rounded-xl border border-border bg-surface px-2.5 py-2 text-xs text-white focus:border-amber-400 focus:outline-none"
+                    className="w-full rounded-xl border border-white/[0.08] bg-[#0B0C12]/80 px-2.5 py-2 text-xs text-white focus:border-amber-400/80 focus:ring-1 focus:ring-amber-400/30 focus:outline-none transition-all"
                   >
                     <option value="flavorful">Flavorful</option>
                     <option value="concise">Quick/Crisp</option>
@@ -716,14 +716,14 @@ function RestaurantAdminDashboardContent() {
                 type="button"
                 onClick={handleRunSimulator}
                 disabled={simulating}
-                className="w-full flex items-center justify-center gap-2 rounded-xl bg-amber-400 py-3 font-semibold text-page hover:bg-amber-300 transition text-xs shadow-md"
+                className="btn-gold w-full flex items-center justify-center gap-2 rounded-xl py-3 font-bold transition text-xs shadow-md"
               >
                 <Sparkles className="h-4 w-4" />
                 <span>{simulating ? 'Crafting Draft...' : 'Generate Sample Review'}</span>
               </button>
 
               {simDraft && (
-                <div className="rounded-xl border border-amber-500/30 bg-surface p-3.5 space-y-1.5 animate-fade-in">
+                <div className="rounded-2xl border border-amber-500/30 bg-[#07090E]/80 p-4 space-y-1.5 animate-fade-in shadow-inner">
                   <span className="text-[10px] font-semibold text-amber-300 uppercase tracking-wider block">
                     AI Review Draft:
                   </span>
@@ -738,7 +738,7 @@ function RestaurantAdminDashboardContent() {
 
         {/* Tab 5: Staff Tabletop Script */}
         {activeTab === 'staff' && (
-          <div className="rounded-2xl border border-border bg-surface-card p-4 space-y-4 animate-fade-in shadow-xl">
+          <div className="glass-card-gold rounded-3xl p-5 space-y-4 animate-fade-in shadow-[0_20px_50px_rgba(0,0,0,0.7)]">
             <div className="flex items-center gap-2">
               <BookOpen className="h-4 w-4 text-amber-400" />
               <h2 className="text-sm font-bold text-white uppercase tracking-wider text-amber-400">
@@ -750,11 +750,11 @@ function RestaurantAdminDashboardContent() {
             </p>
 
             <div className="space-y-3">
-              <div className="rounded-xl border border-amber-500/30 bg-amber-500/5 p-3.5 space-y-1.5">
+              <div className="rounded-2xl border border-amber-500/30 bg-amber-500/5 p-4 space-y-1.5 shadow-sm">
                 <span className="text-[11px] font-bold text-amber-300 uppercase block">
                   ⭐ 10-Second Waiter Script:
                 </span>
-                <p className="text-xs text-zinc-200 leading-relaxed italic bg-surface p-3 rounded-lg border border-border">
+                <p className="text-xs text-zinc-200 leading-relaxed italic bg-[#0B0C12]/80 p-3 rounded-xl border border-white/[0.06]">
                   &quot;Sir / Ma&apos;am, if you enjoyed our {simDish || 'food'}, please tap your phone on this tabletop stand! Tap-Bro AI will craft your review in 10 seconds without typing.&quot;
                 </p>
               </div>
@@ -773,7 +773,7 @@ function RestaurantAdminDashboardContent() {
       </main>
 
       {/* Phone Bottom Tab Bar (Thumb Navigation) */}
-      <nav className="fixed bottom-0 inset-x-0 z-40 bg-surface/95 backdrop-blur-xl border-t border-border/80 pb-safe">
+      <nav className="fixed bottom-0 inset-x-0 z-40 bg-[#0A0C12]/95 backdrop-blur-2xl border-t border-white/[0.08] pb-safe shadow-2xl">
         <div className="mx-auto flex max-w-md items-center justify-around px-2 py-2">
           {[
             { id: 'nfc', label: 'NFC Hub', icon: Radio },
@@ -788,13 +788,13 @@ function RestaurantAdminDashboardContent() {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id as any)}
-                className={`flex flex-col items-center justify-center py-1 px-2.5 rounded-xl transition-all ${
+                className={`flex flex-col items-center justify-center py-1.5 px-3 rounded-2xl transition-all ${
                   isActive
-                    ? 'text-amber-400 font-bold scale-105'
+                    ? 'text-amber-300 bg-amber-400/10 ring-1 ring-amber-400/30 font-bold scale-105 shadow-sm'
                     : 'text-zinc-500 hover:text-zinc-300'
                 }`}
               >
-                <Icon className={`h-5 w-5 mb-0.5 ${isActive ? 'stroke-[2.5]' : 'stroke-[1.8]'}`} />
+                <Icon className={`h-4.5 w-4.5 mb-0.5 ${isActive ? 'stroke-[2.5] text-amber-400' : 'stroke-[1.8]'}`} />
                 <span className="text-[10px] tracking-tight">{tab.label}</span>
               </button>
             );

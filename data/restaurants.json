@@ -1,1 +1,63 @@
-[]
+[
+  {
+    "id": "REST_DEMO_01",
+    "slug": "demo-taj-bistro",
+    "name": "Taj Dining Lounge",
+    "tagline": "Authentic Awadhi & North Indian Delicacies",
+    "cuisine": "North Indian & Mughlai",
+    "phone": "9876543210",
+    "adminPin": "1234",
+    "googleReviewUrl": "https://g.page/r/taj-dining/review",
+    "customDishes": [
+      "Paneer Tikka",
+      "Dal Makhani",
+      "Butter Naan",
+      "Dum Biryani",
+      "Gulab Jamun"
+    ],
+    "tableCount": 15,
+    "totalReviewsGenerated": 50,
+    "createdAt": "2026-11-19T08:50:08.310Z",
+    "updatedAt": "2026-11-19T08:51:36.438Z",
+    "menuCategories": [
+      {
+        "name": "Starters & Tandoor",
+        "icon": "🍢",
+        "items": [
+          "Paneer Tikka",
+          "Dahi Ke Kebab",
+          "Mushroom Galouti",
+          "Tandoori Soya Chaap"
+        ]
+      },
+      {
+        "name": "Main Course Specialties",
+        "icon": "🍲",
+        "items": [
+          "Dal Makhani",
+          "Paneer Butter Masala",
+          "Dum Biryani",
+          "Kadhai Chaap"
+        ]
+      },
+      {
+        "name": "Breads & Accompaniments",
+        "icon": "🫓",
+        "items": [
+          "Butter Naan",
+          "Garlic Roti",
+          "Boondi Raita"
+        ]
+      },
+      {
+        "name": "Desserts & Beverages",
+        "icon": "🍨",
+        "items": [
+          "Gulab Jamun",
+          "Rasmalai",
+          "Masala Chaas"
+        ]
+      }
+    ]
+  }
+]

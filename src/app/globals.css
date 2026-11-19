@@ -89,15 +89,83 @@ select {
   transform: scale(0.95);
 }
 
-/* Ambient glow background */
+/* Ambient glow background with warm champagne gold, amber, and deep obsidian grading */
 .ambient-bg {
-  background: radial-gradient(circle at 50% 0%, rgba(245, 200, 76, 0.09) 0%, rgba(11, 12, 16, 0) 75%);
+  background: 
+    radial-gradient(circle at 50% -5%, rgba(245, 186, 66, 0.22) 0%, rgba(245, 158, 11, 0.08) 35%, transparent 65%),
+    radial-gradient(circle at 10% 35%, rgba(217, 119, 6, 0.12) 0%, transparent 45%),
+    radial-gradient(circle at 90% 65%, rgba(245, 186, 66, 0.10) 0%, transparent 50%),
+    radial-gradient(circle at 50% 105%, rgba(234, 88, 12, 0.08) 0%, transparent 60%),
+    #08090D;
 }
 
-/* Glass card styling */
+/* World-class frosted glass card with soft specular top reflection */
 .glass-card {
-  background: rgba(21, 23, 31, 0.85);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(44, 48, 61, 0.8);
+  background: linear-gradient(160deg, rgba(28, 31, 42, 0.8) 0%, rgba(13, 15, 22, 0.9) 100%);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  box-shadow: 0 16px 40px -8px rgba(0, 0, 0, 0.65), inset 0 1px 1px 0 rgba(255, 255, 255, 0.15);
+}
+
+/* Highlighted luxury card with glowing golden aura */
+.glass-card-gold {
+  background: linear-gradient(160deg, rgba(34, 30, 22, 0.85) 0%, rgba(16, 14, 12, 0.95) 100%);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(245, 186, 66, 0.35);
+  box-shadow: 0 20px 50px -10px rgba(0, 0, 0, 0.7), 0 0 30px -4px rgba(245, 186, 66, 0.18), inset 0 1px 1px 0 rgba(255, 245, 220, 0.3);
+}
+
+/* Master Champagne Gold Gradient Button (Apple / Linear tier) */
+.btn-gold {
+  background: linear-gradient(135deg, #FFE48E 0%, #F5BA42 50%, #E59A1A 100%);
+  color: #120D02;
+  font-weight: 800;
+  box-shadow: 0 10px 28px -4px rgba(245, 186, 66, 0.45), inset 0 1px 1px rgba(255, 255, 255, 0.75);
+  border: 1px solid rgba(255, 240, 185, 0.6);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.btn-gold:hover {
+  background: linear-gradient(135deg, #FFF0B8 0%, #FACB5E 50%, #EFA526 100%);
+  box-shadow: 0 14px 34px -4px rgba(245, 186, 66, 0.55), inset 0 1px 1px rgba(255, 255, 255, 0.9);
+}
+.btn-gold:active {
+  transform: scale(0.97);
+  box-shadow: 0 4px 14px -2px rgba(245, 186, 66, 0.6);
+}
+
+/* Metallic Champagne Text Gradient */
+.text-gold-gradient {
+  background: linear-gradient(135deg, #FFF3D4 0%, #F5C768 45%, #E59A1A 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Lustrous Metallic Star Tiles */
+.star-tile-empty {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.015) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  color: rgba(255, 255, 255, 0.28);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  transition: all 0.18s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.star-tile-empty:hover, .star-tile-empty:active {
+  background: rgba(245, 186, 66, 0.12);
+  border-color: rgba(245, 186, 66, 0.4);
+  color: rgba(245, 186, 66, 0.8);
+  transform: scale(1.08);
+}
+.star-tile-filled {
+  background: linear-gradient(180deg, rgba(245, 186, 66, 0.32) 0%, rgba(217, 119, 6, 0.2) 100%);
+  border: 1px solid rgba(245, 186, 66, 0.85);
+  color: #FFD67A;
+  box-shadow: 0 0 20px rgba(245, 186, 66, 0.45), inset 0 1px 1px rgba(255, 255, 255, 0.5);
+  transform: scale(1.06);
+}
+
+/* Subtle Golden Shimmer Line */
+.golden-divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent 0%, rgba(245, 186, 66, 0.35) 50%, transparent 100%);
 }

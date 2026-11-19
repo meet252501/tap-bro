@@ -413,12 +413,12 @@ export default function SuperAdminPage() {
     return (
       <div className="min-h-screen bg-page flex flex-col justify-center items-center p-4 relative selection:bg-amber-400 selection:text-page">
         <div className="ambient-bg pointer-events-none fixed inset-0 z-0" />
-        <div className="relative z-10 w-full max-w-sm rounded-2xl border border-amber-500/30 bg-surface-card p-6 sm:p-8 shadow-2xl space-y-6">
+        <div className="relative z-10 w-full max-w-sm glass-card-gold rounded-3xl p-6 sm:p-8 shadow-[0_20px_50px_rgba(0,0,0,0.7)] space-y-6">
           <div className="text-center">
-            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl overflow-hidden border border-amber-400/40 shadow-xl shadow-amber-500/20 mb-3 bg-surface">
+            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl overflow-hidden border border-amber-400/40 shadow-xl shadow-amber-500/20 mb-3 bg-[#0B0C12]">
               <img src="/tap-bro-logo.png" alt="Tap-Bro Logo" className="h-full w-full object-cover" />
             </div>
-            <h1 className="text-xl font-extrabold text-white">Tap-Bro Super Admin</h1>
+            <h1 className="text-xl font-black text-white">Tap-Bro Super Admin</h1>
             <p className="text-xs text-text-secondary mt-1">
               Authorized Master Portal for Platform Owner
             </p>
@@ -436,14 +436,14 @@ export default function SuperAdminPage() {
                 Super Admin Email
               </label>
               <div className="relative">
-                <Mail className="h-4 w-4 text-zinc-500 absolute left-3.5 top-3" />
+                <Mail className="h-4 w-4 text-zinc-500 absolute left-3.5 top-3.5 sm:top-3" />
                 <input
                   type="email"
                   required
                   placeholder="admin@tapbro.com"
                   value={adminEmail}
                   onChange={(e) => setAdminEmail(e.target.value)}
-                  className="w-full rounded-xl border border-border bg-surface pl-10 pr-3.5 py-3 sm:py-2.5 text-base sm:text-xs text-white focus:border-amber-400 focus:outline-none"
+                  className="w-full rounded-xl border border-white/[0.08] bg-[#0B0C12]/80 pl-10 pr-3.5 py-3 sm:py-2.5 text-base sm:text-xs text-white focus:border-amber-400/80 focus:ring-1 focus:ring-amber-400/30 focus:outline-none transition-all placeholder-zinc-500"
                 />
               </div>
             </div>
@@ -460,7 +460,7 @@ export default function SuperAdminPage() {
                   placeholder="••••••••••••"
                   value={adminPin}
                   onChange={(e) => setAdminPin(e.target.value)}
-                  className="w-full rounded-xl border border-border bg-surface pl-10 pr-3.5 py-3 sm:py-2.5 text-base sm:text-xs text-white focus:border-amber-400 focus:outline-none font-mono"
+                  className="w-full rounded-xl border border-white/[0.08] bg-[#0B0C12]/80 pl-10 pr-3.5 py-3 sm:py-2.5 text-base sm:text-xs text-white focus:border-amber-400/80 focus:ring-1 focus:ring-amber-400/30 focus:outline-none font-mono transition-all placeholder-zinc-500"
                 />
               </div>
             </div>
@@ -468,7 +468,7 @@ export default function SuperAdminPage() {
             <button
               type="submit"
               disabled={loading}
-              className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-amber-400 to-amber-500 py-3 font-semibold text-page shadow-lg shadow-amber-500/20 hover:from-amber-300 hover:to-amber-400 transition text-xs sm:text-sm"
+              className="btn-gold flex w-full items-center justify-center gap-2 rounded-xl py-3.5 font-black text-xs sm:text-sm"
             >
               <LogIn className="h-4 w-4" />
               <span>{loading ? 'Verifying...' : 'Access Super Admin Dashboard'}</span>
@@ -484,10 +484,10 @@ export default function SuperAdminPage() {
       <div className="ambient-bg pointer-events-none fixed inset-0 z-0" />
 
       {/* Top Bar */}
-      <header className="sticky top-0 z-30 border-b border-border bg-surface/90 backdrop-blur-md px-4 py-3 sm:px-6">
+      <header className="sticky top-0 z-30 border-b border-white/[0.08] bg-[#0A0C12]/90 backdrop-blur-2xl px-4 py-3 sm:px-6 shadow-lg">
         <div className="mx-auto flex max-w-6xl items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="relative flex h-10 w-10 items-center justify-center rounded-xl overflow-hidden border border-amber-400/40 shadow-md shadow-amber-500/10 shrink-0">
+            <div className="relative flex h-10 w-10 items-center justify-center rounded-xl overflow-hidden border border-amber-400/40 shadow-md shadow-amber-500/10 shrink-0 bg-[#0B0C12]">
               <img src="/tap-bro-logo.png" alt="Tap-Bro Logo" className="h-full w-full object-cover" />
             </div>
             <div>
@@ -504,14 +504,14 @@ export default function SuperAdminPage() {
           <div className="flex items-center gap-2">
             <button
               onClick={() => fetchOverview(adminPin)}
-              className="flex items-center gap-1.5 rounded-xl border border-border bg-surface-raised px-3 py-1.5 text-xs text-text-secondary hover:text-white"
+              className="flex items-center gap-1.5 rounded-xl border border-white/[0.08] bg-white/[0.03] px-3 py-1.5 text-xs text-text-secondary hover:text-white transition"
             >
               <RefreshCw className="h-3 w-3" />
               <span>Refresh</span>
             </button>
             <button
               onClick={() => setIsLoggedIn(false)}
-              className="rounded-xl border border-border px-3 py-1.5 text-xs text-red-400 hover:bg-red-500/10"
+              className="rounded-xl border border-red-500/30 px-3 py-1.5 text-xs text-red-400 hover:bg-red-500/10 transition"
             >
               Logout
             </button>
@@ -524,21 +524,21 @@ export default function SuperAdminPage() {
         {/* Metric Cards */}
         {stats && (
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-            <div className="rounded-2xl border border-border bg-surface-card p-4 space-y-1">
-              <span className="text-[11px] font-medium text-text-secondary">Active Businesses</span>
-              <p className="text-2xl font-bold text-white">{stats.totalRestaurants}</p>
+            <div className="glass-card rounded-2xl p-4.5 space-y-1 shadow-md">
+              <span className="text-[11px] font-semibold text-text-secondary">Active Businesses</span>
+              <p className="text-2xl font-black text-white">{stats.totalRestaurants}</p>
             </div>
-            <div className="rounded-2xl border border-border bg-surface-card p-4 space-y-1">
-              <span className="text-[11px] font-medium text-text-secondary">Pending Invites</span>
-              <p className="text-2xl font-bold text-amber-400">{stats.pendingInvites}</p>
+            <div className="glass-card rounded-2xl p-4.5 space-y-1 shadow-md">
+              <span className="text-[11px] font-semibold text-text-secondary">Pending Invites</span>
+              <p className="text-2xl font-black text-amber-400">{stats.pendingInvites}</p>
             </div>
-            <div className="rounded-2xl border border-border bg-surface-card p-4 space-y-1">
-              <span className="text-[11px] font-medium text-text-secondary">Total Review Drafts</span>
-              <p className="text-2xl font-bold text-emerald-400">{stats.totalReviewsDrafted}</p>
+            <div className="glass-card rounded-2xl p-4.5 space-y-1 shadow-md">
+              <span className="text-[11px] font-semibold text-text-secondary">Total Review Drafts</span>
+              <p className="text-2xl font-black text-emerald-400">{stats.totalReviewsDrafted}</p>
             </div>
-            <div className="rounded-2xl border border-border bg-surface-card p-4 space-y-1">
-              <span className="text-[11px] font-medium text-text-secondary">Sent Notification Emails</span>
-              <p className="text-2xl font-bold text-blue-400">{sentEmails.length}</p>
+            <div className="glass-card rounded-2xl p-4.5 space-y-1 shadow-md">
+              <span className="text-[11px] font-semibold text-text-secondary">Sent Notification Emails</span>
+              <p className="text-2xl font-black text-blue-400">{sentEmails.length}</p>
             </div>
           </div>
         )}
@@ -569,17 +569,17 @@ export default function SuperAdminPage() {
         )}
 
         {/* Feed Owner Email ➔ Send Tap-Bro Invite & Temporary Pass */}
-        <div className="rounded-2xl border border-amber-500/40 bg-surface-card p-6 shadow-2xl space-y-4">
+        <div className="glass-card-gold rounded-3xl p-6 sm:p-7 shadow-[0_20px_50px_rgba(0,0,0,0.7)] space-y-4">
           <div className="flex items-center justify-between gap-2.5">
             <div className="flex items-center gap-2.5">
-              <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-amber-400/10 text-amber-400 border border-amber-400/20">
+              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-400/20 text-amber-400 border border-amber-400/30 shadow-sm">
                 <Send className="h-4 w-4" />
               </div>
               <div>
-                <h2 className="text-base font-bold text-white">
+                <h2 className="text-base sm:text-lg font-bold text-white">
                   Feed Owner Email ➔ Send Tap-Bro Invite &amp; Temporary Pass
                 </h2>
-                <p className="text-xs text-text-secondary">
+                <p className="text-xs text-text-secondary mt-0.5">
                   Enter the email address of a restaurant or business owner. Tap-Bro will generate a unique temporary password and invite them. Even without email, you can copy their setup link or share directly to their WhatsApp with 1 tap!
                 </p>
               </div>
@@ -589,7 +589,7 @@ export default function SuperAdminPage() {
               <button
                 type="button"
                 onClick={() => setDispatchedInvite(null)}
-                className="flex items-center gap-1 text-xs text-zinc-400 hover:text-amber-400 transition border border-border px-2.5 py-1 rounded-lg shrink-0"
+                className="flex items-center gap-1 text-xs text-zinc-400 hover:text-amber-400 transition border border-white/[0.08] bg-white/[0.04] px-2.5 py-1 rounded-lg shrink-0"
                 title="Reset this station to send another invite"
               >
                 <RotateCcw className="h-3 w-3" />
@@ -714,14 +714,14 @@ export default function SuperAdminPage() {
                 value={targetEmail}
                 onChange={(e) => setTargetEmail(e.target.value)}
                 placeholder="Business Owner Email (e.g. manager@tajdining.com)"
-                className="w-full rounded-xl border border-border bg-surface px-3.5 py-3 text-base sm:text-sm text-white focus:border-amber-400 focus:outline-none"
+                className="w-full rounded-xl border border-white/[0.08] bg-[#0B0C12]/80 px-3.5 py-3 text-base sm:text-sm text-white focus:border-amber-400/80 focus:ring-1 focus:ring-amber-400/30 focus:outline-none placeholder-zinc-500 transition-all"
               />
             </div>
             <div>
               <button
                 type="submit"
                 disabled={inviting}
-                className="w-full flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-amber-400 to-amber-500 py-2.5 px-4 font-semibold text-page shadow-md shadow-amber-500/20 hover:from-amber-300 hover:to-amber-400 transition text-xs sm:text-sm disabled:opacity-50"
+                className="btn-gold w-full flex items-center justify-center gap-2 rounded-xl py-3 px-4 font-bold text-xs sm:text-sm disabled:opacity-50"
               >
                 <Sparkles className="h-4 w-4" />
                 <span>{inviting ? 'Dispatching...' : 'Send Temp Pass & Invite'}</span>
