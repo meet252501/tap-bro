@@ -47,21 +47,20 @@ export const StepDishes: React.FC<StepDishesProps> = ({
   return (
     <div className="space-y-4 sm:space-y-5 animate-fade-in pb-8">
       {/* Intro Banner */}
-      <div className="rounded-3xl border border-amber-400/30 bg-gradient-to-b from-[#241E15]/95 via-[#181514]/90 to-[#0F0E12]/95 p-5 backdrop-blur-2xl shadow-[0_16px_40px_rgba(0,0,0,0.6),0_0_30px_rgba(245,186,66,0.12)] relative overflow-hidden">
-        <div className="absolute top-0 right-0 -mr-8 -mt-8 h-32 w-32 rounded-full bg-amber-500/15 blur-2xl pointer-events-none" />
-        <div className="flex items-center justify-between relative z-10">
-          <span className="text-[11px] font-black uppercase tracking-wider text-amber-400 flex items-center gap-1.5">
-            <UtensilsCrossed className="h-3 w-3 text-amber-400 animate-pulse" />
+      <div className="rounded-2xl border border-slate-800 bg-[#131B2E] p-5 shadow-lg relative overflow-hidden">
+        <div className="flex items-center justify-between">
+          <span className="text-[11px] font-bold uppercase tracking-wider text-amber-400 flex items-center gap-1.5">
+            <UtensilsCrossed className="h-3 w-3 text-amber-400" />
             <span>Step 2 of 3 • Select Dishes</span>
           </span>
-          <span className="text-[10px] text-amber-300 font-extrabold bg-gradient-to-r from-amber-500/20 to-amber-400/10 px-2.5 py-0.5 rounded-full border border-amber-400/30 shadow-[0_0_10px_rgba(245,186,66,0.2)]">
+          <span className="text-[10px] text-amber-300 font-mono bg-amber-500/10 border border-amber-500/20 px-2.5 py-0.5 rounded-full">
             {selectedDishes.length} {selectedDishes.length === 1 ? 'dish' : 'dishes'} picked
           </span>
         </div>
-        <h2 className="mt-2 text-lg sm:text-xl font-black text-white relative z-10 tracking-tight">
+        <h2 className="mt-2 text-lg sm:text-xl font-bold text-white tracking-tight">
           What did you taste today?
         </h2>
-        <p className="mt-1 text-xs text-zinc-300 leading-relaxed relative z-10">
+        <p className="mt-1 text-xs text-slate-400 leading-relaxed">
           Tap the dishes you ordered so Tap-Bro AI crafts an authentic review.
         </p>
       </div>
@@ -69,8 +68,8 @@ export const StepDishes: React.FC<StepDishesProps> = ({
       {/* Menu Categories & Chips */}
       <div className="space-y-3.5">
         {config.menuCategories.map((category) => (
-          <div key={category.name} className="rounded-2xl border border-white/[0.08] bg-gradient-to-br from-[#161822]/80 to-[#0F1118]/90 p-4 shadow-[0_8px_24px_rgba(0,0,0,0.4)] backdrop-blur-xl">
-            <h3 className="flex items-center gap-2 text-xs font-black uppercase tracking-wider text-amber-300 mb-3">
+          <div key={category.name} className="rounded-2xl border border-slate-800 bg-[#131B2E] p-4 shadow-sm">
+            <h3 className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-amber-300 mb-3">
               <span className="text-base">{category.icon}</span>
               <span>{category.name}</span>
             </h3>
@@ -83,17 +82,17 @@ export const StepDishes: React.FC<StepDishesProps> = ({
                     key={dish}
                     type="button"
                     onClick={() => toggleDish(dish)}
-                    className={`chip-item flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-xs font-bold transition-all duration-150 active:scale-95 ${
+                    className={`chip-item flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-xs font-semibold transition-all duration-150 active:scale-95 ${
                       isSelected
-                        ? 'bg-gradient-to-r from-[#FFE082] via-[#F5BA42] to-[#E59A1A] text-[#140F02] shadow-[0_4px_16px_rgba(245,186,66,0.4),inset_0_1px_1px_rgba(255,255,255,0.7)] border border-amber-200 scale-[1.02]'
-                        : 'bg-white/[0.04] text-zinc-300 border border-white/[0.08] hover:border-amber-400/40 hover:bg-white/[0.08] hover:text-white'
+                        ? 'bg-amber-500/20 text-amber-300 border border-amber-500/60 shadow-sm'
+                        : 'bg-[#0F172A] text-slate-300 border border-slate-700/80 hover:border-slate-600'
                     }`}
                     aria-pressed={isSelected}
                   >
                     {isSelected ? (
-                      <Check className="h-3.5 w-3.5 stroke-[3] text-[#140F02]" />
+                      <Check className="h-3.5 w-3.5 stroke-[2.5] text-amber-400" />
                     ) : (
-                      <Plus className="h-3.5 w-3.5 text-zinc-500" />
+                      <Plus className="h-3.5 w-3.5 text-slate-400" />
                     )}
                     <span>{dish}</span>
                   </button>
@@ -104,19 +103,19 @@ export const StepDishes: React.FC<StepDishesProps> = ({
         ))}
 
         {/* Custom Dish Adder */}
-        <div className="rounded-2xl border border-dashed border-amber-400/25 bg-amber-400/[0.03] p-4 backdrop-blur-md">
+        <div className="rounded-2xl border border-dashed border-slate-700 bg-slate-900/40 p-4">
           {!showAddCustom ? (
             <button
               type="button"
               onClick={() => setShowAddCustom(true)}
-              className="flex w-full items-center justify-center gap-2 text-xs font-bold text-amber-300 hover:text-amber-200 py-1 transition"
+              className="flex w-full items-center justify-center gap-2 text-xs font-semibold text-amber-400 hover:text-amber-300 py-1 transition"
             >
               <Plus className="h-4 w-4" />
               <span>Ordered something not listed? Add custom dish</span>
             </button>
           ) : (
             <form onSubmit={handleAddCustomDish} className="space-y-2.5">
-              <label className="block text-xs font-bold text-zinc-200">
+              <label className="block text-xs font-semibold text-slate-200">
                 Add unlisted item:
               </label>
               <div className="flex gap-2">
@@ -125,20 +124,20 @@ export const StepDishes: React.FC<StepDishesProps> = ({
                   value={customDishInput}
                   onChange={(e) => setCustomDishInput(e.target.value)}
                   placeholder="e.g. Sizzling Brownie, Iced Tea"
-                  className="flex-1 rounded-xl border border-white/[0.1] bg-[#0E1017] px-3.5 py-2.5 text-base sm:text-xs text-white placeholder-zinc-500 focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400/40"
+                  className="flex-1 rounded-xl border border-slate-700 bg-[#0F172A] px-3.5 py-2.5 text-base sm:text-xs text-white placeholder-slate-500 focus:border-amber-400 focus:outline-none"
                   autoFocus
                 />
                 <button
                   type="submit"
                   disabled={!customDishInput.trim()}
-                  className="rounded-xl btn-gold px-4 py-2 text-xs font-black disabled:opacity-50"
+                  className="rounded-xl btn-gold px-4 py-2 text-xs font-bold disabled:opacity-50"
                 >
                   Add
                 </button>
                 <button
                   type="button"
                   onClick={() => setShowAddCustom(false)}
-                  className="rounded-xl border border-white/[0.1] px-3 py-2 text-xs text-zinc-400 hover:text-white"
+                  className="rounded-xl border border-slate-700 px-3 py-2 text-xs text-slate-400 hover:text-white"
                 >
                   Cancel
                 </button>
@@ -148,7 +147,7 @@ export const StepDishes: React.FC<StepDishesProps> = ({
         </div>
 
         {/* Optional Diner Notes */}
-        <div className="rounded-2xl border border-white/[0.08] bg-gradient-to-br from-[#161822]/80 to-[#0F1118]/90 p-4 shadow-[0_8px_24px_rgba(0,0,0,0.4)] backdrop-blur-xl">
+        <div className="rounded-2xl border border-slate-800 bg-[#131B2E] p-4 shadow-sm">
           <label htmlFor="customerNotes" className="flex items-center gap-1.5 text-xs font-bold text-white mb-2">
             <MessageSquare className="h-3.5 w-3.5 text-amber-400" />
             <span>Special Highlights or Memories (Optional)</span>

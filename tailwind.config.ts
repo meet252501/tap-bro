@@ -9,23 +9,23 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        page: "#0B0C10",
+        page: "#0B1326",
         surface: {
-          DEFAULT: "#15171F",
-          raised: "#1E212B",
-          card: "#191B24",
-          highlight: "#262A37",
+          DEFAULT: "#131B2E",
+          raised: "#1E293B",
+          card: "#131B2E",
+          highlight: "#26354D",
         },
         border: {
-          DEFAULT: "#2C303D",
-          subtle: "#222530",
-          bright: "#414656",
+          DEFAULT: "#1E293B",
+          subtle: "#172033",
+          bright: "#334155",
         },
         accent: {
-          DEFAULT: "#F5C84C",
-          hover: "#E5B636",
+          DEFAULT: "#F59E0B",
+          hover: "#D97706",
           light: "#FDE68A",
-          glow: "rgba(245, 200, 76, 0.25)",
+          glow: "rgba(245, 158, 11, 0.2)",
         },
         saffron: {
           400: "#FBBF24",

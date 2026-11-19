@@ -115,48 +115,47 @@ export const StepDraft: React.FC<StepDraftProps> = ({
   return (
     <div className="space-y-4 sm:space-y-5 animate-fade-in pb-10">
       {/* Top Banner */}
-      <div className="rounded-3xl border border-amber-400/30 bg-gradient-to-b from-[#241E15]/95 via-[#181514]/90 to-[#0F0E12]/95 p-5 backdrop-blur-2xl shadow-[0_16px_40px_rgba(0,0,0,0.6),0_0_30px_rgba(245,186,66,0.12)] relative overflow-hidden">
-        <div className="absolute top-0 right-0 -mr-8 -mt-8 h-32 w-32 rounded-full bg-amber-500/15 blur-2xl pointer-events-none" />
+      <div className="rounded-2xl border border-slate-800 bg-[#131B2E] p-5 shadow-lg relative overflow-hidden">
         <div className="flex items-center justify-between relative z-10">
           <span className="text-[11px] font-black uppercase tracking-wider text-amber-400 flex items-center gap-1.5">
-            <Sparkles className="h-3 w-3 text-amber-400 animate-pulse" />
+            <Sparkles className="h-3 w-3 text-amber-400" />
             <span>Step 3 of 3 • Review Draft</span>
           </span>
-          <span className="inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-amber-500/20 to-amber-400/10 border border-amber-400/30 px-2.5 py-0.5 text-[10px] font-extrabold text-amber-300 shadow-[0_0_10px_rgba(245,186,66,0.2)]">
+          <span className="inline-flex items-center gap-1 rounded-full bg-slate-800 border border-slate-700 px-2.5 py-0.5 text-[10px] font-bold text-amber-400">
             <Sparkles className="h-2.5 w-2.5 text-amber-400" />
             <span>{source === 'ai' ? 'Tap-Bro AI' : 'Smart Draft Engine'}</span>
           </span>
         </div>
-        <h2 className="mt-2 text-lg sm:text-xl font-black text-white relative z-10 tracking-tight">
+        <h2 className="mt-2 text-lg sm:text-xl font-bold text-white relative z-10 tracking-tight">
           Your Personal Review Draft
         </h2>
-        <p className="mt-1 text-xs text-zinc-300 leading-relaxed relative z-10">
+        <p className="mt-1 text-xs text-slate-400 leading-relaxed relative z-10">
           Switch language or tone instantly below. You can also edit any words before posting.
         </p>
       </div>
 
       {/* Instant Segmented Controls: Language & Tone */}
-      <div className="rounded-2xl border border-white/[0.08] bg-gradient-to-br from-[#161822]/80 to-[#0F1118]/90 p-4 space-y-4 backdrop-blur-xl shadow-[0_8px_24px_rgba(0,0,0,0.4)]">
+      <div className="rounded-2xl border border-slate-800 bg-[#131B2E] p-4 space-y-4 shadow-lg">
         {/* Language Segmented Pill */}
         <div>
           <div className="flex items-center justify-between mb-2">
-            <span className="flex items-center gap-1.5 text-[11px] font-black text-zinc-200 uppercase tracking-wider">
+            <span className="flex items-center gap-1.5 text-[11px] font-black text-slate-200 uppercase tracking-wider">
               <Globe className="h-3 w-3 text-amber-400" />
               <span>Language Selection</span>
             </span>
-            <span className="text-[10px] text-amber-300/80 font-mono bg-amber-400/10 px-2 py-0.5 rounded-full border border-amber-400/20">
+            <span className="text-[10px] text-amber-400 font-mono bg-amber-400/10 px-2 py-0.5 rounded-full border border-amber-400/20">
               1-tap switch
             </span>
           </div>
 
-          <div className="grid grid-cols-2 gap-1.5 p-1 rounded-2xl bg-[#090B10] border border-white/[0.08] shadow-inner">
+          <div className="grid grid-cols-2 gap-1.5 p-1 rounded-xl bg-[#0B1326] border border-slate-800">
             <button
               type="button"
               onClick={() => onLocaleChange('en')}
-              className={`flex items-center justify-center gap-1.5 rounded-xl py-2.5 px-3 text-xs font-black transition-all duration-150 active:scale-95 ${
+              className={`flex items-center justify-center gap-1.5 rounded-lg py-2.5 px-3 text-xs font-bold transition-all duration-150 active:scale-95 ${
                 locale === 'en'
-                  ? 'btn-gold shadow-md shadow-amber-400/30 font-black'
-                  : 'text-zinc-400 hover:text-white'
+                  ? 'btn-gold shadow-md font-bold'
+                  : 'text-slate-400 hover:text-white'
               }`}
             >
               <span>🇬🇧 English</span>
@@ -164,10 +163,10 @@ export const StepDraft: React.FC<StepDraftProps> = ({
             <button
               type="button"
               onClick={() => onLocaleChange('hinglish')}
-              className={`flex items-center justify-center gap-1.5 rounded-xl py-2.5 px-3 text-xs font-black transition-all duration-150 active:scale-95 ${
+              className={`flex items-center justify-center gap-1.5 rounded-lg py-2.5 px-3 text-xs font-bold transition-all duration-150 active:scale-95 ${
                 locale === 'hinglish'
-                  ? 'btn-gold shadow-md shadow-amber-400/30 font-black'
-                  : 'text-zinc-400 hover:text-white'
+                  ? 'btn-gold shadow-md font-bold'
+                  : 'text-slate-400 hover:text-white'
               }`}
             >
               <span>🇮🇳 Hinglish</span>
@@ -178,11 +177,11 @@ export const StepDraft: React.FC<StepDraftProps> = ({
         {/* Tone Selector: 4 Instant Tactile Chips */}
         <div>
           <div className="flex items-center justify-between mb-2">
-            <span className="flex items-center gap-1.5 text-[11px] font-black text-zinc-200 uppercase tracking-wider">
+            <span className="flex items-center gap-1.5 text-[11px] font-black text-slate-200 uppercase tracking-wider">
               <SlidersHorizontal className="h-3 w-3 text-amber-400" />
               <span>Tone Style</span>
             </span>
-            <span className="text-[10px] text-amber-400/90 font-medium">Instant switch (0ms)</span>
+            <span className="text-[10px] text-slate-400 font-medium">Instant switch (0ms)</span>
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
@@ -196,15 +195,15 @@ export const StepDraft: React.FC<StepDraftProps> = ({
                   onClick={() => onToneChange(opt.id)}
                   className={`flex flex-col items-start rounded-xl p-2.5 text-left border transition-all duration-150 active:scale-[0.97] ${
                     isSelected
-                      ? 'bg-gradient-to-br from-amber-400/25 via-amber-500/15 to-amber-600/10 border-amber-400/80 text-amber-200 shadow-[0_0_18px_rgba(245,186,66,0.25),inset_0_1px_1px_rgba(255,255,255,0.4)] scale-[1.02]'
-                      : 'bg-white/[0.03] border-white/[0.08] text-zinc-400 hover:text-zinc-200 hover:border-amber-400/30'
+                      ? 'bg-amber-400/10 border-amber-400 text-amber-300 font-bold'
+                      : 'bg-[#0B1326] border-slate-800 text-slate-400 hover:text-slate-200 hover:border-slate-700'
                   }`}
                 >
                   <div className="flex items-center gap-1.5 mb-1">
-                    <Icon className={`h-3.5 w-3.5 ${isSelected ? 'text-amber-300' : 'text-zinc-500'}`} />
-                    <span className="text-xs font-bold leading-none">{opt.label}</span>
+                    <Icon className={`h-3.5 w-3.5 ${isSelected ? 'text-amber-400' : 'text-slate-500'}`} />
+                    <span className="text-xs font-semibold leading-none">{opt.label}</span>
                   </div>
-                  <span className="text-[10px] text-zinc-400 leading-tight line-clamp-1">
+                  <span className="text-[10px] text-slate-500 leading-tight line-clamp-1">
                     {opt.desc}
                   </span>
                 </button>
@@ -215,8 +214,8 @@ export const StepDraft: React.FC<StepDraftProps> = ({
 
         {/* Hinglish Verb Agreement (Only when Hinglish active) */}
         {locale === 'hinglish' && (
-          <div className="pt-2.5 border-t border-white/[0.06] flex items-center justify-between">
-            <span className="text-[11px] text-zinc-400 font-medium">Hindi grammar:</span>
+          <div className="pt-2.5 border-t border-slate-800 flex items-center justify-between">
+            <span className="text-[11px] text-slate-400 font-medium">Hindi grammar:</span>
             <div className="flex gap-1.5">
               {(['neutral', 'masculine', 'feminine'] as GenderGrammar[]).map((g) => (
                 <button
@@ -225,8 +224,8 @@ export const StepDraft: React.FC<StepDraftProps> = ({
                   onClick={() => onGenderGrammarChange(g)}
                   className={`rounded-lg px-2.5 py-1 text-[10px] font-bold capitalize border transition ${
                     genderGrammar === g
-                      ? 'bg-gradient-to-r from-amber-500/25 to-amber-400/15 border-amber-400 text-amber-200 shadow-[0_0_10px_rgba(245,186,66,0.2)]'
-                      : 'bg-white/[0.03] border-white/[0.08] text-zinc-400 hover:text-white'
+                      ? 'bg-amber-400/20 border-amber-400 text-amber-300'
+                      : 'bg-[#0B1326] border-slate-800 text-slate-400 hover:text-white'
                   }`}
                 >
                   {g}
@@ -238,9 +237,9 @@ export const StepDraft: React.FC<StepDraftProps> = ({
       </div>
 
       {/* Editable Draft Area */}
-      <div className="rounded-2xl border border-white/[0.09] bg-gradient-to-br from-[#161822]/85 to-[#0E1017]/95 p-4 space-y-3.5 shadow-[0_12px_32px_rgba(0,0,0,0.5)] backdrop-blur-xl relative">
+      <div className="rounded-2xl border border-slate-800 bg-[#131B2E] p-4 space-y-3.5 shadow-lg relative">
         <div className="flex items-center justify-between">
-          <label htmlFor="reviewDraftTextarea" className="text-xs font-extrabold text-white flex items-center gap-1.5">
+          <label htmlFor="reviewDraftTextarea" className="text-xs font-bold text-white flex items-center gap-1.5">
             <Sparkles className="h-3.5 w-3.5 text-amber-400" />
             <span>Tap Below to Edit Review</span>
           </label>
@@ -249,7 +248,7 @@ export const StepDraft: React.FC<StepDraftProps> = ({
             type="button"
             onClick={onRegenerate}
             disabled={isGenerating}
-            className="flex items-center gap-1 text-[11px] font-bold text-amber-300 hover:text-amber-200 transition active:scale-95 disabled:opacity-50 bg-amber-400/10 border border-amber-400/20 px-2.5 py-1 rounded-lg"
+            className="flex items-center gap-1 text-[11px] font-bold text-amber-400 hover:text-amber-300 transition active:scale-95 disabled:opacity-50 bg-amber-400/10 border border-amber-400/20 px-2.5 py-1 rounded-lg"
           >
             <RefreshCw className={`h-3 w-3 ${isGenerating ? 'animate-spin' : ''}`} />
             <span>{isGenerating ? 'Refreshing...' : 'New Drafts'}</span>
@@ -262,7 +261,7 @@ export const StepDraft: React.FC<StepDraftProps> = ({
               <div className="h-10 w-10 animate-spin rounded-full border-2 border-amber-400/20 border-t-amber-400" />
               <Sparkles className="h-4 w-4 text-amber-400 absolute inset-0 m-auto animate-pulse" />
             </div>
-            <p className="text-xs font-bold text-amber-300">
+            <p className="text-xs font-bold text-amber-400">
               Generating review variations for you...
             </p>
           </div>
@@ -272,12 +271,12 @@ export const StepDraft: React.FC<StepDraftProps> = ({
             rows={5}
             value={draftText}
             onChange={(e) => onDraftTextChange(e.target.value)}
-            className="w-full rounded-xl border border-white/[0.1] bg-[#0A0C12]/95 px-4 py-3.5 text-base sm:text-sm text-white placeholder-zinc-500 leading-relaxed focus:border-amber-400 focus:outline-none focus:ring-2 focus:ring-amber-400/25 focus:shadow-[0_0_24px_rgba(245,186,66,0.15)] transition shadow-inner"
+            className="w-full rounded-xl border border-slate-700 bg-[#0B1326] px-4 py-3.5 text-base sm:text-sm text-white placeholder-slate-500 leading-relaxed focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400 transition"
             placeholder="Your draft will appear here..."
           />
         )}
 
-        <div className="flex items-center justify-between text-[11px] text-zinc-400 pt-0.5 font-medium">
+        <div className="flex items-center justify-between text-[11px] text-slate-400 pt-0.5 font-medium">
           <span>{draftText.length} characters</span>
           <span className="flex items-center gap-1 text-emerald-400 font-bold">
             <ShieldCheck className="h-3.5 w-3.5" />
@@ -354,15 +353,15 @@ export const StepDraft: React.FC<StepDraftProps> = ({
       </div>
 
       {/* How to Post Card */}
-      <div className="rounded-2xl border border-amber-400/20 bg-amber-400/[0.03] p-4 space-y-2.5 text-xs backdrop-blur-md">
-        <h3 className="font-black text-amber-300 flex items-center gap-1.5 uppercase tracking-wider text-[11px]">
+      <div className="rounded-2xl border border-slate-800 bg-[#131B2E] p-4 space-y-2.5 text-xs">
+        <h3 className="font-bold text-amber-400 flex items-center gap-1.5 uppercase tracking-wider text-[11px]">
           <HelpCircle className="h-3.5 w-3.5" />
           <span>How to post your review in 10 seconds</span>
         </h3>
-        <ol className="text-zinc-300 space-y-1.5 list-decimal list-inside leading-relaxed text-[11px]">
-          <li>Tap <strong className="text-amber-200">Copy &amp; Open Google Reviews</strong> above.</li>
+        <ol className="text-slate-300 space-y-1.5 list-decimal list-inside leading-relaxed text-[11px]">
+          <li>Tap <strong className="text-amber-300">Copy &amp; Open Google Reviews</strong> above.</li>
           <li>Google will open. Tap your star rating (e.g. 5★).</li>
-          <li>Paste your copied review text and tap <strong className="text-amber-200">Post</strong>. Done! 🎉</li>
+          <li>Paste your copied review text and tap <strong className="text-amber-300">Post</strong>. Done! 🎉</li>
         </ol>
       </div>
     </div>

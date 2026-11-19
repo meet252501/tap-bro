@@ -20,6 +20,7 @@ import {
   ArrowLeft,
   Eye,
   KeyRound,
+  Lock,
   BookOpen,
   MessageSquare,
   Flame,
@@ -65,11 +66,27 @@ function RestaurantAdminDashboardContent() {
   const [simDraft, setSimDraft] = useState('');
   const [simulating, setSimulating] = useState(false);
 
+  // Auth & Access Gate State
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  const [authPinInput, setAuthPinInput] = useState('');
+  const [authError, setAuthError] = useState('');
+  const [isVerifyingAuth, setIsVerifyingAuth] = useState(false);
+
   useEffect(() => {
     if (!slug) return;
 
     const storedPin = localStorage.getItem(`admin_${slug}`) || '';
-    setAdminPin(storedPin);
+    const urlPass = searchParams?.get('pass') || '';
+    if (storedPin) {
+      setAdminPin(storedPin);
+      setIsAuthenticated(true);
+    } else if (urlPass) {
+      setAdminPin(urlPass);
+      localStorage.setItem(`admin_${slug}`, urlPass);
+      setIsAuthenticated(true);
+    } else {
+      setIsAuthenticated(false);
+    }
 
     // Fetch Restaurant Details
     fetch(`/api/restaurants/${slug}`)
@@ -99,7 +116,33 @@ function RestaurantAdminDashboardContent() {
     const isLocal = typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
     const publicOrigin = isLocal ? 'https://tapbro.vercel.app' : window.location.origin;
     setDestinationUrl(`${publicOrigin}/r/${slug}`);
-  }, [slug]);
+  }, [slug, searchParams]);
+
+  const handleUnlockWithPin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!authPinInput.trim()) return;
+    setIsVerifyingAuth(true);
+    setAuthError('');
+    try {
+      const res = await fetch('/api/admin/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone: restaurant?.phone || restaurant?.email || slug, pinOrId: authPinInput.trim() }),
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        localStorage.setItem(`admin_${slug}`, authPinInput.trim());
+        setAdminPin(authPinInput.trim());
+        setIsAuthenticated(true);
+      } else {
+        setAuthError(data.error || 'Access Denied: Invalid PIN or Temporary Pass.');
+      }
+    } catch {
+      setAuthError('Connection error during verification.');
+    } finally {
+      setIsVerifyingAuth(false);
+    }
+  };
 
   const handleSave = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
@@ -233,12 +276,12 @@ function RestaurantAdminDashboardContent() {
 
   if (error || !restaurant) {
     return (
-      <div className="min-h-screen bg-page flex items-center justify-center p-4">
-        <div className="rounded-2xl border border-border bg-surface-card p-6 text-center space-y-4 max-w-sm w-full">
+      <div className="min-h-screen bg-[#0B1326] flex items-center justify-center p-4">
+        <div className="rounded-2xl border border-slate-800 bg-[#131B2E] p-6 text-center space-y-4 max-w-sm w-full">
           <p className="text-sm text-red-400">{error || 'Restaurant not found'}</p>
           <button
             onClick={() => router.push('/admin')}
-            className="w-full rounded-xl bg-amber-400 py-2.5 text-xs font-semibold text-page"
+            className="w-full rounded-xl btn-gold py-2.5 text-xs font-bold"
           >
             Return to Admin Login
           </button>
@@ -247,28 +290,90 @@ function RestaurantAdminDashboardContent() {
     );
   }
 
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-[#0B1326] flex items-center justify-center p-4 selection:bg-amber-400 selection:text-[#0B1326] relative">
+        <div className="ambient-bg pointer-events-none fixed inset-0 z-0" />
+        <div className="relative z-10 w-full max-w-sm rounded-2xl border border-slate-800 bg-[#131B2E] p-6 shadow-2xl space-y-4 animate-fade-in text-center">
+          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-amber-400/10 border border-amber-400/30 text-amber-400">
+            <Lock className="h-6 w-6" />
+          </div>
+          <div>
+            <h2 className="text-base font-bold text-white">Partner Authentication Required</h2>
+            <p className="text-xs text-slate-400 mt-1">
+              This manager portal for <span className="text-white font-semibold">{name || slug}</span> is strictly invite-only. Enter your PIN or sign in via your email link.
+            </p>
+          </div>
+
+          {authError && (
+            <div className="rounded-xl border border-red-500/30 bg-red-500/10 p-2.5 text-xs text-red-300">
+              {authError}
+            </div>
+          )}
+
+          <form onSubmit={handleUnlockWithPin} className="space-y-3 text-left">
+            <div>
+              <label className="block text-[11px] font-semibold text-slate-300 mb-1">
+                Manager PIN or Temporary Pass
+              </label>
+              <div className="relative">
+                <KeyRound className="h-4 w-4 text-slate-400 absolute left-3 top-3" />
+                <input
+                  type="password"
+                  required
+                  value={authPinInput}
+                  onChange={(e) => setAuthPinInput(e.target.value)}
+                  placeholder="Enter 4-digit PIN or TAP-XXXX"
+                  className="w-full rounded-xl border border-slate-700 bg-[#0B1326] pl-9 pr-3 py-2.5 text-sm text-white focus:border-amber-400 focus:outline-none placeholder-slate-500 font-mono"
+                />
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              disabled={isVerifyingAuth || !authPinInput.trim()}
+              className="w-full btn-gold rounded-xl py-2.5 text-xs font-bold transition disabled:opacity-50"
+            >
+              {isVerifyingAuth ? 'Verifying...' : 'Unlock Dashboard'}
+            </button>
+          </form>
+
+          <div className="pt-2 border-t border-slate-800">
+            <button
+              type="button"
+              onClick={() => router.push('/admin')}
+              className="w-full rounded-xl border border-slate-800 bg-[#0B1326] py-2 text-xs font-medium text-slate-400 hover:text-white transition"
+            >
+              Sign In via Email Link (Partner Portal)
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-page text-text-primary selection:bg-amber-400 selection:text-page relative flex flex-col justify-between">
+    <div className="min-h-screen bg-[#0B1326] text-white selection:bg-amber-400 selection:text-[#0B1326] relative flex flex-col justify-between">
       <div className="ambient-bg pointer-events-none fixed inset-0 z-0" />
 
       {/* Phone-Optimized Top App Bar */}
-      <header className="sticky top-0 z-30 border-b border-white/[0.08] bg-[#0A0C12]/90 backdrop-blur-2xl px-4 py-3 shadow-lg">
+      <header className="sticky top-0 z-30 border-b border-slate-800 bg-[#0B1326]/95 backdrop-blur-2xl px-4 py-3 shadow-lg">
         <div className="mx-auto flex max-w-md items-center justify-between">
           <div className="flex items-center gap-2.5 min-w-0">
             <button
               onClick={() => router.push('/admin')}
-              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-white/[0.08] bg-[#0B0C12]/80 text-text-secondary hover:text-white transition"
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-slate-800 bg-[#131B2E] text-slate-400 hover:text-white transition"
             >
               <ArrowLeft className="h-4 w-4" />
             </button>
             <div className="min-w-0">
               <div className="flex items-center gap-1.5 truncate">
                 <span className="text-[11px] font-bold text-amber-400 uppercase tracking-wider">Tap-Bro</span>
-                <span className="text-zinc-600">•</span>
+                <span className="text-slate-600">•</span>
                 <h1 className="text-sm font-bold text-white truncate">{name}</h1>
               </div>
-              <p className="text-[10px] text-text-secondary truncate">
-                ID: <span className="font-mono text-zinc-300">{restaurant.id}</span>
+              <p className="text-[10px] text-slate-400 truncate">
+                ID: <span className="font-mono text-slate-300">{restaurant.id}</span>
               </p>
             </div>
           </div>
@@ -277,7 +382,7 @@ function RestaurantAdminDashboardContent() {
             <button
               type="button"
               onClick={() => window.open(`/r/${slug}`, '_blank')}
-              className="flex h-9 w-9 items-center justify-center rounded-xl border border-white/[0.08] bg-[#0B0C12]/80 text-amber-400 hover:text-white hover:bg-white/[0.05] transition"
+              className="flex h-9 w-9 items-center justify-center rounded-xl border border-slate-800 bg-[#131B2E] text-amber-400 hover:text-white transition"
               title="Preview Diner View"
             >
               <Eye className="h-4 w-4" />
@@ -773,7 +878,7 @@ function RestaurantAdminDashboardContent() {
       </main>
 
       {/* Phone Bottom Tab Bar (Thumb Navigation) */}
-      <nav className="fixed bottom-0 inset-x-0 z-40 bg-[#0A0C12]/95 backdrop-blur-2xl border-t border-white/[0.08] pb-safe shadow-2xl">
+      <nav className="fixed bottom-0 inset-x-0 z-40 bg-[#0B1326]/95 backdrop-blur-2xl border-t border-slate-800 pb-safe shadow-2xl">
         <div className="mx-auto flex max-w-md items-center justify-around px-2 py-2">
           {[
             { id: 'nfc', label: 'NFC Hub', icon: Radio },

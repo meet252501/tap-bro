@@ -312,14 +312,17 @@ export function getRestaurantById(id: string): Restaurant | null {
 export function authenticateAdmin(phoneOrEmail: string, pinOrId: string): Restaurant | null {
   const cleanInput = phoneOrEmail.trim().toLowerCase();
   const cleanPhone = phoneOrEmail.replace(/\D/g, '');
+  const cleanPass = pinOrId.trim();
   const list = getAllRestaurants();
 
   return (
     list.find((r) => {
       const matchPhone = cleanPhone && r.phone.replace(/\D/g, '') === cleanPhone;
       const matchEmail = r.email && r.email.toLowerCase() === cleanInput;
-      const matchPin = r.adminPin === pinOrId.trim() || r.id === pinOrId.trim();
-      return (matchPhone || matchEmail) && matchPin;
+      const matchSlug = r.slug && r.slug.toLowerCase() === cleanInput;
+      const matchPin = r.adminPin === cleanPass || r.id === cleanPass;
+      const matchTempPass = Boolean(matchEmail && (isValidPassForEmail(cleanInput, cleanPass) || getInviteByEmailAndTempPass(cleanInput, cleanPass) !== null));
+      return (matchPhone || matchEmail || matchSlug) && (matchPin || matchTempPass);
     }) || null
   );
 }

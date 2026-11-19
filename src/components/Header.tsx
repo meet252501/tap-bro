@@ -11,27 +11,27 @@ interface HeaderProps {
 
 export const Header: React.FC<HeaderProps> = ({ config, onOpenSettings }) => {
   return (
-    <header className="sticky top-0 z-30 w-full border-b border-white/[0.08] bg-[#0A0C12]/90 backdrop-blur-2xl px-4 py-2.5 sm:px-6 shadow-[0_4px_30px_rgba(0,0,0,0.5)]">
+    <header className="sticky top-0 z-30 w-full border-b border-slate-800 bg-[#0B1326]/95 backdrop-blur-xl px-4 py-2.5 sm:px-6 shadow-md">
       <div className="mx-auto flex max-w-md items-center justify-between gap-3">
         {/* Brand and Restaurant Info */}
         <div className="flex items-center gap-3 min-w-0">
-          <div className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-[#FFE082] via-[#FFB300] to-[#D97706] shadow-[0_0_20px_rgba(255,179,0,0.4)] border border-amber-200/60 p-2">
+          <div className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-[#FFE082] via-[#FFB300] to-[#D97706] shadow-[0_0_15px_rgba(255,179,0,0.3)] border border-amber-300/40 p-2">
             <UtensilsCrossed className="h-5 w-5 text-[#1A1200] stroke-[2.5]" />
-            <div className="absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full bg-emerald-500 border-2 border-[#0A0C12] flex items-center justify-center shadow-sm">
+            <div className="absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full bg-emerald-500 border-2 border-[#0B1326] flex items-center justify-center shadow-sm">
               <CheckCircle2 className="h-2 w-2 text-white stroke-[3]" />
             </div>
           </div>
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2 min-w-0">
-              <h1 className="text-sm sm:text-base font-black tracking-tight text-white truncate">
+              <h1 className="text-sm sm:text-base font-bold tracking-tight text-white truncate">
                 {config.name}
               </h1>
-              <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2 py-0.5 text-[9px] font-extrabold text-emerald-400 border border-emerald-500/25 shrink-0">
+              <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2 py-0.5 text-[9px] font-bold text-emerald-400 border border-emerald-500/20 shrink-0">
                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
                 <span>Verified</span>
               </span>
             </div>
-            <p className="flex items-center gap-1 text-[11px] text-zinc-400 truncate mt-0.5">
+            <p className="flex items-center gap-1 text-[11px] text-slate-400 truncate mt-0.5">
               <MapPin className="h-3 w-3 text-amber-400 shrink-0" />
               <span className="truncate">{config.cuisine || 'Dining & Hospitality'}</span>
             </p>
@@ -40,17 +40,17 @@ export const Header: React.FC<HeaderProps> = ({ config, onOpenSettings }) => {
 
         {/* Action Controls & Tap-Bro Brand */}
         <div className="flex items-center gap-1.5 shrink-0">
-          <div className="flex items-center gap-1.5 rounded-full bg-gradient-to-r from-amber-400/15 to-amber-500/10 border border-amber-400/30 px-2.5 py-1 text-[10px] font-extrabold text-amber-300 shadow-[0_0_12px_rgba(245,186,66,0.15)]">
+          <div className="flex items-center gap-1.5 rounded-full bg-slate-800 border border-slate-700 px-2.5 py-1 text-[10px] font-bold text-amber-400">
             <img src="/tap-bro-logo.png" alt="Tap-Bro" className="h-3.5 w-3.5 rounded-full object-cover ring-1 ring-amber-400/50" />
             <span className="hidden min-[380px]:inline tracking-wide">Tap-Bro</span>
           </div>
           <button
             onClick={onOpenSettings}
             title="Restaurant Admin"
-            className="flex h-9 w-9 items-center justify-center rounded-xl border border-white/[0.08] bg-white/[0.04] text-zinc-400 transition hover:border-amber-400/50 hover:text-white hover:bg-white/[0.08] active:scale-95 shadow-sm"
+            className="flex h-9 w-9 items-center justify-center rounded-xl border border-slate-800 bg-[#131B2E] text-slate-400 transition hover:border-slate-700 hover:text-white active:scale-95 shadow-sm"
             aria-label="Manager portal"
           >
-            <Sliders className="h-4 w-4 text-amber-400/90" />
+            <Sliders className="h-4 w-4 text-amber-400" />
           </button>
         </div>
       </div>

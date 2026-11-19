@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { authenticateAdmin } from '@/lib/db';
+import { authenticateAdmin, getInviteByEmailAndTempPass } from '@/lib/db';
 import { isRateLimited, recordFailedAttempt, resetRateLimit, getClientIp } from '@/lib/rateLimit';
 
 export async function POST(req: NextRequest) {
@@ -20,7 +20,7 @@ export async function POST(req: NextRequest) {
 
     if (!phone || !pinOrId) {
       return NextResponse.json(
-        { error: 'Phone number and Admin PIN / Restaurant ID are required' },
+        { error: 'Authorized Email or Phone and Temporary Pass / PIN are required' },
         { status: 400 }
       );
     }
@@ -28,9 +28,21 @@ export async function POST(req: NextRequest) {
     const restaurant = authenticateAdmin(phone, pinOrId);
 
     if (!restaurant) {
+      // Check if user has an authorized pending invite with this email and temporary pass
+      const cleanEmail = phone.trim().toLowerCase();
+      const invite = getInviteByEmailAndTempPass(cleanEmail, pinOrId.trim());
+      if (invite) {
+        resetRateLimit(limitKey);
+        return NextResponse.json({
+          success: true,
+          pendingSetup: true,
+          setupUrl: `/setup?email=${encodeURIComponent(cleanEmail)}&pass=${encodeURIComponent(pinOrId.trim())}`
+        });
+      }
+
       recordFailedAttempt(limitKey);
       return NextResponse.json(
-        { error: 'Invalid Phone Number or PIN / Restaurant ID' },
+        { error: 'Access Denied: Unauthorized account. Manager portal is strictly invite-only. Please use the link or temporary pass sent to your email.' },
         { status: 401 }
       );
     }
