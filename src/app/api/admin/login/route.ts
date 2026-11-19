@@ -1,15 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { authenticateAdmin } from '@/lib/db';
-import { checkRateLimit, getClientIp } from '@/lib/rateLimit';
+import { isRateLimited, recordFailedAttempt, resetRateLimit, getClientIp } from '@/lib/rateLimit';
 
 export async function POST(req: NextRequest) {
   try {
     const ip = getClientIp(req);
-    // Rate limit: max 6 attempts per 5 minutes per IP
-    const rateCheck = checkRateLimit(`admin-login:${ip}`, 6, 300);
-    if (!rateCheck.allowed) {
+    const limitKey = `admin-login:${ip}`;
+
+    // Rate limit: max 6 failed login attempts per 5 minutes per IP
+    const { limited, resetSeconds } = isRateLimited(limitKey, 6, 300);
+    if (limited) {
       return NextResponse.json(
-        { error: `Too many login attempts. Please wait ${rateCheck.resetSeconds}s before trying again.` },
+        { error: `Too many login attempts. Please wait ${resetSeconds}s before trying again.` },
         { status: 429 }
       );
     }
@@ -26,11 +28,15 @@ export async function POST(req: NextRequest) {
     const restaurant = authenticateAdmin(phone, pinOrId);
 
     if (!restaurant) {
+      recordFailedAttempt(limitKey);
       return NextResponse.json(
         { error: 'Invalid Phone Number or PIN / Restaurant ID' },
         { status: 401 }
       );
     }
+
+    // Clear failed attempts on valid login
+    resetRateLimit(limitKey);
 
     return NextResponse.json({
       success: true,

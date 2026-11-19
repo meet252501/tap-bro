@@ -71,6 +71,48 @@ export function checkRateLimit(
 }
 
 /**
+ * Checks if an identifier is currently blocked due to exceeded failed attempts.
+ */
+export function isRateLimited(
+  identifier: string,
+  maxRequests: number,
+  windowSeconds: number
+): { limited: boolean; resetSeconds: number } {
+  const now = Date.now();
+  const windowMs = windowSeconds * 1000;
+  const record = rateLimitStore.get(identifier);
+  if (!record) return { limited: false, resetSeconds: windowSeconds };
+
+  record.timestamps = record.timestamps.filter((ts) => now - ts < windowMs);
+  if (record.timestamps.length >= maxRequests) {
+    const oldest = record.timestamps[0];
+    const resetSeconds = Math.max(1, Math.ceil((oldest + windowMs - now) / 1000));
+    return { limited: true, resetSeconds };
+  }
+  return { limited: false, resetSeconds: windowSeconds };
+}
+
+/**
+ * Records a failed authentication attempt against brute-force threshold.
+ */
+export function recordFailedAttempt(identifier: string): void {
+  const now = Date.now();
+  let record = rateLimitStore.get(identifier);
+  if (!record) {
+    record = { timestamps: [] };
+    rateLimitStore.set(identifier, record);
+  }
+  record.timestamps.push(now);
+}
+
+/**
+ * Clears failed attempts upon successful authentication.
+ */
+export function resetRateLimit(identifier: string): void {
+  rateLimitStore.delete(identifier);
+}
+
+/**
  * Safely extracts client IP address from Next.js / Vercel proxy headers.
  */
 export function getClientIp(req: Request): string {

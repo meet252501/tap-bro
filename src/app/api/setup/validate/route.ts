@@ -1,15 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getInviteByEmailAndTempPass } from '@/lib/db';
-import { checkRateLimit, getClientIp } from '@/lib/rateLimit';
+import { isRateLimited, recordFailedAttempt, resetRateLimit, getClientIp } from '@/lib/rateLimit';
 
 export async function POST(req: NextRequest) {
   try {
     const ip = getClientIp(req);
-    // Rate limit: max 8 code validation attempts per 5 minutes per IP
-    const rateCheck = checkRateLimit(`setup-validate:${ip}`, 8, 300);
-    if (!rateCheck.allowed) {
+    const limitKey = `setup-validate:${ip}`;
+
+    // Rate limit: max 8 failed validation attempts per 5 minutes per IP
+    const { limited, resetSeconds } = isRateLimited(limitKey, 8, 300);
+    if (limited) {
       return NextResponse.json(
-        { error: `Too many validation attempts. Please wait ${rateCheck.resetSeconds}s before trying again.` },
+        { error: `Too many failed validation attempts. Please wait ${resetSeconds}s before trying again.` },
         { status: 429 }
       );
     }
@@ -23,11 +25,15 @@ export async function POST(req: NextRequest) {
     const invite = getInviteByEmailAndTempPass(email, tempPass);
 
     if (!invite) {
+      recordFailedAttempt(limitKey);
       return NextResponse.json(
         { error: 'Invalid or expired temporary password for this email address.' },
         { status: 404 }
       );
     }
+
+    // Clear failed attempts on valid code
+    resetRateLimit(limitKey);
 
     return NextResponse.json({
       success: true,

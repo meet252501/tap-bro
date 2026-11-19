@@ -451,7 +451,7 @@ export default function SuperAdminPage() {
               <div className="relative">
                 <KeyRound className="h-4 w-4 text-zinc-500 absolute left-3.5 top-3" />
                 <input
-                  type="text"
+                  type="password"
                   required
                   placeholder="e.g. prince@777"
                   value={adminPin}
