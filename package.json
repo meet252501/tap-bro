@@ -5,7 +5,9 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start"
+    "start": "next start",
+    "test:security": "node scripts/strix-audit.js",
+    "audit": "node scripts/strix-audit.js"
   },
   "dependencies": {
     "@google/generative-ai": "^0.21.0",
