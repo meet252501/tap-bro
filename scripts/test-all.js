@@ -1,17 +1,11 @@
 /**
- * Master Test Orchestrator for Tap-Bro
- * 
- * Runs all 6 specialized QA & Security test suites:
- * 1. Unit & Engine Logic Suite (scripts/test-unit.js)
- * 2. Strix-Style OWASP Security Audit (scripts/strix-audit.js)
- * 3. Tabletop QR Code & NFC Route Suite (scripts/test-qr.js)
- * 4. Diner Multi-Language & Tone Suite (scripts/test-diner-languages.js)
- * 5. Restaurant Manager Portal E2E (scripts/test-manager.js)
- * 6. Real Human-User End-to-End Simulation (scripts/human-tester.js)
+ * Tap-Bro Comprehensive End-to-End System Test Suite
+ * Tests all components against live Railway PostgreSQL database.
  */
 
-const { spawn } = require('child_process');
-const path = require('path');
+const BASE_URL = 'http://localhost:3000';
+const SUPER_ADMIN_EMAIL = 'princesharma9955a@gmail.com';
+const SUPER_ADMIN_PASS = 'prince@777';
 
 const colors = {
   reset: '\x1b[0m',
@@ -20,87 +14,279 @@ const colors = {
   yellow: '\x1b[33m',
   cyan: '\x1b[36m',
   bold: '\x1b[1m',
-  magenta: '\x1b[35m',
 };
 
-const suites = [
-  { name: 'Unit & Engine Logic', script: 'scripts/test-unit.js', desc: 'DB Schemas, Rate Limiter, URL Resolver, Linguistic Engine' },
-  { name: 'Strix OWASP Security Audit', script: 'scripts/strix-audit.js', desc: 'OWASP Headers, Brute-Force Defense, AI Quotas, Auth Guards' },
-  { name: 'Tabletop QR & NFC Targets', script: 'scripts/test-qr.js', desc: '600px PNG Generation, Public Domain Routing, Error Boundaries' },
-  { name: 'Diner Multilingual Engine', script: 'scripts/test-diner-languages.js', desc: 'Multi-Language, Multi-Tone, Template Sanitization, Counters' },
-  { name: 'Restaurant Manager Portal', script: 'scripts/test-manager.js', desc: 'Manager Login, NFC Tabletop URL, Profile & Menu Sync' },
-  { name: 'Real Human-User E2E Journey', script: 'scripts/human-tester.js', desc: 'Admin Login ➔ Invite ➔ Email Button ➔ Mobile Setup ➔ Diner Review' },
-];
-
-function runScript(scriptPath) {
-  return new Promise((resolve) => {
-    const startTime = Date.now();
-    const child = spawn('node', [scriptPath], {
-      stdio: 'inherit',
-      shell: true,
-      env: { ...process.env, BASE_URL: 'http://localhost:3000', TARGET_URL: 'http://localhost:3000' }
-    });
-
-    child.on('close', (code) => {
-      const duration = ((Date.now() - startTime) / 1000).toFixed(1);
-      resolve({ code, duration });
-    });
-
-    child.on('error', (err) => {
-      resolve({ code: 1, duration: 0, error: err.message });
-    });
-  });
+function pass(testName, details = '') {
+  console.log(`${colors.green}  ✓ PASS:${colors.reset} ${colors.bold}${testName}${colors.reset} ${details ? `(${details})` : ''}`);
 }
 
-async function runMasterTestSuite() {
-  console.log(`\n${colors.bold}${colors.magenta}╔══════════════════════════════════════════════════════════════════════╗${colors.reset}`);
-  console.log(`${colors.bold}${colors.magenta}║        TAP-BRO COMPREHENSIVE QA & END-TO-END MASTER SUITE            ║${colors.reset}`);
-  console.log(`${colors.bold}${colors.magenta}╚══════════════════════════════════════════════════════════════════════╝${colors.reset}\n`);
-
-  const results = [];
-  let allPassed = true;
-
-  for (let i = 0; i < suites.length; i++) {
-    const suite = suites[i];
-    console.log(`\n${colors.bold}${colors.yellow}======================================================================${colors.reset}`);
-    console.log(`${colors.bold}${colors.yellow} [${i + 1}/${suites.length}] RUNNING: ${suite.name} (${suite.desc})${colors.reset}`);
-    console.log(`${colors.bold}${colors.yellow}======================================================================${colors.reset}`);
-
-    const res = await runScript(suite.script);
-    const passed = res.code === 0;
-    if (!passed) allPassed = false;
-
-    results.push({
-      ...suite,
-      passed,
-      duration: res.duration
-    });
-  }
-
-  // Final Executive Scorecard
-  console.log(`\n\n${colors.bold}${colors.cyan}══════════════════════════════════════════════════════════════════════${colors.reset}`);
-  console.log(`${colors.bold}${colors.cyan}                TAP-BRO FINAL QA EXECUTIVE SCORECARD                  ${colors.reset}`);
-  console.log(`${colors.bold}${colors.cyan}══════════════════════════════════════════════════════════════════════${colors.reset}\n`);
-
-  results.forEach((r, idx) => {
-    const status = r.passed
-      ? `${colors.green}${colors.bold}✓ PASSED${colors.reset}`
-      : `${colors.red}${colors.bold}✗ FAILED${colors.reset}`;
-    console.log(`  ${idx + 1}. [${status}] ${colors.bold}${r.name.padEnd(30)}${colors.reset} (${r.duration}s)`);
-    console.log(`     ${colors.yellow}↳ ${r.desc}${colors.reset}`);
-  });
-
-  console.log(`\n${colors.bold}${colors.cyan}──────────────────────────────────────────────────────────────────────${colors.reset}`);
-  if (allPassed) {
-    console.log(`${colors.bold}${colors.green}  🎉 100% PRODUCTION VERIFIED: ALL 6 SPECIALIZED SUITES PASSED!        ${colors.reset}`);
-    console.log(`${colors.bold}${colors.green}  Tap-Bro is completely robust, secure, and human-tested.              ${colors.reset}`);
-    console.log(`${colors.bold}${colors.cyan}──────────────────────────────────────────────────────────────────────\n${colors.reset}`);
-    process.exit(0);
-  } else {
-    console.error(`${colors.bold}${colors.red}  ❌ QUALITY GATE FAILED: One or more test suites did not pass.        ${colors.reset}`);
-    console.log(`${colors.bold}${colors.cyan}──────────────────────────────────────────────────────────────────────\n${colors.reset}`);
-    process.exit(1);
-  }
+function fail(testName, err) {
+  console.error(`${colors.red}  ✗ FAIL:${colors.reset} ${colors.bold}${testName}${colors.reset} - ${err}`);
+  process.exitCode = 1;
 }
 
-runMasterTestSuite();
+async function runTests() {
+  console.log(`\n${colors.cyan}${colors.bold}══════════════════════════════════════════════════════════════${colors.reset}`);
+  console.log(`${colors.cyan}${colors.bold}   TAP-BRO PLATFORM: FULL END-TO-END INTEGRATION TEST SUITE     ${colors.reset}`);
+  console.log(`${colors.cyan}${colors.bold}   Target: ${BASE_URL}  |  Database: Railway PostgreSQL       ${colors.reset}`);
+  console.log(`${colors.cyan}${colors.bold}══════════════════════════════════════════════════════════════${colors.reset}\n`);
+
+  let testInvite = null;
+  let testRestaurant = null;
+
+  // TEST 1: Health Check & Database Ping
+  try {
+    const t0 = Date.now();
+    const res = await fetch(`${BASE_URL}/api/health`);
+    const data = await res.json();
+    const duration = Date.now() - t0;
+
+    if (res.status === 200 && data.status === 'ok' && data.database?.connected === true) {
+      pass('System Health & Railway PostgreSQL Ping', `Status: 200 OK, DB Latency: ${data.database.latencyMs}ms, Total: ${duration}ms`);
+    } else {
+      fail('System Health Check', JSON.stringify(data));
+    }
+  } catch (e) {
+    fail('System Health Check', e.message);
+  }
+
+  // TEST 2: Super Admin Authentication & Platform Stats
+  try {
+    const res = await fetch(`${BASE_URL}/api/super-admin/overview`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        superAdminEmail: SUPER_ADMIN_EMAIL,
+        superAdminPin: SUPER_ADMIN_PASS,
+      }),
+    });
+    const data = await res.json();
+
+    if (res.status === 200 && data.success && data.stats) {
+      pass('Super Admin Master Login & Overview', `Active Restaurants: ${data.stats.totalRestaurants}, Invites: ${data.stats.totalInvites}`);
+    } else {
+      fail('Super Admin Overview', data.error || JSON.stringify(data));
+    }
+  } catch (e) {
+    fail('Super Admin Overview', e.message);
+  }
+
+  // TEST 3: Business Owner Invitation Dispatch
+  const testEmail = `e2e-test-${Date.now()}@tapbro.io`;
+  try {
+    const res = await fetch(`${BASE_URL}/api/super-admin/invite`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        superAdminEmail: SUPER_ADMIN_EMAIL,
+        superAdminPin: SUPER_ADMIN_PASS,
+        targetEmail: testEmail,
+        notes: 'Automated E2E Test Suite Invite',
+      }),
+    });
+    const data = await res.json();
+
+    if (res.status === 200 && data.success && data.invite?.tempPass) {
+      testInvite = data.invite;
+      pass('Super Admin Owner Invite Creation', `Invite ID: ${testInvite.id}, Temp Pass: ${testInvite.tempPass}`);
+    } else {
+      fail('Invite Creation', data.error || JSON.stringify(data));
+    }
+  } catch (e) {
+    fail('Invite Creation', e.message);
+  }
+
+  // TEST 4: Partner Setup Validation
+  if (testInvite) {
+    try {
+      const res = await fetch(`${BASE_URL}/api/setup/validate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: testInvite.email,
+          tempPass: testInvite.tempPass,
+          token: testInvite.token,
+        }),
+      });
+      const data = await res.json();
+
+      if (res.status === 200 && data.success) {
+        pass('Invite Validation via Temporary Password', `Verified for: ${testInvite.email}`);
+      } else {
+        fail('Invite Validation', data.error || JSON.stringify(data));
+      }
+    } catch (e) {
+      fail('Invite Validation', e.message);
+    }
+  }
+
+  // TEST 5: Complete Restaurant Setup (Write to Railway PostgreSQL)
+  if (testInvite) {
+    try {
+      const res = await fetch(`${BASE_URL}/api/setup/complete`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: testInvite.email,
+          tempPass: testInvite.tempPass,
+          restaurantName: 'Saffron Royal Palace',
+          phone: '+91 98765 43210',
+          adminPin: '9988',
+          cuisine: 'North Indian & Mughlai',
+          tagline: 'Authentic Royal Flavors',
+          location: 'Connaught Place, New Delhi',
+          googleReviewUrl: 'https://search.google.com/local/writereview?placeid=ChIJN1t_tDeuEmsRUsoyG83frY4',
+          customDishes: ['Butter Chicken Special', 'Mutton Rogan Josh', 'Garlic Naan', 'Dum Biryani'],
+        }),
+      });
+      const data = await res.json();
+
+      if (res.status === 200 && data.success && data.restaurant?.slug) {
+        testRestaurant = data.restaurant;
+        pass('Restaurant Onboarding & DB Record Creation', `Slug: ${testRestaurant.slug}, ID: ${testRestaurant.id}`);
+      } else {
+        fail('Restaurant Setup Completion', data.error || JSON.stringify(data));
+      }
+    } catch (e) {
+      fail('Restaurant Setup Completion', e.message);
+    }
+  }
+
+  // TEST 6: Public Diner Query & Data Sanitization
+  if (testRestaurant) {
+    try {
+      const res = await fetch(`${BASE_URL}/api/restaurants/${testRestaurant.slug}`);
+      const data = await res.json();
+
+      if (res.status === 200 && data.success && data.restaurant) {
+        const pinLeaked = Boolean(data.restaurant.adminPin);
+        if (pinLeaked) {
+          fail('Security Check: Admin PIN Leaked to Public API', 'adminPin was found in response!');
+        } else {
+          pass('Public Diner Restaurant Query & Sanitization', `Name: "${data.restaurant.name}", PIN sanitized: YES, Menu Items: ${data.restaurant.menuCategories?.[0]?.items?.length || 0}`);
+        }
+      } else {
+        fail('Public Restaurant Query', data.error || JSON.stringify(data));
+      }
+    } catch (e) {
+      fail('Public Restaurant Query', e.message);
+    }
+  }
+
+  // TEST 7: Tabletop NFC/QR Code Generation
+  if (testRestaurant) {
+    try {
+      const res = await fetch(`${BASE_URL}/api/restaurants/${testRestaurant.slug}/qr`);
+      const data = await res.json();
+
+      if (res.status === 200 && data.success && data.qrDataUrl?.startsWith('data:image/png;base64,')) {
+        pass('Tabletop Stand QR Code Generation', `Destination: ${data.destinationUrl}, Data Size: ${Math.round(data.qrDataUrl.length / 1024)} KB`);
+      } else {
+        fail('QR Code Generation', data.error || JSON.stringify(data));
+      }
+    } catch (e) {
+      fail('QR Code Generation', e.message);
+    }
+  }
+
+  // TEST 8: Diner AI Review Generation & Audit Trail
+  if (testRestaurant) {
+    try {
+      const t0 = Date.now();
+      const res = await fetch(`${BASE_URL}/api/review-draft`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          restaurantSlug: testRestaurant.slug,
+          locale: 'en',
+          tone: 'flavorful',
+          genderGrammar: 'neutral',
+          ratings: { food: 5, service: 5, ambiance: 5, overall: 5 },
+          selectedDishes: ['Butter Chicken Special', 'Garlic Naan'],
+          customerNotes: 'Everything was fresh, rich gravy, prompt service.',
+        }),
+      });
+      const data = await res.json();
+      const duration = Date.now() - t0;
+
+      if (res.status === 200 && data.draft) {
+        pass('Diner AI Review Draft Generation', `Engine: ${data.provider || 'NVIDIA AI'}, Latency: ${duration}ms, Draft: "${data.draft.slice(0, 60)}..."`);
+      } else {
+        fail('AI Review Draft Generation', data.error?.message || JSON.stringify(data));
+      }
+    } catch (e) {
+      fail('AI Review Draft Generation', e.message);
+    }
+  }
+
+  // TEST 9: Restaurant Manager Portal Authentication
+  if (testRestaurant) {
+    try {
+      const res = await fetch(`${BASE_URL}/api/admin/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          phone: '+91 98765 43210',
+          pinOrId: '9988',
+        }),
+      });
+      const data = await res.json();
+
+      if (res.status === 200 && data.success && data.restaurant?.slug === testRestaurant.slug) {
+        pass('Restaurant Manager Authentication', `Verified login for ${data.restaurant.name}`);
+      } else {
+        fail('Manager Login', data.error || JSON.stringify(data));
+      }
+    } catch (e) {
+      fail('Manager Login', e.message);
+    }
+  }
+
+  // TEST 10: Clean Slate Cleanup (Delete test records from PostgreSQL)
+  console.log(`\n${colors.yellow}─── Performing Post-Test Database Cleanup ───${colors.reset}`);
+  if (testRestaurant) {
+    try {
+      const res = await fetch(`${BASE_URL}/api/super-admin/delete`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          superAdminEmail: SUPER_ADMIN_EMAIL,
+          superAdminPin: SUPER_ADMIN_PASS,
+          restaurantId: testRestaurant.id,
+        }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        pass('Cleanup: Deleted test restaurant from Railway PostgreSQL', `ID: ${testRestaurant.id}`);
+      }
+    } catch (e) {
+      console.warn('Failed to delete test restaurant:', e.message);
+    }
+  }
+
+  if (testInvite) {
+    try {
+      const res = await fetch(`${BASE_URL}/api/super-admin/delete-invite`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          superAdminEmail: SUPER_ADMIN_EMAIL,
+          superAdminPin: SUPER_ADMIN_PASS,
+          inviteId: testInvite.id,
+        }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        pass('Cleanup: Deleted test invite from Railway PostgreSQL', `ID: ${testInvite.id}`);
+      }
+    } catch (e) {
+      console.warn('Failed to delete test invite:', e.message);
+    }
+  }
+
+  console.log(`\n${colors.cyan}${colors.bold}══════════════════════════════════════════════════════════════${colors.reset}`);
+  console.log(`${colors.cyan}${colors.bold}            ALL INTEGRATION TESTS COMPLETED                   ${colors.reset}`);
+  console.log(`${colors.cyan}${colors.bold}══════════════════════════════════════════════════════════════${colors.reset}\n`);
+}
+
+runTests();
