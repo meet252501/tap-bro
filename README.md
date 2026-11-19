@@ -1,69 +1,115 @@
-# Review AI — Honest Food & Restaurant Review Assistant
+# Tap-Bro — Tabletop NFC & QR Dining Review SaaS
 
-> **A mobile-first, tabletop QR & NFC review assistant designed specifically for dining spots, bistros, and restaurants.**  
-> Built with Next.js 14, Tailwind CSS, Google Gemini AI, and mobile-optimized luxury culinary UI.
+> **Autonomous, mobile-first, tabletop NFC & QR review assistant designed for restaurants, bistros, cafes, and dining chains.**  
+> Built with Next.js 14, Tailwind CSS, NVIDIA AI Foundation Models, Google Gemini AI, and mobile-optimized luxury culinary UI.
 
 ---
 
 ## 🍽️ Overview
 
-**Review AI** turns a customer's genuine dining visit details into a polished, authentic Google Review draft in under 60 seconds.
-
-Inspired by real-world dining reels and tabletop customer flows:
-1. **Diners arrive** by scanning a QR code on the table or tapping an NFC puck.
-2. **Rate experience** on independent 1–5 star scales (Food & Taste, Hospitality, Ambiance, Overall) — *ratings start completely unselected*.
-3. **Select dishes & drinks** they actually tasted (Banarasi Chaat, Dal Makhani, Dum Biryani, etc.) and add optional custom feedback notes.
-4. **Choose language & tone** (English or conversational **Hinglish**, Foodie / Crisp / Warm / Balanced).
-5. **Review AI drafts the review** using Google Gemini (or deterministic fallback engine) strictly grounded in what the diner selected.
-6. **One-tap Copy & Open Google Reviews**: The diner copies the draft, opens Google Reviews in a new tab, pastes, and posts their honest review.
+**Tap-Bro** turns a diner's authentic meal experience into a polished, genuine Google Review in under 60 seconds:
+1. **Diners arrive at their table**: Tap the tabletop NFC stand or scan the high-resolution QR code.
+2. **Rate experience**: Rate Food, Hospitality, Ambiance, and Overall on independent 1–5 star scales (*starts completely unselected*).
+3. **Select dishes tasted**: Tap categorized menu items (appetizers, chef specials, beverages) and add optional notes.
+4. **Choose language & tone**: English or conversational **Hinglish**, with tones like Foodie/Flavorful, Concise, Hospitality, or Constructive.
+5. **AI generates the draft**: Powered by NVIDIA AI / Google Gemini with zero-cost fallback engine.
+6. **1-Tap Share to Google**: Diner taps copy, opening the restaurant's direct Google Review dialog in a new tab.
 
 ---
 
-## 🛡️ Core Review Integrity Safeguards
+## 🏗️ Multi-Tenant Architecture
 
-In accordance with consumer review guidelines and the project's PRD:
-- **No Deceptive Defaults**: Ratings start unselected. No preselected 5 stars.
-- **Accurate Reflection of Negative/Mixed Experiences**: If a diner rates service or food as 1 or 2 stars, the AI produces respectful, constructive feedback rather than artificial praise.
-- **Strict Anti-Hallucination Guardrails**: The draft only mentions dishes and notes explicitly chosen by the diner.
-- **Non-Custodial & Privacy-First**: No diner phone numbers, emails, or review texts are stored on the server.
-- **Customer is the Publisher**: Review AI does not auto-post to Google. Diners have 100% control to edit, refine, or discard before submitting.
+Tap-Bro provides an end-to-end platform for diners, restaurant owners, and platform administrators:
+
+- **Super Admin Master Dashboard (`/super-admin`)**:
+  - Full analytics across all restaurants, total reviews generated, and active stands.
+  - One-click restaurant invitation generator with automated Google SMTP email dispatch (`friendlygaming2525@gmail.com`), WhatsApp instant share, and direct link copy.
+  - SMTP configuration manager and real-time connection tester.
+  - Restaurant account management (credential rotation, deletion, analytics monitoring).
+
+- **Restaurant Onboarding Portal (`/setup`)**:
+  - Secure tokenized setup links (`/setup?email=...&pass=...`) sent directly to restaurant owners.
+  - Auto-unlocking form for configuring restaurant name, phone, admin PIN, Google Review URL, cuisine, and signature dishes.
+
+- **Restaurant Manager Dashboard (`/admin` & `/admin/[slug]`)**:
+  - Mobile-first manager portal accessed via Phone Number & 4-digit Admin PIN.
+  - Live Tabletop Station NFC target link with 1-click copy for programming hardware tags.
+  - High-resolution (600x600) tabletop QR code generator & PNG download (`/api/restaurants/[slug]/qr`).
+  - Real-time menu management, cuisine customization, and Google Review URL sync.
+
+- **Public Diner Station (`/r/[slug]`)**:
+  - Lightweight, responsive mobile experience loaded when a diner taps the tabletop stand.
+  - Dynamic branding, signature dish presets, and real-time review counter analytics.
 
 ---
 
-## 🎨 Culinary Visual System
+## 🛡️ Security & Integrity Defenses
 
-- **Palette**: Dark obsidian backdrop (`#0B0C10`), elevated surface cards (`#191B24`), and warm culinary saffron/amber accents (`#F5C84C`, `#E5A93C`).
-- **Touch-First**: 44px+ touch targets, rounded pill chips with bouncy state feedback, and celebratory confetti on copy.
-- **Accessibility**: High contrast WCAG 2.2 AA compliant, full keyboard navigation, explicit ARIA labels.
+- **OWASP Top 10 Headers**: Strict CSP, HSTS, `X-Content-Type-Options: nosniff`, `X-Frame-Options: SAMEORIGIN`, and `Referrer-Policy`.
+- **Sliding-Window Rate Limiting**:
+  - Super Admin & Manager Login: Max 6 failed login attempts per 5 minutes per IP before HTTP 429 lockout.
+  - Setup Pass Validation: Max 5 attempts per 10 minutes per email to stop credential stuffing.
+  - AI Token Protection: Max 15 review drafts per minute per IP to defend AI API quota.
+- **Strict Public URL Resolution**: Outgoing emails, WhatsApp buttons, and QR code payloads strictly resolve to public production domains (e.g. `https://tapbro.vercel.app`), never leaking `localhost`.
+- **Credential Masking**: Public APIs strictly omit `adminPin`, custom API keys, and sensitive tokens.
 
 ---
 
-## 🚀 Quick Start
+## 🧪 Comprehensive QA & Testing Suite
+
+Tap-Bro includes 6 specialized test suites covering unit logic, OWASP security, hardware QR/NFC routing, multilingual generation, manager portal, and real human-user browser journeys:
+
+```bash
+# Run all 6 suites sequentially with executive scorecard
+npm test
+
+# Run individual specialized suites
+npm run test:unit        # DB Schemas, Sliding-Window Limiter, Public URL Resolver, Fallback Engine
+npm run test:security    # OWASP Headers, Brute-Force Defense, AI Quota Exhaustion, Auth Guards
+npm run test:qr          # 600px Base64 PNG generation, Public Domain Routing, 404 Boundaries
+npm run test:languages   # English & Hinglish reviews across all tones, Review Counter increment
+npm run test:manager     # Real Chrome Playwright test for Manager Login, NFC URL, Profile & Menu Sync
+npm run test:e2e         # Full Human-User Mobile Journey (Admin Invite ➔ Email ➔ Setup ➔ Diner Review)
+```
+
+---
+
+## 🚀 Getting Started
 
 ### 1. Installation
 
 ```bash
-# Clone or navigate to the project
-cd reviewai
-
-# Install dependencies
+git clone https://github.com/meet252501/tap-bro.git
+cd tap-bro
 npm install
 ```
 
-### 2. Environment Configuration
+### 2. Configure Environment
 
-Create a `.env.local` file:
+Copy `.env.example` to `.env.local`:
 
 ```env
-# Optional: Google Gemini API Key for dynamic AI generation
-GEMINI_API_KEY=your_gemini_api_key_here
+APP_NAME="Tap-Bro"
+NEXT_PUBLIC_APP_NAME="Tap-Bro"
+APP_URL="https://tapbro.vercel.app"
 
-# Optional: Default restaurant overrides
-NEXT_PUBLIC_RESTAURANT_NAME="Saffron & Spice Bistro"
-NEXT_PUBLIC_GOOGLE_REVIEW_URL="https://search.google.com/local/writereview?placeid=YOUR_PLACE_ID"
+# Super Admin Credentials
+SUPER_ADMIN_EMAIL="princesharma9955a@gmail.com"
+SUPER_ADMIN_PASSWORD="prince@777"
+
+# AI Engine
+NVIDIA_API_KEY="your_nvidia_api_key"
+NVIDIA_MODEL="minimaxai/minimax-m3.1-flash"
+
+# Google SMTP Dispatch
+EMAIL_PROVIDER="smtp"
+SMTP_HOST="smtp.gmail.com"
+SMTP_PORT=465
+SMTP_USER="friendlygaming2525@gmail.com"
+SMTP_PASS="your_gmail_app_password"
+SMTP_FROM="Tap-Bro Team <friendlygaming2525@gmail.com>"
+SMTP_SECURE="true"
 ```
-
-*(Note: If no API key is provided, Review AI automatically uses its built-in deterministic fallback generator, so the entire flow works out-of-the-box!)*
 
 ### 3. Run Development Server
 
@@ -71,45 +117,11 @@ NEXT_PUBLIC_GOOGLE_REVIEW_URL="https://search.google.com/local/writereview?place
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) on your mobile browser or emulator.
+Visit [http://localhost:3000](http://localhost:3000) or test the mobile diner experience at [http://localhost:3000/r/demo-bistro](http://localhost:3000/r/demo-bistro).
 
----
+### 4. Production Build
 
-## 📂 Project Architecture
-
+```bash
+npm run build
+npm run start
 ```
-reviewai/
-├── src/
-│   ├── app/
-│   │   ├── api/
-│   │   │   └── review-draft/route.ts   # Secure server-side AI endpoint
-│   │   ├── globals.css                 # Culinary dark theme & animations
-│   │   ├── layout.tsx                  # Mobile-first viewport & typography
-│   │   └── page.tsx                    # 3-step review coordinator
-│   ├── components/
-│   │   ├── Header.tsx                  # Restaurant branding & settings trigger
-│   │   ├── StepIndicator.tsx           # 3-step progress bar
-│   │   ├── StepRatings.tsx             # Step 1: Star ratings with descriptions
-│   │   ├── StepDishes.tsx              # Step 2: Categorized menu chips & notes
-│   │   ├── StepDraft.tsx               # Step 3: AI draft, copy & Google link
-│   │   ├── SettingsModal.tsx           # Owner settings (Review URL & name)
-│   │   └── Footer.tsx                  # Transparency & privacy notice
-│   ├── config/
-│   │   └── restaurantConfig.ts         # Default menu items & restaurant metadata
-│   ├── lib/
-│   │   └── geminiReviewGenerator.ts    # AI prompt engineering & fallback engine
-│   └── types/
-│       └── review.ts                   # TypeScript interfaces & types
-├── skills/                             # Custom AI skills
-├── rules/                              # Behavioral and design rules
-└── revwrite-review-tool-docs/          # PRD, TDD, and UI style guides
-```
-
----
-
-## ⚙️ Restaurant Customization
-
-Restaurant managers can tap the **Settings icon** in the top header to configure:
-1. **Restaurant Name & Cuisine** (e.g., *The Grand Maharaja Chaat House*).
-2. **Direct Google Review URL**: Extracted directly from Google Business Profile ("Ask for reviews" link).
-3. **Menu Categories**: Configured in `src/config/restaurantConfig.ts`.
