@@ -1,36 +1,27 @@
 'use client';
 
-export const dynamic = 'force-dynamic';
-
 import React, { useState, useEffect, useRef, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import {
   Sparkles,
+  CheckCircle2,
   Store,
+  Phone,
   KeyRound,
   Mail,
-  Phone,
-  Link as LinkIcon,
-  CheckCircle2,
   ExternalLink,
   Search,
   Copy,
   Check,
   MapPin,
-  QrCode,
-  ShieldCheck,
   RefreshCw,
   ArrowRight,
-  Flame,
+  ShieldCheck,
+  Building2,
+  Navigation,
 } from 'lucide-react';
-
-interface PlaceSuggestion {
-  placeId: string;
-  name: string;
-  address: string;
-  description: string;
-  reviewUrl: string;
-}
+import { PlaceSuggestion } from '@/app/api/places/autocomplete/route';
+import { StoreBranchMap } from '@/components/StoreBranchMap';
 
 function generateSlug(name: string, location?: string): string {
   const parts = [name, location?.split(',')[0]].filter(Boolean).join(' ');
@@ -45,15 +36,15 @@ function SetupContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  // "Search & Lock" State
+  // Search & Map Discovery State
   const [searchInput, setSearchInput] = useState('');
   const [predictions, setPredictions] = useState<PlaceSuggestion[]>([]);
+  const [selectedBranch, setSelectedBranch] = useState<PlaceSuggestion | null>(null);
   const [isSearching, setIsSearching] = useState(false);
-  const [showDropdown, setShowDropdown] = useState(false);
   const [isLocked, setIsLocked] = useState(false);
   const searchDebounceRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Locked Restaurant Details (Pulled from Google)
+  // Locked Restaurant Details (Pulled from Map Selection)
   const [restaurantName, setRestaurantName] = useState('');
   const [location, setLocation] = useState('');
   const [placeId, setPlaceId] = useState('');
@@ -85,13 +76,25 @@ function SetupContent() {
     if (urlToken) setToken(urlToken);
   }, [searchParams]);
 
-  // Autocomplete fetch on search typing
+  // Initial branch seed for default brands (e.g. Karnavati) on initial load
+  useEffect(() => {
+    // Perform an initial quick lookup for popular brand locations if search empty
+    const initialQuery = 'Karnavati';
+    fetch(`/api/places/autocomplete?input=${encodeURIComponent(initialQuery)}`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && Array.isArray(data.predictions) && data.predictions.length > 0) {
+          setPredictions(data.predictions);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  // Fetch branches and locations on map when user types
   useEffect(() => {
     if (isLocked) return;
 
     if (!searchInput.trim() || searchInput.trim().length < 2) {
-      setPredictions([]);
-      setShowDropdown(false);
       return;
     }
 
@@ -104,7 +107,9 @@ function SetupContent() {
         const data = await res.json();
         if (data.success && Array.isArray(data.predictions)) {
           setPredictions(data.predictions);
-          setShowDropdown(true);
+          if (data.predictions.length > 0) {
+            setSelectedBranch(data.predictions[0]);
+          }
         }
       } catch (err) {
         console.warn('Place search error:', err);
@@ -118,14 +123,14 @@ function SetupContent() {
     };
   }, [searchInput, isLocked]);
 
-  // Lock listing when owner taps a suggestion from dropdown
+  // Lock branch when owner selects a branch on map or card
   const handleSelectPlace = (place: PlaceSuggestion) => {
-    const cleanName = place.name.trim();
+    const cleanName = place.branchName || place.name.trim();
     const cleanAddress = place.address.trim();
     const pid = place.placeId.trim();
 
     // Direct 5-Star Review Popup URL
-    const reviewUrl = pid
+    const reviewUrl = pid && pid.startsWith('ChIJ')
       ? `https://search.google.com/local/writereview?placeid=${pid}`
       : place.reviewUrl || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(cleanName + ' ' + cleanAddress)}`;
 
@@ -133,6 +138,7 @@ function SetupContent() {
     const origin = typeof window !== 'undefined' ? window.location.origin : 'https://tapbro.vercel.app';
     const tapBroLink = `${origin}/r/${generatedSlug}`;
 
+    setSelectedBranch(place);
     setRestaurantName(cleanName);
     setLocation(cleanAddress);
     setPlaceId(pid);
@@ -140,7 +146,6 @@ function SetupContent() {
     setSlug(generatedSlug);
     setLiveTapBroLink(tapBroLink);
     setIsLocked(true);
-    setShowDropdown(false);
     setError(null);
   };
 
@@ -158,7 +163,6 @@ function SetupContent() {
     setSlug(generatedSlug);
     setLiveTapBroLink(`${origin}/r/${generatedSlug}`);
     setIsLocked(true);
-    setShowDropdown(false);
   };
 
   // Rule 1: Instant direct link navigation for testing
@@ -173,7 +177,7 @@ function SetupContent() {
     setError(null);
 
     if (!restaurantName.trim()) {
-      setError('Please search and lock your restaurant first.');
+      setError('Please select and lock your store branch on the map first.');
       return;
     }
     if (!phone.trim()) {
@@ -181,22 +185,22 @@ function SetupContent() {
       return;
     }
     if (!adminPin.trim() || adminPin.trim().length < 4) {
-      setError('Please create a 4-digit Manager PIN (e.g. 1234).');
+      setError('Please choose at least a 4-digit PIN for your manager dashboard.');
       return;
     }
 
     setSubmitting(true);
-
     try {
       const res = await fetch('/api/setup/complete', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           restaurantName: restaurantName.trim(),
-          location: location.trim(),
-          googleReviewUrl: googleReviewUrl.trim(),
           phone: phone.trim(),
           adminPin: adminPin.trim(),
+          location: location.trim(),
+          googleReviewUrl: googleReviewUrl.trim(),
+          placeId: placeId.trim() || undefined,
           email: email.trim() || undefined,
           tempPass: tempPass.trim() || undefined,
           token: token || undefined,
@@ -218,18 +222,18 @@ function SetupContent() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0A0A0C] text-white p-4 sm:p-6 pb-24 max-w-xl mx-auto flex flex-col justify-center">
+    <div className="min-h-screen bg-[#0A0A0C] text-white p-4 sm:p-6 pb-24 max-w-2xl mx-auto flex flex-col justify-center">
       {/* Brand Header */}
       <div className="text-center mb-6 space-y-2">
         <div className="inline-flex items-center gap-2 rounded-full bg-zinc-900 border border-zinc-800 px-3 py-1 text-xs text-zinc-400">
-          <Sparkles className="h-3.5 w-3.5 text-zinc-300" />
-          <span>Self-Serve Stand Onboarding</span>
+          <Sparkles className="h-3.5 w-3.5 text-amber-400" />
+          <span>Interactive Store Branch Map</span>
         </div>
         <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
-          Search &amp; Lock Your Restaurant
+          Select Your Store Branch on the Map
         </h1>
-        <p className="text-xs sm:text-sm text-zinc-400 max-w-md mx-auto leading-relaxed">
-          Type your restaurant name below. We&apos;ll automatically lock your direct 5-star Google review target and launch your tabletop stand in 10 seconds.
+        <p className="text-xs sm:text-sm text-zinc-400 max-w-lg mx-auto leading-relaxed">
+          One brand name often has multiple stores. Search your restaurant chain below to view all branch pins on the map, then tap your exact location to lock your stand.
         </p>
       </div>
 
@@ -239,13 +243,19 @@ function SetupContent() {
         </div>
       )}
 
-      {/* STEP 1: Search & Lock Search Box */}
+      {/* STEP 1: Search & Interactive Branch Map */}
       {!isLocked ? (
-        <div className="rounded-2xl border border-zinc-800 bg-[#121216] p-5 sm:p-6 space-y-4 shadow-xl">
-          <div>
-            <label className="block text-xs font-bold text-white uppercase tracking-wider mb-2 flex items-center gap-1.5">
-              <Search className="h-4 w-4 text-zinc-400" />
-              <span>Search Google Business Profile</span>
+        <div className="space-y-4 animate-fade-in">
+          {/* Search Box */}
+          <div className="rounded-2xl border border-zinc-800 bg-[#121216] p-4 sm:p-5 space-y-3 shadow-xl">
+            <label className="block text-xs font-bold text-white uppercase tracking-wider flex items-center justify-between">
+              <span className="flex items-center gap-1.5">
+                <Search className="h-4 w-4 text-amber-400" />
+                <span>Search Restaurant or Chain Name</span>
+              </span>
+              <span className="text-[10px] text-zinc-500 font-mono">
+                No dropdowns • Map view
+              </span>
             </label>
             <div className="relative">
               <Search className="h-4 w-4 text-zinc-500 absolute left-3.5 top-3.5" />
@@ -255,83 +265,135 @@ function SetupContent() {
                 autoComplete="off"
                 value={searchInput}
                 onChange={(e) => setSearchInput(e.target.value)}
-                placeholder='e.g. "Eat Panjab, Gandhinagar" or paste Maps link'
-                className="w-full rounded-xl border border-zinc-800 bg-[#0A0A0C] pl-10 pr-10 py-3 text-sm text-white placeholder-zinc-500 focus:border-zinc-500 focus:outline-none transition"
+                placeholder='e.g. "Karnavati", "Eat Punjab", "Honest", "Tea Post"...'
+                className="w-full rounded-xl border border-zinc-800 bg-[#0A0A0C] pl-10 pr-10 py-3 text-sm text-white placeholder-zinc-500 focus:border-amber-400 focus:outline-none transition"
               />
               {isSearching && (
-                <RefreshCw className="h-4 w-4 text-zinc-400 absolute right-3.5 top-3.5 animate-spin" />
+                <RefreshCw className="h-4 w-4 text-amber-400 absolute right-3.5 top-3.5 animate-spin" />
               )}
             </div>
-            <p className="text-[11px] text-zinc-500 mt-1.5 leading-relaxed">
-              💡 Works for any business! You do not need to be the Google owner.
-            </p>
           </div>
 
-          {/* Autocomplete Predictions Dropdown */}
-          {showDropdown && predictions.length > 0 && (
-            <div className="rounded-xl border border-zinc-800 bg-[#0A0A0C] divide-y divide-zinc-850 overflow-hidden shadow-2xl animate-fade-in max-h-72 overflow-y-auto">
-              {predictions.map((p, idx) => (
-                <button
-                  key={idx}
-                  type="button"
-                  onClick={() => handleSelectPlace(p)}
-                  className="w-full text-left p-3 hover:bg-zinc-850 flex items-start gap-2.5 transition group"
-                >
-                  <MapPin className="h-4 w-4 text-zinc-400 mt-0.5 shrink-0 group-hover:text-white" />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs font-bold text-white truncate group-hover:text-white">
-                      {p.name}
-                    </p>
-                    <p className="text-[11px] text-zinc-400 truncate mt-0.5">
-                      {p.address}
-                    </p>
-                  </div>
-                  <span className="text-[10px] text-zinc-500 font-mono shrink-0 uppercase group-hover:text-zinc-300">
-                    Lock ➔
-                  </span>
-                </button>
-              ))}
-            </div>
-          )}
+          {/* Interactive Store Branch Map */}
+          <StoreBranchMap
+            branches={predictions}
+            selectedBranch={selectedBranch}
+            onSelectBranch={handleSelectPlace}
+            isLoading={isSearching}
+          />
 
-          {/* Fallback Lock Button if typed custom */}
-          {searchInput.trim().length >= 2 && !showDropdown && (
-            <button
-              type="button"
-              onClick={handleManualLock}
-              className="w-full rounded-xl border border-zinc-700 bg-zinc-800 py-2.5 px-3 text-xs font-semibold text-zinc-200 hover:text-white hover:bg-zinc-750 transition flex items-center justify-center gap-1.5"
-            >
-              <span>Lock &quot;{searchInput.trim()}&quot;</span>
-              <ArrowRight className="h-3.5 w-3.5" />
-            </button>
-          )}
+          {/* Branch Store Cards (Tappable Pins / Cards) */}
+          <div className="space-y-2.5">
+            <div className="flex items-center justify-between px-1">
+              <h3 className="text-xs font-bold text-zinc-300 uppercase tracking-wider flex items-center gap-1.5">
+                <Building2 className="h-3.5 w-3.5 text-amber-400" />
+                <span>
+                  {predictions.length > 0
+                    ? `Discovered Branches (${predictions.length} locations)`
+                    : 'Search a brand above to view branches'}
+                </span>
+              </h3>
+              <span className="text-[10px] text-zinc-500">Tap pin or card to lock</span>
+            </div>
+
+            {predictions.length > 0 ? (
+              <div className="grid grid-cols-1 gap-2.5 max-h-80 overflow-y-auto pr-1">
+                {predictions.map((p, idx) => {
+                  const isCurrent = selectedBranch?.name === p.name && selectedBranch?.address === p.address;
+                  return (
+                    <div
+                      key={idx}
+                      onClick={() => handleSelectPlace(p)}
+                      className={`p-3.5 rounded-xl border text-left transition-all duration-150 cursor-pointer active:scale-[0.99] flex items-center justify-between gap-3 ${
+                        isCurrent
+                          ? 'bg-[#18181E] border-amber-400/90 shadow-[0_0_15px_rgba(245,200,76,0.15)]'
+                          : 'bg-[#121216] border-zinc-800 hover:border-zinc-700 hover:bg-zinc-850'
+                      }`}
+                    >
+                      <div className="flex items-start gap-3 min-w-0">
+                        {/* Numbered Pin Badge */}
+                        <div
+                          className={`w-7 h-7 rounded-full flex items-center justify-center font-bold text-xs shrink-0 mt-0.5 ${
+                            isCurrent
+                              ? 'bg-amber-400 text-black shadow-md'
+                              : 'bg-zinc-800 text-zinc-300 border border-zinc-700'
+                          }`}
+                        >
+                          {idx + 1}
+                        </div>
+
+                        <div className="min-w-0">
+                          <p className="text-xs sm:text-sm font-bold text-white truncate">
+                            {p.branchName || p.name}
+                          </p>
+                          <p className="text-[11px] text-zinc-400 truncate mt-0.5 flex items-center gap-1">
+                            <MapPin className="h-3 w-3 shrink-0 text-zinc-500" />
+                            <span>{p.address}</span>
+                          </p>
+                        </div>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleSelectPlace(p);
+                        }}
+                        className={`px-3 py-1.5 rounded-lg text-xs font-bold shrink-0 transition ${
+                          isCurrent
+                            ? 'bg-amber-400 text-black'
+                            : 'bg-zinc-800 text-zinc-200 hover:bg-zinc-700'
+                        }`}
+                      >
+                        Lock Branch ➔
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="rounded-xl border border-dashed border-zinc-800 p-6 text-center text-xs text-zinc-500">
+                Type your restaurant name above to plot all branch locations on the map.
+              </div>
+            )}
+
+            {/* Manual fallback button */}
+            {searchInput.trim().length >= 2 && (
+              <button
+                type="button"
+                onClick={handleManualLock}
+                className="w-full rounded-xl border border-zinc-800 bg-[#121216] py-2.5 px-3 text-xs font-semibold text-zinc-400 hover:text-white transition flex items-center justify-center gap-1.5"
+              >
+                <span>Branch not on map? Lock &quot;{searchInput.trim()}&quot; directly</span>
+                <ArrowRight className="h-3.5 w-3.5" />
+              </button>
+            )}
+          </div>
         </div>
       ) : (
-        /* STEP 2: The Locked Restaurant Card + Instant Live Preview + Activation */
+        /* STEP 2: The Locked Restaurant Branch Card + Instant Live Preview + Activation */
         <div className="space-y-4 animate-fade-in">
           {/* Locked Badge & Card */}
-          <div className="rounded-2xl border border-emerald-500/30 bg-[#121216] p-5 space-y-4 shadow-xl">
+          <div className="rounded-2xl border border-amber-400/30 bg-[#121216] p-5 space-y-4 shadow-xl">
             <div className="flex items-center justify-between pb-3 border-b border-zinc-800">
-              <span className="flex items-center gap-1.5 text-xs font-semibold text-emerald-400">
+              <span className="flex items-center gap-1.5 text-xs font-semibold text-amber-400">
                 <CheckCircle2 className="h-4 w-4" />
-                <span>Locked from Google Business Profile</span>
+                <span>Store Branch Locked on Map</span>
               </span>
               <button
                 type="button"
-                onClick={() => {
-                  setIsLocked(false);
-                  setShowDropdown(false);
-                }}
-                className="text-[11px] text-zinc-400 hover:text-white underline underline-offset-2 transition"
+                onClick={() => setIsLocked(false)}
+                className="text-[11px] text-zinc-400 hover:text-white underline underline-offset-2 transition flex items-center gap-1"
               >
-                Change Listing
+                <Navigation className="h-3 w-3" />
+                <span>Pick Another Branch on Map</span>
               </button>
             </div>
 
             {/* Extracted Business Information */}
             <div className="space-y-1.5">
               <div className="flex items-center gap-2">
-                <Store className="h-4 w-4 text-zinc-400 shrink-0" />
+                <Store className="h-4 w-4 text-amber-400 shrink-0" />
                 <h2 className="text-base font-bold text-white">{restaurantName}</h2>
               </div>
               <p className="text-xs text-zinc-400 pl-6 leading-relaxed">
@@ -349,7 +411,7 @@ function SetupContent() {
                   type="text"
                   readOnly
                   value={googleReviewUrl}
-                  className="flex-1 rounded-lg border border-zinc-800 bg-[#121216] px-2.5 py-1.5 text-xs text-emerald-400 font-mono truncate"
+                  className="flex-1 rounded-lg border border-zinc-800 bg-[#121216] px-2.5 py-1.5 text-xs text-amber-400 font-mono truncate"
                 />
                 <button
                   type="button"
@@ -362,7 +424,7 @@ function SetupContent() {
                   }}
                   className="rounded-lg border border-zinc-700 bg-zinc-800 px-2.5 py-1.5 text-xs font-semibold text-zinc-300 hover:text-white transition shrink-0"
                 >
-                  {copiedReviewUrl ? <Check className="h-3.5 w-3.5 text-emerald-400" /> : <Copy className="h-3.5 w-3.5" />}
+                  {copiedReviewUrl ? <Check className="h-3.5 w-3.5 text-amber-400" /> : <Copy className="h-3.5 w-3.5" />}
                 </button>
               </div>
             </div>
@@ -390,12 +452,12 @@ function SetupContent() {
                   }}
                   className="rounded-lg border border-zinc-700 bg-zinc-800 px-2.5 py-1.5 text-xs font-semibold text-zinc-300 hover:text-white transition shrink-0"
                 >
-                  {copiedTapBroUrl ? <Check className="h-3.5 w-3.5 text-emerald-400" /> : <Copy className="h-3.5 w-3.5" />}
+                  {copiedTapBroUrl ? <Check className="h-3.5 w-3.5 text-amber-400" /> : <Copy className="h-3.5 w-3.5" />}
                 </button>
               </div>
             </div>
 
-            {/* Instant Preview: Test Live Review Button (Rule 1 & Rule 2) */}
+            {/* Instant Preview: Test Live Review Button */}
             <div className="pt-2 space-y-2">
               <button
                 type="button"
@@ -444,7 +506,7 @@ function SetupContent() {
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
                     placeholder="e.g. 9876543210"
-                    className="w-full rounded-xl border border-zinc-800 bg-[#0A0A0C] pl-10 pr-3.5 py-2.5 text-sm text-white focus:border-zinc-500 focus:outline-none placeholder-zinc-500"
+                    className="w-full rounded-xl border border-zinc-800 bg-[#0A0A0C] pl-10 pr-3.5 py-2.5 text-sm text-white focus:border-amber-400 focus:outline-none placeholder-zinc-500"
                   />
                 </div>
               </div>
@@ -463,7 +525,7 @@ function SetupContent() {
                     placeholder="4-digit PIN (e.g. 1234)"
                     value={adminPin}
                     onChange={(e) => setAdminPin(e.target.value)}
-                    className="w-full rounded-xl border border-zinc-800 bg-[#0A0A0C] pl-10 pr-3.5 py-2.5 text-sm text-white focus:border-zinc-500 focus:outline-none placeholder-zinc-500 font-mono"
+                    className="w-full rounded-xl border border-zinc-800 bg-[#0A0A0C] pl-10 pr-3.5 py-2.5 text-sm text-white focus:border-amber-400 focus:outline-none placeholder-zinc-500 font-mono"
                   />
                 </div>
               </div>
@@ -481,7 +543,7 @@ function SetupContent() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="e.g. owner@gmail.com"
-                  className="w-full rounded-xl border border-zinc-800 bg-[#0A0A0C] pl-10 pr-3.5 py-2.5 text-sm text-white focus:border-zinc-500 focus:outline-none placeholder-zinc-500"
+                  className="w-full rounded-xl border border-zinc-800 bg-[#0A0A0C] pl-10 pr-3.5 py-2.5 text-sm text-white focus:border-amber-400 focus:outline-none placeholder-zinc-500"
                 />
               </div>
             </div>
@@ -510,7 +572,13 @@ function SetupContent() {
 
 export default function BusinessSetupPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-[#0A0A0C] flex items-center justify-center p-4 text-zinc-400 text-xs">Loading Search &amp; Lock Setup...</div>}>
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-[#0A0A0C] flex items-center justify-center p-4 text-zinc-400 text-xs">
+          Loading Store Branch Map...
+        </div>
+      }
+    >
       <SetupContent />
     </Suspense>
   );
