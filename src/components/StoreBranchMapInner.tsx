@@ -37,11 +37,11 @@ export const StoreBranchMapInner: React.FC<StoreBranchMapInnerProps> = ({
       scrollWheelZoom: true,
     });
 
-    // High-clarity CartoDB Voyager tiles: shows roads, landmarks, street names clearly
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-      subdomains: 'abcd',
+    // 100% Free OpenStreetMap Global Tiles (ZERO API keys, ZERO watermarks, full street names)
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      subdomains: ['a', 'b', 'c'],
       maxZoom: 19,
-      attribution: '&copy; OpenStreetMap contributors &copy; CARTO',
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
     }).addTo(map);
 
     mapInstanceRef.current = map;
