@@ -1,20 +1,7 @@
-'use client';
-
-import React, { Suspense } from 'react';
-import { StoreSetupView } from '@/components/StoreSetupView';
+import { redirect } from 'next/navigation';
 
 export const dynamic = 'force-dynamic';
 
 export default function CreatePage() {
-  return (
-    <Suspense
-      fallback={
-        <div className="min-h-screen bg-[#0A0A0C] flex items-center justify-center p-4 text-zinc-400 text-xs">
-          Loading Stand Creator...
-        </div>
-      }
-    >
-      <StoreSetupView mode="direct" />
-    </Suspense>
-  );
+  redirect('/setup');
 }

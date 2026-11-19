@@ -14,7 +14,7 @@ export default function BusinessSetupPage() {
         </div>
       }
     >
-      <StoreSetupView mode="invite" />
+      <StoreSetupView />
     </Suspense>
   );
 }

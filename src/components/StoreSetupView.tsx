@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import Link from 'next/link';
 import {
   Sparkles,
   CheckCircle2,
@@ -22,6 +21,7 @@ import {
   Navigation,
   Lock,
   Unlock,
+  ChevronLeft,
 } from 'lucide-react';
 import { PlaceSuggestion } from '@/app/api/places/autocomplete/route';
 import { StoreBranchMap } from '@/components/StoreBranchMap';
@@ -44,24 +44,29 @@ function formatGujaratReviewQuery(name: string, address?: string): string {
   return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
 }
 
-export interface StoreSetupViewProps {
-  mode?: 'invite' | 'direct';
-}
+type SetupStep = 'verify' | 'info' | 'map';
 
-export function StoreSetupView({ mode = 'invite' }: StoreSetupViewProps) {
+export function StoreSetupView() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  // Invite Gate State (Only active in 'invite' mode)
-  const isDirectMode = mode === 'direct';
+  // Current Step in the Linear Onboarding Pipeline
+  const [step, setStep] = useState<SetupStep>('verify');
+
+  // STEP 1: Temporary Mail & Password Verification
   const [email, setEmail] = useState('');
   const [tempPass, setTempPass] = useState('');
   const [token, setToken] = useState<string | null>(null);
-  const [isVerified, setIsVerified] = useState(isDirectMode);
+  const [isVerified, setIsVerified] = useState(false);
   const [validatingInvite, setValidatingInvite] = useState(false);
   const [inviteError, setInviteError] = useState<string | null>(null);
 
-  // Search & Map Discovery State
+  // STEP 2: Owner & Manager Info
+  const [phone, setPhone] = useState('');
+  const [adminPin, setAdminPin] = useState('');
+  const [infoError, setInfoError] = useState<string | null>(null);
+
+  // STEP 3: Store Branch Map for Google Review & Station Activation
   const [searchInput, setSearchInput] = useState('');
   const [predictions, setPredictions] = useState<PlaceSuggestion[]>([]);
   const [selectedBranch, setSelectedBranch] = useState<PlaceSuggestion | null>(null);
@@ -69,7 +74,7 @@ export function StoreSetupView({ mode = 'invite' }: StoreSetupViewProps) {
   const [isLocked, setIsLocked] = useState(false);
   const searchDebounceRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Locked Restaurant Details (Pulled from Map Selection)
+  // Locked Restaurant Details (Extracted from Map Selection)
   const [restaurantName, setRestaurantName] = useState('');
   const [location, setLocation] = useState('');
   const [placeId, setPlaceId] = useState('');
@@ -77,17 +82,13 @@ export function StoreSetupView({ mode = 'invite' }: StoreSetupViewProps) {
   const [slug, setSlug] = useState('');
   const [liveTapBroLink, setLiveTapBroLink] = useState('');
 
-  // Owner Access Credentials
-  const [phone, setPhone] = useState('');
-  const [adminPin, setAdminPin] = useState('');
-
   // UI helpers
   const [copiedReviewUrl, setCopiedReviewUrl] = useState(false);
   const [copiedTapBroUrl, setCopiedTapBroUrl] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
-  // Auto-verify if email and temp pass are in URL query params
+  // Auto-verify if email and temp pass are in URL query params (clicked from invite email)
   useEffect(() => {
     const urlEmail = searchParams?.get('email');
     const urlPass = searchParams?.get('pass');
@@ -97,15 +98,15 @@ export function StoreSetupView({ mode = 'invite' }: StoreSetupViewProps) {
     if (urlPass) setTempPass(urlPass.trim());
     if (urlToken) setToken(urlToken.trim());
 
-    if (!isDirectMode && urlEmail && urlPass) {
+    if (urlEmail && urlPass) {
       setValidatingInvite(true);
       setInviteError(null);
       fetch('/api/setup/validate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          email: urlEmail.trim(),
-          tempPass: urlPass.trim(),
+          email: urlEmail.trim().toLowerCase(),
+          tempPass: urlPass.trim().toUpperCase(),
           token: urlToken || undefined,
         }),
       })
@@ -114,6 +115,7 @@ export function StoreSetupView({ mode = 'invite' }: StoreSetupViewProps) {
           if (data.success) {
             setIsVerified(true);
             setInviteError(null);
+            setStep('info'); // Auto-advance to Step 2: Info
           } else {
             setInviteError(data.error || 'Temporary pass is invalid or expired.');
           }
@@ -121,9 +123,9 @@ export function StoreSetupView({ mode = 'invite' }: StoreSetupViewProps) {
         .catch(() => setInviteError('Could not validate temporary pass. Check your connection.'))
         .finally(() => setValidatingInvite(false));
     }
-  }, [searchParams, isDirectMode]);
+  }, [searchParams]);
 
-  // Manual Invite Verification Handler
+  // STEP 1 Handler: Manual Invite Verification
   const handleVerifyInvite = async (e: React.FormEvent) => {
     e.preventDefault();
     setInviteError(null);
@@ -148,6 +150,7 @@ export function StoreSetupView({ mode = 'invite' }: StoreSetupViewProps) {
       if (res.ok && data.success) {
         setIsVerified(true);
         setInviteError(null);
+        setStep('info'); // Advance to Step 2: Info
       } else {
         setInviteError(data.error || 'Invalid or expired temporary password for this email.');
       }
@@ -158,9 +161,29 @@ export function StoreSetupView({ mode = 'invite' }: StoreSetupViewProps) {
     }
   };
 
-  // Search query with Gujarat / India bias
+  // STEP 2 Handler: Validate Owner Info & Move to Map
+  const handleProceedToMap = (e: React.FormEvent) => {
+    e.preventDefault();
+    setInfoError(null);
+
+    const cleanPhone = phone.trim();
+    const cleanPin = adminPin.trim();
+
+    if (!cleanPhone || cleanPhone.length < 8) {
+      setInfoError('Please enter a valid contact phone number.');
+      return;
+    }
+    if (!cleanPin || cleanPin.length < 4) {
+      setInfoError('Please choose at least a 4-digit PIN for your manager dashboard.');
+      return;
+    }
+
+    setStep('map'); // Advance to Step 3: Map & Review Setup
+  };
+
+  // STEP 3 Handler: Search query with Gujarat / India bias
   useEffect(() => {
-    if (isLocked) return;
+    if (step !== 'map' || isLocked) return;
 
     if (!searchInput.trim() || searchInput.trim().length < 2) {
       setPredictions([]);
@@ -191,7 +214,7 @@ export function StoreSetupView({ mode = 'invite' }: StoreSetupViewProps) {
     return () => {
       if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
     };
-  }, [searchInput, isLocked]);
+  }, [searchInput, isLocked, step]);
 
   // Lock branch when owner selects a branch on map or card
   const handleSelectPlace = (place: PlaceSuggestion) => {
@@ -216,10 +239,10 @@ export function StoreSetupView({ mode = 'invite' }: StoreSetupViewProps) {
     setSlug(generatedSlug);
     setLiveTapBroLink(tapBroLink);
     setIsLocked(true);
-    setError(null);
+    setSubmitError(null);
   };
 
-  // Allow manual lock if listing not found in dropdown
+  // Manual fallback lock if store not on map
   const handleManualLock = () => {
     if (!searchInput.trim()) return;
     const cleanName = searchInput.trim();
@@ -242,20 +265,11 @@ export function StoreSetupView({ mode = 'invite' }: StoreSetupViewProps) {
   };
 
   // Final Station Activation Form Submit
-  const handleCompleteSetup = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError(null);
+  const handleCompleteSetup = async () => {
+    setSubmitError(null);
 
     if (!restaurantName.trim()) {
-      setError('Please select and lock your store branch on the map first.');
-      return;
-    }
-    if (!phone.trim()) {
-      setError('Please enter your contact phone number.');
-      return;
-    }
-    if (!adminPin.trim() || adminPin.trim().length < 4) {
-      setError('Please choose at least a 4-digit PIN for your manager dashboard.');
+      setSubmitError('Please select and lock your store branch on the map first.');
       return;
     }
 
@@ -271,8 +285,8 @@ export function StoreSetupView({ mode = 'invite' }: StoreSetupViewProps) {
           location: location.trim(),
           googleReviewUrl: googleReviewUrl.trim(),
           placeId: placeId.trim() || undefined,
-          email: email.trim() || undefined,
-          tempPass: tempPass.trim().toUpperCase() || undefined,
+          email: email.trim().toLowerCase(),
+          tempPass: tempPass.trim().toUpperCase(),
           token: token || undefined,
         }),
       });
@@ -280,12 +294,12 @@ export function StoreSetupView({ mode = 'invite' }: StoreSetupViewProps) {
       const data = await res.json();
       if (res.ok && data.success) {
         localStorage.setItem(`admin_${data.restaurant.slug}`, adminPin.trim());
-        router.push(`/admin/${data.restaurant.slug}?welcome=1`);
+        window.location.href = `/admin/${data.restaurant.slug}?welcome=1`;
       } else {
-        setError(data.error || 'Failed to complete setup');
+        setSubmitError(data.error || 'Failed to complete setup');
       }
     } catch (err: any) {
-      setError(err.message || 'Network setup error');
+      setSubmitError(err.message || 'Network setup error');
     } finally {
       setSubmitting(false);
     }
@@ -297,38 +311,69 @@ export function StoreSetupView({ mode = 'invite' }: StoreSetupViewProps) {
       <div className="text-center mb-6 space-y-2">
         <div className="inline-flex items-center gap-2 rounded-full bg-zinc-900 border border-zinc-800 px-3 py-1 text-xs text-zinc-400">
           <Sparkles className="h-3.5 w-3.5 text-amber-400" />
-          <span>{isDirectMode ? 'Self-Serve Stand Onboarding' : 'Official Invite Setup Portal'}</span>
+          <span>Tap-Bro Tabletop Stand Setup</span>
         </div>
         <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
-          {isDirectMode
-            ? 'Launch Your Tabletop Stand'
-            : isVerified
-            ? 'Select Your Store Branch'
-            : 'Enter Your Invitation Pass'}
+          {step === 'verify' && 'Verify Your Invitation Pass'}
+          {step === 'info' && 'Manager & Contact Details'}
+          {step === 'map' && 'Store Branch Map & Review Setup'}
         </h1>
         <p className="text-xs sm:text-sm text-zinc-400 max-w-lg mx-auto leading-relaxed">
-          {isDirectMode
-            ? 'Search your brand or restaurant below to plot all Gujarat branches on the map and activate your NFC review stand.'
-            : isVerified
-            ? `Invitation verified for ${email}! Search your restaurant below to plot your store branches on the map.`
-            : 'Enter the temporary password sent to your email to verify your invite and configure your live tabletop station.'}
+          {step === 'verify' &&
+            'Enter the temporary password sent to your business email to unlock your tabletop station setup.'}
+          {step === 'info' &&
+            `Invitation verified for ${email}. Set your contact phone number and 4-digit manager dashboard PIN.`}
+          {step === 'map' &&
+            'Search your restaurant name below to plot your Gujarat store branches on the map and activate your stand.'}
         </p>
+
+        {/* 3-Step Guided Progress Tracker */}
+        <div className="flex items-center justify-center gap-2 pt-3 max-w-sm mx-auto">
+          <div
+            className={`flex-1 h-1.5 rounded-full transition-all duration-300 ${
+              step === 'verify' ? 'bg-amber-400' : 'bg-emerald-500'
+            }`}
+          />
+          <div
+            className={`flex-1 h-1.5 rounded-full transition-all duration-300 ${
+              step === 'info' ? 'bg-amber-400' : step === 'map' ? 'bg-emerald-500' : 'bg-zinc-800'
+            }`}
+          />
+          <div
+            className={`flex-1 h-1.5 rounded-full transition-all duration-300 ${
+              step === 'map' ? 'bg-amber-400' : 'bg-zinc-800'
+            }`}
+          />
+        </div>
+        <div className="flex justify-between text-[10px] text-zinc-500 max-w-sm mx-auto px-1">
+          <span className={step === 'verify' ? 'text-amber-400 font-bold' : isVerified ? 'text-emerald-400 font-semibold' : ''}>
+            1. Verify Pass
+          </span>
+          <span className={step === 'info' ? 'text-amber-400 font-bold' : step === 'map' ? 'text-emerald-400 font-semibold' : ''}>
+            2. Owner Info
+          </span>
+          <span className={step === 'map' ? 'text-amber-400 font-bold' : ''}>
+            3. Store Map &amp; Launch
+          </span>
+        </div>
       </div>
 
-      {/* Global Error Banner */}
-      {(error || inviteError) && (
-        <div className="mb-4 rounded-xl border border-red-500/30 bg-red-500/10 p-3 text-xs text-red-300">
-          {error || inviteError}
+      {/* Global Error Banners */}
+      {(inviteError || infoError || submitError) && (
+        <div className="mb-4 rounded-xl border border-red-500/30 bg-red-500/10 p-3 text-xs text-red-300 animate-fade-in">
+          {inviteError || infoError || submitError}
         </div>
       )}
 
-      {/* GATE: If in Invite mode and not yet verified, show Temp Pass Gate */}
-      {!isDirectMode && !isVerified ? (
+      {/* =========================================================================
+          STEP 1: Temporary Mail & Password Verification
+          ========================================================================= */}
+      {step === 'verify' && (
         <div className="rounded-2xl border border-zinc-800 bg-[#121216] p-5 sm:p-6 space-y-5 shadow-2xl animate-fade-in">
           <div className="flex items-center gap-2 pb-3 border-b border-zinc-800">
             <Lock className="h-4 w-4 text-amber-400" />
             <span className="text-xs font-bold text-zinc-200 uppercase tracking-wider">
-              Verify Business Invitation
+              Step 1 • Verify Business Invitation
             </span>
           </div>
 
@@ -389,56 +434,123 @@ export function StoreSetupView({ mode = 'invite' }: StoreSetupViewProps) {
               )}
             </button>
           </form>
-
-          {/* Quick link to /create if no invite code */}
-          <div className="pt-2 text-center text-xs text-zinc-500">
-            <span>Don&apos;t have an invite code? </span>
-            <Link
-              href="/create"
-              className="text-amber-400 hover:text-amber-300 underline underline-offset-2 font-medium transition"
-            >
-              Start direct self-serve setup on /create ➔
-            </Link>
-          </div>
         </div>
-      ) : (
-        /* UNLOCKED: Store Branch Map Flow */
-        <>
-          {/* Direct Mode Invitation Switcher Banner */}
-          {isDirectMode && (
-            <div className="mb-4 rounded-xl border border-zinc-800 bg-[#121216] p-3 flex items-center justify-between text-xs text-zinc-400 animate-fade-in">
-              <span className="flex items-center gap-2">
-                <KeyRound className="h-4 w-4 text-amber-400 shrink-0" />
-                <span>Have an official invitation code or temporary password?</span>
-              </span>
-              <Link
-                href="/setup"
-                className="text-amber-400 hover:text-amber-300 font-semibold text-[11px] underline underline-offset-2 shrink-0 transition"
-              >
-                Go to Setup Portal ➔
-              </Link>
-            </div>
-          )}
+      )}
 
-          {/* Verified Invite Banner (when in invite mode) */}
-          {!isDirectMode && email && (
-            <div className="mb-4 rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-3 flex items-center justify-between text-xs text-emerald-300 animate-fade-in">
-              <span className="flex items-center gap-2">
-                <CheckCircle2 className="h-4 w-4 text-emerald-400 shrink-0" />
-                <span>
-                  Invitation Verified for <strong>{email}</strong>
-                  {tempPass ? ` (Pass: ${tempPass.toUpperCase()})` : ''}
-                </span>
+      {/* =========================================================================
+          STEP 2: Owner & Manager Info (Phone Number + 4-Digit Manager PIN)
+          ========================================================================= */}
+      {step === 'info' && (
+        <div className="rounded-2xl border border-zinc-800 bg-[#121216] p-5 sm:p-6 space-y-5 shadow-2xl animate-fade-in">
+          {/* Verified Badge */}
+          <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-3 flex items-center justify-between text-xs text-emerald-300">
+            <span className="flex items-center gap-2">
+              <CheckCircle2 className="h-4 w-4 text-emerald-400 shrink-0" />
+              <span>
+                Verified Invitation for <strong>{email}</strong>
               </span>
-              <span className="text-[10px] bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded-full font-mono">
-                1-Time Pass Ready
+            </span>
+            <span className="text-[10px] bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded-full font-mono">
+              Pass: {tempPass.toUpperCase()}
+            </span>
+          </div>
+
+          <div className="flex items-center justify-between pb-3 border-b border-zinc-800">
+            <div className="flex items-center gap-2">
+              <ShieldCheck className="h-4 w-4 text-amber-400" />
+              <span className="text-xs font-bold text-zinc-200 uppercase tracking-wider">
+                Step 2 • Owner Contact &amp; Manager Security
               </span>
             </div>
-          )}
+            <button
+              type="button"
+              onClick={() => setStep('verify')}
+              className="text-[11px] text-zinc-400 hover:text-white flex items-center gap-1 transition"
+            >
+              <ChevronLeft className="h-3 w-3" />
+              <span>Change Pass</span>
+            </button>
+          </div>
 
-          {/* STEP 1: Search & Interactive Branch Map */}
+          <form onSubmit={handleProceedToMap} className="space-y-4">
+            <div>
+              <label className="block text-xs font-semibold text-zinc-300 mb-1.5">
+                Contact Phone Number *
+              </label>
+              <div className="relative">
+                <Phone className="h-4 w-4 text-zinc-500 absolute left-3.5 top-3.5" />
+                <input
+                  type="tel"
+                  required
+                  autoFocus
+                  autoComplete="tel"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  placeholder="e.g. 9876543210"
+                  className="w-full rounded-xl border border-zinc-800 bg-[#0A0A0C] pl-10 pr-3.5 py-3 text-sm text-white placeholder-zinc-500 focus:border-amber-400 focus:outline-none transition"
+                />
+              </div>
+              <p className="text-[11px] text-zinc-500 mt-1">
+                Used for instant WhatsApp/SMS review notifications and hardware support.
+              </p>
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-zinc-300 mb-1.5 flex items-center justify-between">
+                <span>Create Manager PIN (Dashboard Password) *</span>
+                <span className="text-[10px] text-zinc-400 font-mono">4 to 8 digits</span>
+              </label>
+              <div className="relative">
+                <KeyRound className="h-4 w-4 text-zinc-500 absolute left-3.5 top-3.5" />
+                <input
+                  type="password"
+                  required
+                  maxLength={8}
+                  autoComplete="new-password"
+                  value={adminPin}
+                  onChange={(e) => setAdminPin(e.target.value)}
+                  placeholder="e.g. 1234"
+                  className="w-full rounded-xl border border-zinc-800 bg-[#0A0A0C] pl-10 pr-3.5 py-3 text-sm text-white placeholder-zinc-500 font-mono tracking-widest focus:border-amber-400 focus:outline-none transition"
+                />
+              </div>
+              <p className="text-[11px] text-zinc-500 mt-1">
+                Only you will use this PIN to log into your manager dashboard and view analytics.
+              </p>
+            </div>
+
+            <button
+              type="submit"
+              className="btn-gold w-full flex items-center justify-center gap-2 rounded-xl py-3.5 font-bold text-sm shadow-xl active:scale-95 transition"
+            >
+              <span>Next: Select Store on Map ➔</span>
+            </button>
+          </form>
+        </div>
+      )}
+
+      {/* =========================================================================
+          STEP 3: Store Branch Map for Google Review & All Setup
+          ========================================================================= */}
+      {step === 'map' && (
+        <div className="space-y-4 animate-fade-in">
+          {/* Header Bar with Back to Info */}
+          <div className="flex items-center justify-between px-1">
+            <span className="text-xs font-bold text-zinc-300 uppercase tracking-wider flex items-center gap-1.5">
+              <MapPin className="h-4 w-4 text-amber-400" />
+              <span>Step 3 • Find &amp; Lock Your Store Branch</span>
+            </span>
+            <button
+              type="button"
+              onClick={() => setStep('info')}
+              className="text-[11px] text-zinc-400 hover:text-white flex items-center gap-1 transition"
+            >
+              <ChevronLeft className="h-3 w-3" />
+              <span>Edit Phone / PIN</span>
+            </button>
+          </div>
+
           {!isLocked ? (
-            <div className="space-y-4 animate-fade-in">
+            <>
               {/* Search Box */}
               <div className="rounded-2xl border border-zinc-800 bg-[#121216] p-4 sm:p-5 space-y-3 shadow-xl">
                 <label className="block text-xs font-bold text-white uppercase tracking-wider flex items-center justify-between">
@@ -446,8 +558,8 @@ export function StoreSetupView({ mode = 'invite' }: StoreSetupViewProps) {
                     <Search className="h-4 w-4 text-amber-400" />
                     <span>Search Restaurant or Chain Name</span>
                   </span>
-                  <span className="text-[10px] text-zinc-500 font-mono">
-                    Gujarat &amp; India • Map view
+                  <span className="text-[10px] text-zinc-400 font-mono">
+                    Gujarat &amp; India • Map View
                   </span>
                 </label>
                 <div className="relative">
@@ -483,7 +595,7 @@ export function StoreSetupView({ mode = 'invite' }: StoreSetupViewProps) {
                     <span>
                       {predictions.length > 0
                         ? `Discovered Branches (${predictions.length} locations in Gujarat)`
-                        : 'Search a brand above to view branches'}
+                        : 'Search a brand above to view branches on map'}
                     </span>
                   </h3>
                   <span className="text-[10px] text-zinc-500">Tap pin or card to lock</span>
@@ -563,11 +675,10 @@ export function StoreSetupView({ mode = 'invite' }: StoreSetupViewProps) {
                   </button>
                 )}
               </div>
-            </div>
+            </>
           ) : (
-            /* STEP 2: The Locked Restaurant Branch Card + Instant Live Preview + Activation */
+            /* LOCKED BRANCH: Review Target Details & Station Activation */
             <div className="space-y-4 animate-fade-in">
-              {/* Locked Badge & Card */}
               <div className="rounded-2xl border border-amber-400/30 bg-[#121216] p-5 space-y-4 shadow-xl">
                 <div className="flex items-center justify-between pb-3 border-b border-zinc-800">
                   <span className="flex items-center gap-1.5 text-xs font-semibold text-amber-400">
@@ -674,90 +785,37 @@ export function StoreSetupView({ mode = 'invite' }: StoreSetupViewProps) {
                 </div>
               </div>
 
-              {/* STEP 3: Owner Credentials & Launch */}
-              <form onSubmit={handleCompleteSetup} className="rounded-2xl border border-zinc-800 bg-[#121216] p-5 space-y-4 shadow-xl">
-                <div>
-                  <h3 className="text-sm font-bold text-white flex items-center gap-1.5">
-                    <ShieldCheck className="h-4 w-4 text-zinc-400" />
-                    <span>Owner Credentials (To Access Manager Hub)</span>
-                  </h3>
-                  <p className="text-[11px] text-zinc-400 mt-0.5">
-                    Set a PIN so only you can access your reviews and menu dashboard.
-                  </p>
+              {/* Station Summary & Final Activation */}
+              <div className="rounded-2xl border border-zinc-800 bg-[#121216] p-5 space-y-4 shadow-xl">
+                <div className="flex items-center justify-between pb-2 border-b border-zinc-800 text-xs">
+                  <span className="font-bold text-white flex items-center gap-1.5">
+                    <ShieldCheck className="h-4 w-4 text-emerald-400" />
+                    <span>Ready to Launch Review Station</span>
+                  </span>
+                  <span className="text-zinc-400 font-mono text-[11px]">
+                    PIN: •••• | {phone}
+                  </span>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-xs font-semibold text-zinc-300 mb-1">
-                      Contact Phone Number *
-                    </label>
-                    <div className="relative">
-                      <Phone className="h-4 w-4 text-zinc-500 absolute left-3.5 top-3.5" />
-                      <input
-                        type="tel"
-                        required
-                        autoComplete="off"
-                        value={phone}
-                        onChange={(e) => setPhone(e.target.value)}
-                        placeholder="e.g. 9876543210"
-                        className="w-full rounded-xl border border-zinc-800 bg-[#0A0A0C] pl-10 pr-3.5 py-2.5 text-sm text-white focus:border-amber-400 focus:outline-none placeholder-zinc-500"
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-semibold text-zinc-300 mb-1">
-                      Create Manager PIN *
-                    </label>
-                    <div className="relative">
-                      <KeyRound className="h-4 w-4 text-zinc-500 absolute left-3.5 top-3.5" />
-                      <input
-                        type="password"
-                        required
-                        maxLength={8}
-                        autoComplete="new-password"
-                        placeholder="4-digit PIN (e.g. 1234)"
-                        value={adminPin}
-                        onChange={(e) => setAdminPin(e.target.value)}
-                        className="w-full rounded-xl border border-zinc-800 bg-[#0A0A0C] pl-10 pr-3.5 py-2.5 text-sm text-white focus:border-amber-400 focus:outline-none placeholder-zinc-500 font-mono"
-                      />
-                    </div>
-                  </div>
+                <div className="text-xs text-zinc-400 space-y-1">
+                  <p>• Station will be linked to <strong>{restaurantName}</strong> ({location})</p>
+                  <p>• Single-use pass <strong>{tempPass.toUpperCase()}</strong> will be redeemed for <strong>{email}</strong></p>
+                  <p>• You will be redirected straight to your live manager dashboard</p>
                 </div>
 
-                <div>
-                  <label className="block text-xs font-semibold text-zinc-300 mb-1">
-                    Owner Email Address {isDirectMode ? '(For 30-Day Monthly Performance Report)' : '(Verified Invite Email)'}
-                  </label>
-                  <div className="relative">
-                    <Mail className="h-4 w-4 text-zinc-500 absolute left-3.5 top-3.5" />
-                    <input
-                      type="email"
-                      readOnly={!isDirectMode && Boolean(email)}
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      placeholder="e.g. owner@gmail.com"
-                      className={`w-full rounded-xl border border-zinc-800 pl-10 pr-3.5 py-2.5 text-sm text-white focus:border-amber-400 focus:outline-none placeholder-zinc-500 ${
-                        !isDirectMode && email ? 'bg-zinc-900 text-zinc-300 cursor-not-allowed' : 'bg-[#0A0A0C]'
-                      }`}
-                    />
-                  </div>
-                </div>
-
-                <div className="pt-2">
-                  <button
-                    type="submit"
-                    disabled={submitting}
-                    className="btn-gold flex w-full items-center justify-center gap-2 rounded-xl py-3.5 font-bold transition text-sm disabled:opacity-50 shadow-xl active:scale-95"
-                  >
-                    <Sparkles className="h-4 w-4 fill-current" />
-                    <span>{submitting ? 'Activating Stand...' : 'Activate Tabletop Station 🚀'}</span>
-                  </button>
-                </div>
-              </form>
+                <button
+                  type="button"
+                  onClick={handleCompleteSetup}
+                  disabled={submitting}
+                  className="btn-gold flex w-full items-center justify-center gap-2 rounded-xl py-3.5 font-bold transition text-sm disabled:opacity-50 shadow-xl active:scale-95"
+                >
+                  <Sparkles className="h-4 w-4 fill-current" />
+                  <span>{submitting ? 'Activating Stand...' : 'Activate Tabletop Station 🚀'}</span>
+                </button>
+              </div>
             </div>
           )}
-        </>
+        </div>
       )}
 
       {/* Footer */}
@@ -767,4 +825,5 @@ export function StoreSetupView({ mode = 'invite' }: StoreSetupViewProps) {
     </div>
   );
 }
+
 export default StoreSetupView;

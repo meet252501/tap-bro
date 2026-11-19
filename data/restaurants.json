@@ -67,5 +67,189 @@
       }
     ],
     "cycleStartDate": "2026-11-19T14:26:52.747Z"
+  },
+  {
+    "id": "REST_EUPHYA",
+    "slug": "karnavati-main-branch",
+    "name": "Karnavati (Main Branch)",
+    "tagline": "Delightful Dining & Hospitality",
+    "cuisine": "Restaurant & Cafe",
+    "location": "Gujarat, India",
+    "phone": "9825012345",
+    "email": "gujaratowner_1795104774552@restaurant.com",
+    "adminPin": "4321",
+    "googleReviewUrl": "https://www.google.com/maps/search/?api=1&query=Karnavati%20Gujarat%2C%20India",
+    "aiProvider": "nvidia",
+    "totalReviewsGenerated": 0,
+    "tableCount": 10,
+    "createdAt": "2026-11-19T16:13:09.984Z",
+    "updatedAt": "2026-11-19T16:13:09.984Z",
+    "menuCategories": [
+      {
+        "name": "Starters & Chaat",
+        "icon": "🍲",
+        "items": [
+          "Crispy Veg Spring Roll",
+          "Paneer Tikka",
+          "Crispy Corn Chaat"
+        ]
+      },
+      {
+        "name": "Main Courses",
+        "icon": "🍛",
+        "items": [
+          "Dal Makhani",
+          "Paneer Butter Masala",
+          "Butter Garlic Naan"
+        ]
+      },
+      {
+        "name": "Desserts & Beverages",
+        "icon": "🍧",
+        "items": [
+          "Hot Gulab Jamun",
+          "Masala Kulhad Chai",
+          "Fresh Mango Lassi"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "REST_XP5UUI",
+    "slug": "karnavati-main-branch-1",
+    "name": "Karnavati (Main Branch)",
+    "tagline": "Delightful Dining & Hospitality",
+    "cuisine": "Restaurant & Cafe",
+    "location": "Gujarat, India",
+    "phone": "9825012345",
+    "email": "gujaratowner_1795104820925@restaurant.com",
+    "adminPin": "4321",
+    "googleReviewUrl": "https://www.google.com/maps/search/?api=1&query=Karnavati%20Gujarat%2C%20India",
+    "aiProvider": "nvidia",
+    "totalReviewsGenerated": 0,
+    "tableCount": 10,
+    "createdAt": "2026-11-19T16:13:51.418Z",
+    "updatedAt": "2026-11-19T16:13:51.419Z",
+    "menuCategories": [
+      {
+        "name": "Starters & Chaat",
+        "icon": "🍲",
+        "items": [
+          "Crispy Veg Spring Roll",
+          "Paneer Tikka",
+          "Crispy Corn Chaat"
+        ]
+      },
+      {
+        "name": "Main Courses",
+        "icon": "🍛",
+        "items": [
+          "Dal Makhani",
+          "Paneer Butter Masala",
+          "Butter Garlic Naan"
+        ]
+      },
+      {
+        "name": "Desserts & Beverages",
+        "icon": "🍧",
+        "items": [
+          "Hot Gulab Jamun",
+          "Masala Kulhad Chai",
+          "Fresh Mango Lassi"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "REST_B7NUAF",
+    "slug": "karnavati-club",
+    "name": "Karnavati Club",
+    "tagline": "Delightful Dining & Hospitality",
+    "cuisine": "Restaurant & Cafe",
+    "location": "Sarkhej, Ahmedabad, Gujarat",
+    "phone": "9825012345",
+    "email": "test_node_complete@restaurant.com",
+    "adminPin": "4321",
+    "googleReviewUrl": "https://www.google.com/maps/search/?api=1&query=Karnavati%20Gujarat",
+    "aiProvider": "nvidia",
+    "totalReviewsGenerated": 0,
+    "tableCount": 10,
+    "createdAt": "2026-11-19T16:14:47.697Z",
+    "updatedAt": "2026-11-19T16:14:47.697Z",
+    "menuCategories": [
+      {
+        "name": "Starters & Chaat",
+        "icon": "🍲",
+        "items": [
+          "Crispy Veg Spring Roll",
+          "Paneer Tikka",
+          "Crispy Corn Chaat"
+        ]
+      },
+      {
+        "name": "Main Courses",
+        "icon": "🍛",
+        "items": [
+          "Dal Makhani",
+          "Paneer Butter Masala",
+          "Butter Garlic Naan"
+        ]
+      },
+      {
+        "name": "Desserts & Beverages",
+        "icon": "🍧",
+        "items": [
+          "Hot Gulab Jamun",
+          "Masala Kulhad Chai",
+          "Fresh Mango Lassi"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "REST_4PDENX",
+    "slug": "karnavati-main-branch-2",
+    "name": "Karnavati (Main Branch)",
+    "tagline": "Delightful Dining & Hospitality",
+    "cuisine": "Restaurant & Cafe",
+    "location": "Gujarat, India",
+    "phone": "9825012345",
+    "email": "gujaratowner_1795104986970@restaurant.com",
+    "adminPin": "4321",
+    "googleReviewUrl": "https://www.google.com/maps/search/?api=1&query=Karnavati%20Gujarat%2C%20India",
+    "aiProvider": "nvidia",
+    "totalReviewsGenerated": 0,
+    "tableCount": 10,
+    "createdAt": "2026-11-19T16:16:45.109Z",
+    "updatedAt": "2026-11-19T16:16:45.109Z",
+    "menuCategories": [
+      {
+        "name": "Starters & Chaat",
+        "icon": "🍲",
+        "items": [
+          "Crispy Veg Spring Roll",
+          "Paneer Tikka",
+          "Crispy Corn Chaat"
+        ]
+      },
+      {
+        "name": "Main Courses",
+        "icon": "🍛",
+        "items": [
+          "Dal Makhani",
+          "Paneer Butter Masala",
+          "Butter Garlic Naan"
+        ]
+      },
+      {
+        "name": "Desserts & Beverages",
+        "icon": "🍧",
+        "items": [
+          "Hot Gulab Jamun",
+          "Masala Kulhad Chai",
+          "Fresh Mango Lassi"
+        ]
+      }
+    ]
   }
 ]
