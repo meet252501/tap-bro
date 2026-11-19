@@ -8,7 +8,7 @@ export const Footer: React.FC = () => {
     <footer className="w-full border-t border-border/40 py-6 px-4 text-center text-xs text-zinc-500">
       <div className="mx-auto max-w-xl space-y-2">
         <div className="flex items-center justify-center gap-2 text-zinc-400">
-          <QrCode className="h-4 w-4 text-cyan-400/80" />
+          <QrCode className="h-4 w-4 text-zinc-400" />
           <span className="font-medium text-xs">Tap-Bro Tabletop NFC & QR Review Station</span>
         </div>
         <p className="text-[11px] leading-relaxed">

@@ -66,20 +66,20 @@ export const StepRatings: React.FC<StepRatingsProps> = ({ ratings, onChange, onN
   return (
     <div className="space-y-4 sm:space-y-5 animate-fade-in pb-8">
       {/* Intro Banner */}
-      <div className="rounded-2xl border border-slate-800 bg-[#131B2E] p-5 shadow-lg relative overflow-hidden">
+      <div className="rounded-2xl border border-zinc-800 bg-[#121216] p-5 relative overflow-hidden">
         <div className="flex items-center justify-between">
-          <span className="text-[11px] font-bold uppercase tracking-wider text-indigo-400 flex items-center gap-1.5">
-            <Sparkles className="h-3 w-3 text-cyan-400" />
+          <span className="text-[11px] font-medium uppercase tracking-wider text-zinc-400 flex items-center gap-1.5">
+            <Sparkles className="h-3 w-3 text-zinc-400" />
             <span>Step 1 of 3 • Quick Ratings</span>
           </span>
-          <span className="text-[10px] text-cyan-300 font-mono bg-cyan-500/10 border border-cyan-500/20 px-2.5 py-0.5 rounded-full">
+          <span className="text-[10px] text-zinc-300 font-mono bg-zinc-800/80 border border-zinc-700/60 px-2.5 py-0.5 rounded-full">
             10-sec review
           </span>
         </div>
         <h2 className="mt-2 text-lg sm:text-xl font-bold text-white tracking-tight">
           How was your meal today?
         </h2>
-        <p className="mt-1 text-xs text-slate-400 leading-relaxed">
+        <p className="mt-1 text-xs text-zinc-400 leading-relaxed">
           Tap the stars below to share your genuine dining experience.
         </p>
       </div>
@@ -94,37 +94,37 @@ export const StepRatings: React.FC<StepRatingsProps> = ({ ratings, onChange, onN
           return (
             <div
               key={cat.key}
-              className={`rounded-2xl p-4 transition-all duration-200 ${
+              className={`rounded-2xl p-4 transition-all duration-150 ${
                 isRated
-                  ? 'border border-indigo-500/50 bg-[#17213A] shadow-[0_0_16px_rgba(99,102,241,0.15)]'
-                  : 'border border-slate-800 bg-[#131B2E] shadow-sm'
+                  ? 'border border-zinc-600 bg-[#18181B]'
+                  : 'border border-zinc-800 bg-[#121216]'
               }`}
             >
               <div className="flex items-center justify-between gap-2">
                 <div className="flex items-center gap-3 min-w-0">
                   <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border transition-colors ${
                     isRated
-                      ? 'bg-indigo-500/20 border-indigo-500/40 text-indigo-300'
-                      : 'bg-slate-800/60 border-slate-700 text-slate-400'
+                      ? 'bg-zinc-800 border-zinc-600 text-white'
+                      : 'bg-zinc-900 border-zinc-800 text-zinc-400'
                   }`}>
                     <Icon className="h-4 w-4" />
                   </div>
                   <div className="min-w-0">
                     <h3 className="text-xs sm:text-sm font-bold text-white truncate tracking-tight">{cat.title}</h3>
-                    <p className="text-[10px] sm:text-[11px] text-slate-400 truncate">{cat.subtitle}</p>
+                    <p className="text-[10px] sm:text-[11px] text-zinc-400 truncate">{cat.subtitle}</p>
                   </div>
                 </div>
 
                 {/* Selected Status Badge */}
                 {selectedValue > 0 && (
-                  <span className="shrink-0 rounded-full bg-indigo-500/10 border border-indigo-500/30 px-2.5 py-1 text-[10px] sm:text-[11px] font-bold text-indigo-200 animate-fade-in">
+                  <span className="shrink-0 rounded-full bg-zinc-800 border border-zinc-700 px-2.5 py-1 text-[10px] sm:text-[11px] font-medium text-zinc-200 animate-fade-in">
                     {RATING_DESCRIPTIONS[selectedValue]}
                   </span>
                 )}
               </div>
 
               {/* Big Touch-Friendly Star Rating Buttons */}
-              <div className="mt-3.5 pt-3 border-t border-slate-800">
+              <div className="mt-3.5 pt-3 border-t border-zinc-800/80">
                 <div className="flex items-center justify-between gap-1.5">
                   {[1, 2, 3, 4, 5].map((star) => {
                     const isFilled = star <= selectedValue;
@@ -141,8 +141,8 @@ export const StepRatings: React.FC<StepRatingsProps> = ({ ratings, onChange, onN
                         <Star
                           className={`h-5 w-5 transition-transform ${
                             isFilled
-                              ? 'fill-[#FFB95F] stroke-[#F59E0B] drop-shadow-[0_0_8px_rgba(255,185,95,0.7)] scale-110'
-                              : 'stroke-current opacity-40'
+                              ? 'fill-white stroke-white scale-105'
+                              : 'stroke-zinc-500 opacity-40'
                           }`}
                         />
                       </button>
@@ -160,14 +160,14 @@ export const StepRatings: React.FC<StepRatingsProps> = ({ ratings, onChange, onN
         <button
           type="button"
           onClick={onNext}
-          className="group flex w-full items-center justify-center gap-2 rounded-2xl btn-gold py-4 px-6 font-bold text-sm sm:text-base shadow-xl transition-all duration-200 active:scale-[0.98]"
+          className="group flex w-full items-center justify-center gap-2 rounded-xl btn-gold py-3.5 px-6 font-semibold text-sm sm:text-base transition-all duration-150 active:scale-[0.98]"
         >
           <span>Continue to Dishes &amp; Notes ➔</span>
-          <ChevronRight className="h-4 w-4 transition-transform group-hover:translate-x-1 stroke-[3]" />
+          <ChevronRight className="h-4 w-4 transition-transform group-hover:translate-x-1 stroke-[2.5]" />
         </button>
 
         {!hasAtLeastOneRating && (
-          <p className="mt-2.5 text-center text-[11px] text-slate-500 font-medium">
+          <p className="mt-2.5 text-center text-[11px] text-zinc-500 font-medium">
             You can proceed even without rating all categories.
           </p>
         )}

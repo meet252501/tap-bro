@@ -162,8 +162,8 @@ export default function RestaurantDinerPage() {
     return (
       <div className="min-h-screen bg-page flex items-center justify-center p-4">
         <div className="flex flex-col items-center gap-3">
-          <div className="h-10 w-10 animate-spin rounded-full border-2 border-indigo-400/20 border-t-indigo-400" />
-          <p className="text-xs font-medium text-indigo-300">Loading restaurant review station...</p>
+          <div className="h-10 w-10 animate-spin rounded-full border-2 border-zinc-700 border-t-white" />
+          <p className="text-xs font-medium text-zinc-400">Loading restaurant review station...</p>
         </div>
       </div>
     );

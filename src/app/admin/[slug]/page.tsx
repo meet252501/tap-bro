@@ -265,10 +265,10 @@ function RestaurantAdminDashboardContent() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-page flex items-center justify-center p-4">
+      <div className="min-h-screen bg-[#0A0A0C] flex items-center justify-center p-4">
         <div className="flex flex-col items-center gap-3">
-          <div className="h-10 w-10 animate-spin rounded-full border-2 border-amber-400/20 border-t-amber-400" />
-          <p className="text-xs font-medium text-amber-300">Loading Tap-Bro...</p>
+          <div className="h-10 w-10 animate-spin rounded-full border-2 border-zinc-700 border-t-white" />
+          <p className="text-xs font-medium text-zinc-400">Loading Tap-Bro...</p>
         </div>
       </div>
     );
@@ -276,12 +276,12 @@ function RestaurantAdminDashboardContent() {
 
   if (error || !restaurant) {
     return (
-      <div className="min-h-screen bg-[#0B1326] flex items-center justify-center p-4">
-        <div className="rounded-2xl border border-slate-800 bg-[#131B2E] p-6 text-center space-y-4 max-w-sm w-full">
+      <div className="min-h-screen bg-[#0A0A0C] flex items-center justify-center p-4">
+        <div className="rounded-2xl border border-zinc-800 bg-[#121216] p-6 text-center space-y-4 max-w-sm w-full">
           <p className="text-sm text-red-400">{error || 'Restaurant not found'}</p>
           <button
             onClick={() => router.push('/admin')}
-            className="w-full rounded-xl btn-gold py-2.5 text-xs font-bold"
+            className="w-full rounded-xl btn-gold py-2.5 text-xs font-semibold"
           >
             Return to Admin Login
           </button>
@@ -292,15 +292,15 @@ function RestaurantAdminDashboardContent() {
 
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen bg-[#0B1326] flex items-center justify-center p-4 selection:bg-amber-400 selection:text-[#0B1326] relative">
+      <div className="min-h-screen bg-[#0A0A0C] flex items-center justify-center p-4 selection:bg-zinc-700 selection:text-white relative">
         <div className="ambient-bg pointer-events-none fixed inset-0 z-0" />
-        <div className="relative z-10 w-full max-w-sm rounded-2xl border border-slate-800 bg-[#131B2E] p-6 shadow-2xl space-y-4 animate-fade-in text-center">
-          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-amber-400/10 border border-amber-400/30 text-amber-400">
+        <div className="relative z-10 w-full max-w-sm rounded-2xl border border-zinc-800 bg-[#121216] p-6 space-y-4 animate-fade-in text-center">
+          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-zinc-800 border border-zinc-700 text-zinc-300">
             <Lock className="h-6 w-6" />
           </div>
           <div>
             <h2 className="text-base font-bold text-white">Partner Authentication Required</h2>
-            <p className="text-xs text-slate-400 mt-1">
+            <p className="text-xs text-zinc-400 mt-1">
               This manager portal for <span className="text-white font-semibold">{name || slug}</span> is strictly invite-only. Enter your PIN or sign in via your email link.
             </p>
           </div>
@@ -313,18 +313,18 @@ function RestaurantAdminDashboardContent() {
 
           <form onSubmit={handleUnlockWithPin} className="space-y-3 text-left">
             <div>
-              <label className="block text-[11px] font-semibold text-slate-300 mb-1">
+              <label className="block text-[11px] font-semibold text-zinc-300 mb-1">
                 Manager PIN or Temporary Pass
               </label>
               <div className="relative">
-                <KeyRound className="h-4 w-4 text-slate-400 absolute left-3 top-3" />
+                <KeyRound className="h-4 w-4 text-zinc-500 absolute left-3 top-3" />
                 <input
                   type="password"
                   required
                   value={authPinInput}
                   onChange={(e) => setAuthPinInput(e.target.value)}
                   placeholder="Enter 4-digit PIN or TAP-XXXX"
-                  className="w-full rounded-xl border border-slate-700 bg-[#0B1326] pl-9 pr-3 py-2.5 text-sm text-white focus:border-amber-400 focus:outline-none placeholder-slate-500 font-mono"
+                  className="w-full rounded-xl border border-zinc-800 bg-[#0A0A0C] pl-9 pr-3 py-2.5 text-sm text-white focus:border-zinc-500 focus:outline-none placeholder-zinc-500 font-mono"
                 />
               </div>
             </div>
@@ -332,17 +332,17 @@ function RestaurantAdminDashboardContent() {
             <button
               type="submit"
               disabled={isVerifyingAuth || !authPinInput.trim()}
-              className="w-full btn-gold rounded-xl py-2.5 text-xs font-bold transition disabled:opacity-50"
+              className="w-full btn-gold rounded-xl py-2.5 text-xs font-semibold transition disabled:opacity-50"
             >
               {isVerifyingAuth ? 'Verifying...' : 'Unlock Dashboard'}
             </button>
           </form>
 
-          <div className="pt-2 border-t border-slate-800">
+          <div className="pt-2 border-t border-zinc-800">
             <button
               type="button"
               onClick={() => router.push('/admin')}
-              className="w-full rounded-xl border border-slate-800 bg-[#0B1326] py-2 text-xs font-medium text-slate-400 hover:text-white transition"
+              className="w-full rounded-xl border border-zinc-800 bg-[#0A0A0C] py-2 text-xs font-medium text-zinc-400 hover:text-white transition"
             >
               Sign In via Email Link (Partner Portal)
             </button>
@@ -353,27 +353,27 @@ function RestaurantAdminDashboardContent() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0B1326] text-white selection:bg-amber-400 selection:text-[#0B1326] relative flex flex-col justify-between">
+    <div className="min-h-screen bg-[#0A0A0C] text-white selection:bg-zinc-700 selection:text-white relative flex flex-col justify-between">
       <div className="ambient-bg pointer-events-none fixed inset-0 z-0" />
 
       {/* Phone-Optimized Top App Bar */}
-      <header className="sticky top-0 z-30 border-b border-slate-800 bg-[#0B1326]/95 backdrop-blur-2xl px-4 py-3 shadow-lg">
+      <header className="sticky top-0 z-30 border-b border-zinc-800 bg-[#0A0A0C]/95 backdrop-blur-2xl px-4 py-3">
         <div className="mx-auto flex max-w-md items-center justify-between">
           <div className="flex items-center gap-2.5 min-w-0">
             <button
               onClick={() => router.push('/admin')}
-              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-slate-800 bg-[#131B2E] text-slate-400 hover:text-white transition"
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-zinc-800 bg-[#121216] text-zinc-400 hover:text-white transition"
             >
               <ArrowLeft className="h-4 w-4" />
             </button>
             <div className="min-w-0">
               <div className="flex items-center gap-1.5 truncate">
-                <span className="text-[11px] font-bold text-amber-400 uppercase tracking-wider">Tap-Bro</span>
-                <span className="text-slate-600">•</span>
+                <span className="text-[11px] font-semibold text-zinc-300 uppercase tracking-wider">Tap-Bro</span>
+                <span className="text-zinc-600">•</span>
                 <h1 className="text-sm font-bold text-white truncate">{name}</h1>
               </div>
-              <p className="text-[10px] text-slate-400 truncate">
-                ID: <span className="font-mono text-slate-300">{restaurant.id}</span>
+              <p className="text-[10px] text-zinc-400 truncate">
+                ID: <span className="font-mono text-zinc-300">{restaurant.id}</span>
               </p>
             </div>
           </div>
@@ -382,7 +382,7 @@ function RestaurantAdminDashboardContent() {
             <button
               type="button"
               onClick={() => window.open(`/r/${slug}`, '_blank')}
-              className="flex h-9 w-9 items-center justify-center rounded-xl border border-slate-800 bg-[#131B2E] text-amber-400 hover:text-white transition"
+              className="flex h-9 w-9 items-center justify-center rounded-xl border border-zinc-800 bg-[#121216] text-zinc-400 hover:text-white transition"
               title="Preview Diner View"
             >
               <Eye className="h-4 w-4" />
@@ -391,10 +391,10 @@ function RestaurantAdminDashboardContent() {
               type="button"
               onClick={() => handleSave()}
               disabled={saving}
-              className={`flex items-center gap-1.5 rounded-xl px-4 py-2 text-xs font-bold transition shadow-md ${
+              className={`flex items-center gap-1.5 rounded-xl px-4 py-2 text-xs font-semibold transition ${
                 savedSuccess
-                  ? 'bg-emerald-500 text-white'
-                  : 'btn-gold shadow-amber-400/20'
+                  ? 'bg-zinc-800 text-white border border-zinc-600'
+                  : 'btn-gold'
               }`}
             >
               {savedSuccess ? <Check className="h-3.5 w-3.5" /> : <Save className="h-3.5 w-3.5" />}
@@ -421,30 +421,30 @@ function RestaurantAdminDashboardContent() {
 
         {/* Quick Phone Stats Widget */}
         <div className="grid grid-cols-2 gap-2.5">
-          <div className="glass-card rounded-2xl p-3.5 flex items-center justify-between shadow-md">
+          <div className="glass-card rounded-2xl p-3.5 flex items-center justify-between">
             <div>
-              <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">
+              <span className="text-[10px] font-semibold text-zinc-400 uppercase tracking-wider block">
                 Total Reviews
               </span>
               <p className="text-xl font-bold text-white mt-0.5">
                 {restaurant.totalReviewsGenerated || 0}
               </p>
             </div>
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 shadow-sm">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-zinc-800 border border-zinc-700 text-zinc-300">
               <Sparkles className="h-4 w-4" />
             </div>
           </div>
 
-          <div className="glass-card rounded-2xl p-3.5 flex items-center justify-between shadow-md">
+          <div className="glass-card rounded-2xl p-3.5 flex items-center justify-between">
             <div>
-              <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">
+              <span className="text-[10px] font-semibold text-zinc-400 uppercase tracking-wider block">
                 Dining Tables
               </span>
-              <p className="text-xl font-bold text-indigo-400 mt-0.5">
+              <p className="text-xl font-bold text-white mt-0.5">
                 {tableCount} Stands
               </p>
             </div>
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 shadow-sm">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-zinc-800 border border-zinc-700 text-zinc-300">
               <Radio className="h-4 w-4" />
             </div>
           </div>

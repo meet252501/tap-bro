@@ -3,8 +3,8 @@
 @tailwind utilities;
 
 :root {
-  --background: #0B1326;
-  --foreground: #F8F9FA;
+  --background: #0A0A0C;
+  --foreground: #FFFFFF;
 }
 
 /* Prevent unwanted horizontal viewport shift and enable smooth scrolling */
@@ -16,8 +16,8 @@ html {
 }
 
 body {
-  background-color: #0B1326;
-  color: #F8F9FA;
+  background-color: #0A0A0C;
+  color: #EDEDED;
   font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -63,22 +63,22 @@ select {
   height: 5px;
 }
 ::-webkit-scrollbar-track {
-  background: #111319;
+  background: #0A0A0C;
 }
 ::-webkit-scrollbar-thumb {
-  background: #2D313F;
+  background: #27272A;
   border-radius: 9999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #6366F1;
+  background: #3F3F46;
 }
 
-/* Star glow transition */
+/* Star transition */
 .star-btn {
   transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1), color 0.15s ease, background-color 0.15s ease;
 }
 .star-btn:active {
-  transform: scale(1.15);
+  transform: scale(1.1);
 }
 
 /* Chip selection bounce */
@@ -86,77 +86,75 @@ select {
   transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
 }
 .chip-item:active {
-  transform: scale(0.95);
+  transform: scale(0.96);
 }
 
-/* Clean Stitch Dark Canvas (High-precision, no muddy color tinting) */
+/* Obsidian Reserve Canvas (Pure matte dark, non-radiant, no neon halos) */
 .ambient-bg {
-  background-color: #0B1326;
-  background-image: 
-    radial-gradient(ellipse 60% 30% at 50% 0%, rgba(99, 102, 241, 0.06), transparent 70%),
-    linear-gradient(180deg, #0B1326 0%, #080D1A 100%);
+  background-color: #0A0A0C;
 }
 
-/* Stitch Precision Card Layer (#131B2E with crisp border #1E293B) */
+/* Precision Card Layer (#121216 with subtle 1px hairline border #27272A) */
 .glass-card {
-  background: #131B2E;
-  border: 1px solid #1E293B;
-  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.5);
+  background: #121216;
+  border: 1px solid #27272A;
+  box-shadow: none;
 }
 
-/* Stitch Highlighted Active Card with clean border definition */
+/* Highlighted Active Card with clean border definition */
 .glass-card-gold {
-  background: #17213A;
-  border: 1px solid #334155;
-  box-shadow: 0 8px 28px -4px rgba(0, 0, 0, 0.6);
+  background: #18181B;
+  border: 1px solid #3F3F46;
+  box-shadow: none;
 }
 
-/* Stitch Authentic Electric Indigo Primary Action Button */
+/* Obsidian Reserve Solid Stark White Primary Action Button (Pure black text, zero glow) */
 .btn-gold {
-  background: #6366F1;
-  color: #FFFFFF;
-  font-weight: 700;
+  background: #FFFFFF;
+  color: #000000;
+  font-weight: 600;
   border: 1px solid rgba(255, 255, 255, 0.2);
-  box-shadow: 0 4px 14px rgba(99, 102, 241, 0.35);
+  box-shadow: none;
   transition: all 0.15s ease;
 }
 .btn-gold:hover {
-  background: #4F46E5;
-  box-shadow: 0 6px 20px rgba(99, 102, 241, 0.45);
+  background: #E4E4E7;
+  color: #000000;
+  box-shadow: none;
 }
 .btn-gold:active {
   transform: scale(0.98);
 }
 
-/* Stitch Cyan-Indigo Gradient Accent Text */
+/* Monochromatic Clean Typography Accent */
 .text-gold-gradient {
-  background: linear-gradient(135deg, #818CF8 0%, #22D3EE 100%);
+  background: linear-gradient(180deg, #FFFFFF 0%, #A1A1AA 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
-/* Stitch Clean Precision Star Tiles */
+/* Minimalist Non-Radiant Star Tiles */
 .star-tile-empty {
-  background: #0F172A;
-  border: 1px solid #1E293B;
-  color: #475569;
+  background: #121216;
+  border: 1px solid #27272A;
+  color: #52525B;
   transition: all 0.15s ease;
 }
 .star-tile-empty:hover, .star-tile-empty:active {
-  border-color: #FFB95F;
-  color: #FFB95F;
+  border-color: #71717A;
+  color: #D4D4D8;
   transform: scale(1.05);
 }
 .star-tile-filled {
-  background: rgba(255, 185, 95, 0.12);
-  border: 1px solid rgba(255, 185, 95, 0.5);
-  color: #FFB95F;
-  box-shadow: 0 0 12px rgba(255, 185, 95, 0.2);
+  background: #27272A;
+  border: 1px solid #FFFFFF;
+  color: #FFFFFF;
+  box-shadow: none;
   transform: scale(1.05);
 }
 
-/* Crisp Minimalist Divider */
+/* Crisp Hairline Divider */
 .golden-divider {
   height: 1px;
-  background: #1E293B;
+  background: #27272A;
 }

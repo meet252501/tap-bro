@@ -9,33 +9,33 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        page: "#0B1326",
+        page: "#0A0A0C",
         surface: {
-          DEFAULT: "#131B2E",
-          raised: "#1E293B",
-          card: "#131B2E",
-          highlight: "#26354D",
+          DEFAULT: "#121216",
+          raised: "#18181B",
+          card: "#121216",
+          highlight: "#222226",
         },
         border: {
-          DEFAULT: "#1E293B",
-          subtle: "#172033",
-          bright: "#334155",
+          DEFAULT: "#27272A",
+          subtle: "#18181B",
+          bright: "#3F3F46",
         },
         accent: {
-          DEFAULT: "#6366F1",
-          hover: "#4F46E5",
-          light: "#A5B4FC",
-          glow: "rgba(99, 102, 241, 0.3)",
+          DEFAULT: "#FFFFFF",
+          hover: "#E4E4E7",
+          light: "#A1A1AA",
+          glow: "transparent",
         },
         cyan: {
-          400: "#22D3EE",
-          500: "#06B6D4",
-          600: "#0891B2",
+          400: "#E4E4E7",
+          500: "#A1A1AA",
+          600: "#71717A",
         },
         saffron: {
-          400: "#FBBF24",
-          500: "#F59E0B",
-          600: "#D97706",
+          400: "#FFFFFF",
+          500: "#E4E4E7",
+          600: "#A1A1AA",
         },
       },
       fontFamily: {

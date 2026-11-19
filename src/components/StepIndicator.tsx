@@ -41,19 +41,19 @@ export const StepIndicator: React.FC<StepIndicatorProps> = ({ currentStep, onSte
                 aria-current={isActive ? 'step' : undefined}
               >
                 <div
-                  className={`flex h-10 w-10 items-center justify-center rounded-full text-xs font-semibold transition-all duration-300 shadow-md ${
+                  className={`flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-full text-xs font-semibold transition-all duration-200 ${
                     isCompleted
-                      ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-400/50 shadow-[0_0_14px_rgba(6,182,212,0.3)]'
+                      ? 'bg-zinc-800 text-white border border-zinc-700'
                       : isActive
-                      ? 'bg-gradient-to-br from-[#8083FF] via-[#6366F1] to-[#4F46E5] text-white border border-indigo-300/40 shadow-[0_0_20px_rgba(99,102,241,0.5)] ring-4 ring-indigo-500/20 scale-110'
-                      : 'bg-[#131B2E] border border-slate-800 text-slate-500'
+                      ? 'bg-white text-black border border-white font-bold'
+                      : 'bg-[#121216] border border-zinc-800 text-zinc-500'
                   }`}
                 >
-                  {isCompleted ? <Check className="h-5 w-5 stroke-[2.5]" /> : <Icon className={`h-4 w-4 ${isActive ? 'stroke-[2.5]' : ''}`} />}
+                  {isCompleted ? <Check className="h-4 w-4 stroke-[2.5]" /> : <Icon className={`h-4 w-4 ${isActive ? 'stroke-[2.5]' : ''}`} />}
                 </div>
                 <span
-                  className={`text-[11px] font-bold transition-colors sm:text-xs tracking-tight ${
-                    isActive ? 'text-cyan-400 font-extrabold drop-shadow-[0_0_8px_rgba(34,211,238,0.3)]' : isCompleted ? 'text-slate-200' : 'text-slate-500'
+                  className={`text-[11px] sm:text-xs transition-colors tracking-tight ${
+                    isActive ? 'text-white font-semibold' : isCompleted ? 'text-zinc-300' : 'text-zinc-500'
                   }`}
                 >
                   {step.title}
@@ -62,9 +62,9 @@ export const StepIndicator: React.FC<StepIndicatorProps> = ({ currentStep, onSte
 
               {/* Progress Line */}
               {index < steps.length - 1 && (
-                <div className="flex-1 mx-2 h-1 bg-[#1E293B] rounded-full relative top-[-10px] overflow-hidden">
+                <div className="flex-1 mx-2 h-0.5 bg-zinc-800 rounded-full relative top-[-10px] overflow-hidden">
                   <div
-                    className="h-full bg-gradient-to-r from-[#6366F1] to-[#06B6D4] shadow-[0_0_10px_rgba(6,182,212,0.4)] transition-all duration-300"
+                    className="h-full bg-white transition-all duration-200"
                     style={{
                       width: currentStep > step.id ? '100%' : '0%',
                     }}

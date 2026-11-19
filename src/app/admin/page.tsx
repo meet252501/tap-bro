@@ -81,44 +81,44 @@ function AdminPortalContent() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0B1326] flex flex-col justify-center items-center p-4 selection:bg-indigo-500 selection:text-white relative">
+    <div className="min-h-screen bg-[#0A0A0C] flex flex-col justify-center items-center p-4 selection:bg-zinc-700 selection:text-white relative">
       <div className="ambient-bg pointer-events-none fixed inset-0 z-0" />
 
       <div className="relative z-10 w-full max-w-md">
         {/* Branding Banner */}
         <div className="text-center mb-6">
-          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-indigo-500/10 border border-indigo-500/30 text-indigo-400 shadow-lg mb-3">
-            <Radio className="h-7 w-7" />
+          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-zinc-800 border border-zinc-700 text-zinc-300 mb-3">
+            <Radio className="h-6 w-6" />
           </div>
           <h1 className="text-2xl font-bold tracking-tight text-white">
             Tap-Bro Partner Portal
           </h1>
-          <p className="mt-1 text-xs text-slate-400">
-            Invite-Only Restaurant Management & Tabletop NFC Hub
+          <p className="mt-1 text-xs text-zinc-400">
+            Invite-Only Restaurant Management &amp; Tabletop NFC Hub
           </p>
         </div>
 
         {/* Security Invite-Only Badge */}
-        <div className="mb-4 flex items-center justify-center gap-2 rounded-xl bg-slate-900/80 border border-slate-800 p-2.5 text-xs text-slate-300">
-          <Lock className="h-3.5 w-3.5 text-indigo-400 shrink-0" />
+        <div className="mb-4 flex items-center justify-center gap-2 rounded-xl bg-zinc-900 border border-zinc-800 p-2.5 text-xs text-zinc-300">
+          <Lock className="h-3.5 w-3.5 text-zinc-400 shrink-0" />
           <span>Strictly Invite-Only • Verified Partner Access</span>
         </div>
 
-        {/* Login Form Card (Stitch High-Precision Design System) */}
-        <div className="rounded-2xl border border-slate-800 bg-[#131B2E] p-6 sm:p-7 shadow-2xl space-y-5 animate-fade-in">
+        {/* Login Form Card (Minimalist Luxury Design) */}
+        <div className="rounded-2xl border border-zinc-800 bg-[#121216] p-6 sm:p-7 space-y-5 animate-fade-in">
           <div>
             <h2 className="text-base font-bold text-white flex items-center gap-2">
-              <ShieldCheck className="h-4 w-4 text-indigo-400" />
+              <ShieldCheck className="h-4 w-4 text-zinc-300" />
               <span>Partner Sign In</span>
             </h2>
-            <p className="text-xs text-slate-400 mt-0.5">
+            <p className="text-xs text-zinc-400 mt-0.5">
               Access is restricted to authorized partners with an active Super Admin invitation or temporary pass.
             </p>
           </div>
 
           {autoLoggingIn && (
-            <div className="rounded-xl border border-indigo-500/30 bg-indigo-500/10 p-3 text-xs text-indigo-300 flex items-center gap-2">
-              <div className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-indigo-400 border-t-transparent" />
+            <div className="rounded-xl border border-zinc-700 bg-zinc-800/80 p-3 text-xs text-zinc-300 flex items-center gap-2">
+              <div className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-zinc-500 border-t-white" />
               <span>Verifying your email invitation link...</span>
             </div>
           )}
@@ -132,35 +132,35 @@ function AdminPortalContent() {
 
           <form onSubmit={handleManualLogin} className="space-y-4">
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+              <label className="block text-xs font-semibold text-zinc-300 mb-1.5">
                 Authorized Email or Phone
               </label>
               <div className="relative">
-                <Mail className="h-4 w-4 text-slate-400 absolute left-3.5 top-3.5" />
+                <Mail className="h-4 w-4 text-zinc-500 absolute left-3.5 top-3.5" />
                 <input
                   type="text"
                   required
                   value={loginPhoneOrEmail}
                   onChange={(e) => setLoginPhoneOrEmail(e.target.value)}
                   placeholder="e.g. manager@tajdining.com or 9876543210"
-                  className="w-full rounded-xl border border-slate-700 bg-[#0F172A] pl-10 pr-3.5 py-3 text-base sm:text-sm text-white focus:border-indigo-400 focus:outline-none placeholder-slate-500 transition-all"
+                  className="w-full rounded-xl border border-zinc-800 bg-[#0A0A0C] pl-10 pr-3.5 py-3 text-base sm:text-sm text-white focus:border-zinc-500 focus:outline-none placeholder-zinc-500 transition-all"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+              <label className="block text-xs font-semibold text-zinc-300 mb-1.5">
                 Temporary Pass (from email) or Manager PIN
               </label>
               <div className="relative">
-                <KeyRound className="h-4 w-4 text-slate-400 absolute left-3.5 top-3.5" />
+                <KeyRound className="h-4 w-4 text-zinc-500 absolute left-3.5 top-3.5" />
                 <input
                   type="password"
                   required
                   value={loginPinOrPass}
                   onChange={(e) => setLoginPinOrPass(e.target.value)}
                   placeholder="e.g. TAP-1234 or 4-digit PIN"
-                  className="w-full rounded-xl border border-slate-700 bg-[#0F172A] pl-10 pr-3.5 py-3 text-base sm:text-sm text-white focus:border-indigo-400 focus:outline-none placeholder-slate-500 transition-all font-mono"
+                  className="w-full rounded-xl border border-zinc-800 bg-[#0A0A0C] pl-10 pr-3.5 py-3 text-base sm:text-sm text-white focus:border-zinc-500 focus:outline-none placeholder-zinc-500 transition-all font-mono"
                 />
               </div>
             </div>
@@ -169,7 +169,7 @@ function AdminPortalContent() {
               <button
                 type="submit"
                 disabled={loginLoading}
-                className="btn-gold flex w-full items-center justify-center gap-2 rounded-xl py-3.5 px-4 font-bold text-sm transition disabled:opacity-50"
+                className="btn-gold flex w-full items-center justify-center gap-2 rounded-xl py-3 px-4 font-semibold text-sm transition disabled:opacity-50"
               >
                 <LogIn className="h-4 w-4" />
                 <span>{loginLoading ? 'Authenticating...' : 'Sign In to Dashboard'}</span>
@@ -178,8 +178,8 @@ function AdminPortalContent() {
           </form>
 
           {/* Security Guarantee */}
-          <div className="pt-2 border-t border-slate-800 text-center">
-            <p className="text-[11px] text-slate-400 leading-relaxed">
+          <div className="pt-2 border-t border-zinc-800 text-center">
+            <p className="text-[11px] text-zinc-500 leading-relaxed">
               New restaurants must be invited by Super Admin.
               <br />
               Public self-registration is closed for platform security.
@@ -187,7 +187,7 @@ function AdminPortalContent() {
           </div>
         </div>
 
-        <div className="mt-6 text-center text-xs text-slate-500">
+        <div className="mt-6 text-center text-xs text-zinc-500">
           <p>Tap-Bro Tabletop NFC Review Assistant • End-to-End Encrypted Partner Access</p>
         </div>
       </div>
@@ -197,7 +197,7 @@ function AdminPortalContent() {
 
 export default function AdminPortalPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-[#0B1326] flex items-center justify-center text-indigo-400 text-xs">Loading Partner Portal...</div>}>
+    <Suspense fallback={<div className="min-h-screen bg-[#0A0A0C] flex items-center justify-center text-zinc-400 text-xs">Loading Partner Portal...</div>}>
       <AdminPortalContent />
     </Suspense>
   );

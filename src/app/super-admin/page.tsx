@@ -411,15 +411,15 @@ export default function SuperAdminPage() {
 
   if (!isLoggedIn) {
     return (
-      <div className="min-h-screen bg-page flex flex-col justify-center items-center p-4 relative selection:bg-amber-400 selection:text-page">
+      <div className="min-h-screen bg-page flex flex-col justify-center items-center p-4 relative selection:bg-zinc-700 selection:text-white">
         <div className="ambient-bg pointer-events-none fixed inset-0 z-0" />
-        <div className="relative z-10 w-full max-w-sm glass-card-gold rounded-3xl p-6 sm:p-8 shadow-[0_20px_50px_rgba(0,0,0,0.7)] space-y-6">
+        <div className="relative z-10 w-full max-w-sm rounded-2xl border border-zinc-800 bg-[#121216] p-6 sm:p-8 space-y-6">
           <div className="text-center">
-            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl overflow-hidden border border-amber-400/40 shadow-xl shadow-amber-500/20 mb-3 bg-[#0B0C12]">
+            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-xl overflow-hidden border border-zinc-700 mb-3 bg-[#0A0A0C]">
               <img src="/tap-bro-logo.png" alt="Tap-Bro Logo" className="h-full w-full object-cover" />
             </div>
-            <h1 className="text-xl font-black text-white">Tap-Bro Super Admin</h1>
-            <p className="text-xs text-text-secondary mt-1">
+            <h1 className="text-xl font-bold text-white">Tap-Bro Super Admin</h1>
+            <p className="text-xs text-zinc-400 mt-1">
               Authorized Master Portal for Platform Owner
             </p>
           </div>
@@ -443,7 +443,7 @@ export default function SuperAdminPage() {
                   placeholder="admin@tapbro.com"
                   value={adminEmail}
                   onChange={(e) => setAdminEmail(e.target.value)}
-                  className="w-full rounded-xl border border-white/[0.08] bg-[#0B0C12]/80 pl-10 pr-3.5 py-3 sm:py-2.5 text-base sm:text-xs text-white focus:border-amber-400/80 focus:ring-1 focus:ring-amber-400/30 focus:outline-none transition-all placeholder-zinc-500"
+                  className="w-full rounded-xl border border-zinc-800 bg-[#0A0A0C] pl-10 pr-3.5 py-3 sm:py-2.5 text-base sm:text-xs text-white focus:border-zinc-500 focus:outline-none transition-all placeholder-zinc-500"
                 />
               </div>
             </div>
@@ -460,7 +460,7 @@ export default function SuperAdminPage() {
                   placeholder="••••••••••••"
                   value={adminPin}
                   onChange={(e) => setAdminPin(e.target.value)}
-                  className="w-full rounded-xl border border-white/[0.08] bg-[#0B0C12]/80 pl-10 pr-3.5 py-3 sm:py-2.5 text-base sm:text-xs text-white focus:border-amber-400/80 focus:ring-1 focus:ring-amber-400/30 focus:outline-none font-mono transition-all placeholder-zinc-500"
+                  className="w-full rounded-xl border border-zinc-800 bg-[#0A0A0C] pl-10 pr-3.5 py-3 sm:py-2.5 text-base sm:text-xs text-white focus:border-zinc-500 focus:outline-none font-mono transition-all placeholder-zinc-500"
                 />
               </div>
             </div>
