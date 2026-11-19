@@ -168,106 +168,7 @@ export function updateSuperAdminSMTP(smtpData: {
   return saveSuperAdminConfig(cfg);
 }
 
-const INITIAL_RESTAURANTS: Restaurant[] = [
-  {
-    id: 'REST_SAFFRON_01',
-    slug: 'saffron-spice',
-    name: 'Saffron & Spice Bistro',
-    tagline: 'Artisanal Indian Cuisine & Heritage Chaat House',
-    cuisine: 'North Indian & Chaat Bistro',
-    location: 'Civil Lines, Central Varanasi',
-    phone: '9876543210',
-    email: 'contact@saffronspice.com',
-    adminPin: '1234',
-    googleReviewUrl: 'https://search.google.com/local/writereview?placeid=ChIJN1t_tDeuEmsRUsoyG83frY4',
-    aiProvider: 'nvidia',
-    totalReviewsGenerated: 42,
-    tableCount: 15,
-    createdAt: '2026-11-18T10:00:00.000Z',
-    updatedAt: '2026-11-18T10:00:00.000Z',
-    menuCategories: [
-      {
-        name: 'Signature Chaat & Starters',
-        icon: '🍲',
-        items: [
-          'Banarasi Tamatar Chaat',
-          'Crispy Palak Patta Chaat',
-          'Stuffed Dahi Puri / Golgappe',
-          'Aloo Tikki with Chutney',
-          'Dahi Bhalla Papdi',
-          'Paneer Tikka Angara',
-        ],
-      },
-      {
-        name: 'Royal Mains & Curries',
-        icon: '🍛',
-        items: [
-          'Dal Makhani (Slow Cooked)',
-          'Paneer Butter Masala',
-          'Smoked Veg Dum Biryani',
-          'Kadhai Paneer',
-          'Amritsari Chole',
-          'Malai Kofta',
-        ],
-      },
-      {
-        name: 'Tandoori Breads & Rice',
-        icon: '🫓',
-        items: [
-          'Garlic Butter Naan',
-          'Laccha Paratha',
-          'Tandoori Butter Roti',
-          'Jeera Rice',
-        ],
-      },
-      {
-        name: 'Desserts & Refreshers',
-        icon: '🍧',
-        items: [
-          'Hot Gulab Jamun with Rabri',
-          'Royal Kesar Kulfi',
-          'Thandai Delight',
-          'Mango Lassi',
-          'Kulhad Masala Chai',
-        ],
-      },
-    ],
-  },
-  {
-    id: 'REST_ROYAL_02',
-    slug: 'royal-chaat',
-    name: 'Royal Banarasi Chaat & Sweets',
-    tagline: 'Authentic Kashi Delicacies & Pure Ghee Mithai',
-    cuisine: 'Street Food, Chaat & Mithai',
-    location: 'Godowlia Chowk, Varanasi',
-    phone: '9876500000',
-    email: 'royalchaat@gmail.com',
-    adminPin: '5678',
-    googleReviewUrl: 'https://search.google.com/local/writereview?placeid=ChIJN1t_tDeuEmsRUsoyG83frY4',
-    aiProvider: 'nvidia',
-    totalReviewsGenerated: 19,
-    tableCount: 10,
-    createdAt: '2026-11-18T10:00:00.000Z',
-    updatedAt: '2026-11-18T10:00:00.000Z',
-    menuCategories: [
-      {
-        name: 'Famous Chaat',
-        icon: '🥘',
-        items: ['Special Tamatar Chaat', 'Palak Chaat', 'Golgappa Pani Puri', 'Matar Tikki'],
-      },
-      {
-        name: 'Heritage Sweets',
-        icon: '🍯',
-        items: ['Malaiyo (Winter Special)', 'Kheer Mohan', 'Gulab Jamun', 'Rasmalai'],
-      },
-      {
-        name: 'Beverages',
-        icon: '☕',
-        items: ['Masala Kulhad Chai', 'Kesar Thandai', 'Sweet Lassi'],
-      },
-    ],
-  },
-];
+const INITIAL_RESTAURANTS: Restaurant[] = [];
 
 function ensureFile(): void {
   if (!fs.existsSync(DATA_FILE)) {
@@ -296,12 +197,7 @@ export function getAllRestaurants(): Restaurant[] {
 
 export function getRestaurantBySlug(slug: string): Restaurant | null {
   const list = getAllRestaurants();
-  const found = list.find((r) => r.slug.toLowerCase() === slug.toLowerCase());
-  if (found) return found;
-  if (slug.toLowerCase() === 'saffron-spice' && INITIAL_RESTAURANTS.length > 0) {
-    return INITIAL_RESTAURANTS[0];
-  }
-  return null;
+  return list.find((r) => r.slug.toLowerCase() === slug.toLowerCase()) || null;
 }
 
 export function getRestaurantById(id: string): Restaurant | null {
@@ -474,6 +370,37 @@ export function incrementReviewCount(slug: string): void {
     rest.totalReviewsGenerated = (rest.totalReviewsGenerated || 0) + 1;
     saveRestaurant(rest);
   }
+}
+
+export function recordDinerReview(
+  slug: string,
+  reviewData: {
+    ratings: Record<string, number>;
+    selectedDishes: string[];
+    reviewDraft: string;
+    tone: string;
+    locale: string;
+  }
+): void {
+  const rest = getRestaurantBySlug(slug);
+  if (!rest) return;
+  rest.totalReviewsGenerated = (rest.totalReviewsGenerated || 0) + 1;
+  if (!rest.reviewsLog) rest.reviewsLog = [];
+  const overall = reviewData.ratings?.overall || 5;
+  rest.reviewsLog.unshift({
+    id: 'REV_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+    timestamp: new Date().toISOString(),
+    overallRating: overall,
+    ratings: reviewData.ratings,
+    selectedDishes: reviewData.selectedDishes || [],
+    reviewDraft: reviewData.reviewDraft,
+    tone: reviewData.tone,
+    locale: reviewData.locale,
+  });
+  if (rest.reviewsLog.length > 100) {
+    rest.reviewsLog = rest.reviewsLog.slice(0, 100);
+  }
+  saveRestaurant(rest);
 }
 
 // ----------------- INVITE MANAGEMENT (Super Admin) -----------------

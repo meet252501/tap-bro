@@ -17,6 +17,8 @@ import {
   UtensilsCrossed,
   Plus,
   X,
+  HelpCircle,
+  ExternalLink,
 } from 'lucide-react';
 
 function SetupContent() {
@@ -42,6 +44,7 @@ function SetupContent() {
   // Custom signature dishes added by the owner during setup
   const [dishTags, setDishTags] = useState<string[]>([]);
   const [newDishInput, setNewDishInput] = useState('');
+  const [showGoogleHelp, setShowGoogleHelp] = useState(false);
 
   // Auto-verify if email and temp pass are in the URL parameters
   useEffect(() => {
@@ -406,22 +409,61 @@ function SetupContent() {
               )}
             </div>
 
-            {/* Google Review URL */}
-            <div>
-              <label className="block text-xs font-semibold text-zinc-300 mb-1 flex items-center gap-1.5">
-                <LinkIcon className="h-3.5 w-3.5 text-zinc-400" />
-                <span>Google Business Review URL (Optional)</span>
-              </label>
-              <input
-                type="url"
-                autoComplete="off"
-                value={googleReviewUrl}
-                onChange={(e) => setGoogleReviewUrl(e.target.value)}
-                placeholder="https://g.page/r/your-restaurant/review"
-                className="w-full rounded-xl border border-zinc-800 bg-[#0A0A0C] px-3.5 py-3 text-base sm:text-sm text-white focus:border-zinc-500 focus:outline-none font-mono placeholder-zinc-500"
-              />
-              <p className="mt-1 text-[11px] text-zinc-400">
-                Guests tap here after generating their review draft to post directly on Google.
+            {/* Google Review URL with Dead-Simple 15s Helper */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-semibold text-zinc-300 flex items-center gap-1.5">
+                  <LinkIcon className="h-3.5 w-3.5 text-zinc-400" />
+                  <span>Google Business Review URL</span>
+                </label>
+                <button
+                  type="button"
+                  onClick={() => setShowGoogleHelp(!showGoogleHelp)}
+                  className="text-[11px] text-zinc-400 hover:text-white flex items-center gap-1 transition"
+                >
+                  <HelpCircle className="h-3.5 w-3.5" />
+                  <span>Where do I find this?</span>
+                </button>
+              </div>
+
+              {/* Step-by-Step Visual Guide for Confused Shop Owners */}
+              {showGoogleHelp && (
+                <div className="rounded-xl border border-zinc-700 bg-[#0A0A0C] p-3 text-xs space-y-2 animate-fade-in">
+                  <p className="font-semibold text-white">How to get your Google Review link in 3 steps:</p>
+                  <ol className="list-decimal list-inside space-y-1 text-zinc-400 text-[11px] leading-relaxed">
+                    <li>Open <strong>Google Maps</strong> or search your restaurant name on Google.</li>
+                    <li>On your restaurant profile, tap the button that says <strong>&quot;Ask for reviews&quot;</strong> or <strong>&quot;Get more reviews&quot;</strong>.</li>
+                    <li>Copy the short link Google gives you (looks like <span className="font-mono text-zinc-200">https://g.page/r/.../review</span>) and paste it below!</li>
+                  </ol>
+                  <p className="text-[10px] text-zinc-500 pt-1 border-t border-zinc-800">
+                    💡 When diners tap this, it opens Google with 5 stars ready so they paste their AI review with 1 tap.
+                  </p>
+                </div>
+              )}
+
+              <div className="flex gap-2">
+                <input
+                  type="url"
+                  autoComplete="off"
+                  value={googleReviewUrl}
+                  onChange={(e) => setGoogleReviewUrl(e.target.value)}
+                  placeholder="https://g.page/r/your-restaurant/review"
+                  className="flex-1 rounded-xl border border-zinc-800 bg-[#0A0A0C] px-3.5 py-3 text-base sm:text-sm text-white focus:border-zinc-500 focus:outline-none font-mono placeholder-zinc-500"
+                />
+                {googleReviewUrl && (
+                  <button
+                    type="button"
+                    onClick={() => window.open(googleReviewUrl, '_blank')}
+                    className="flex items-center gap-1 rounded-xl border border-zinc-700 bg-zinc-800 px-3 py-3 text-xs font-semibold text-white hover:bg-zinc-700 transition shrink-0"
+                    title="Test your review link"
+                  >
+                    <ExternalLink className="h-3.5 w-3.5" />
+                    <span className="hidden sm:inline">Test Link</span>
+                  </button>
+                )}
+              </div>
+              <p className="text-[11px] text-zinc-500">
+                Optional: You can also add or update this anytime in your manager dashboard.
               </p>
             </div>
 

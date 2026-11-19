@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { ReviewDraftRequest } from '@/types/review';
 import { generateUniversalReview } from '@/lib/aiProvider';
-import { getRestaurantBySlug, incrementReviewCount } from '@/lib/db';
+import { getRestaurantBySlug, recordDinerReview } from '@/lib/db';
 import { checkRateLimit, getClientIp } from '@/lib/rateLimit';
 
 export async function POST(req: NextRequest) {
@@ -29,14 +29,11 @@ export async function POST(req: NextRequest) {
       genderGrammar,
     } = body;
 
-    // Check if restaurant slug is provided to lookup its preferences and track analytics
+    // Check if restaurant slug is provided to lookup its preferences
     const targetSlug = (restaurantSlug || body.slug);
     let matchedRest = null;
     if (targetSlug && typeof targetSlug === 'string') {
       matchedRest = getRestaurantBySlug(targetSlug);
-      if (matchedRest) {
-        incrementReviewCount(targetSlug);
-      }
     }
 
     const validLocale = locale === 'hinglish' ? 'hinglish' : 'en';
@@ -84,6 +81,16 @@ export async function POST(req: NextRequest) {
     const customKey = matchedRest?.customApiKey;
 
     const result = await generateUniversalReview(draftRequest, aiProvider, customKey);
+
+    if (targetSlug && typeof targetSlug === 'string' && result?.draft) {
+      recordDinerReview(targetSlug, {
+        ratings: cleanRatings,
+        selectedDishes: cleanDishes,
+        reviewDraft: result.draft,
+        tone: validTone,
+        locale: validLocale,
+      });
+    }
 
     return NextResponse.json(result, {
       status: 200,
