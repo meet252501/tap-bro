@@ -300,7 +300,21 @@ export async function getRestaurantBySlug(slug: string): Promise<Restaurant | nu
     }
   }
   const localList = getLocalRestaurants();
-  return localList.find((r) => r.slug.toLowerCase() === cleanSlug) || null;
+  const matched = localList.find((r) => r.slug.toLowerCase() === cleanSlug);
+  if (matched) return matched;
+
+  // Safe fallback for demo / showcase slugs
+  if (cleanSlug === 'eat-panjab' || cleanSlug === 'panjabi-dhaba' || cleanSlug === 'demo') {
+    if (isDatabaseConfigured()) {
+      try {
+        const fallbackRest = await pgGetRestaurantBySlug('eat-punjab-gandhinagar-gujarat');
+        if (fallbackRest) return fallbackRest;
+      } catch (e) {}
+    }
+    return localList.find((r) => r.slug.toLowerCase() === 'eat-punjab-gandhinagar-gujarat') || null;
+  }
+
+  return null;
 }
 
 export async function getRestaurantById(id: string): Promise<Restaurant | null> {
