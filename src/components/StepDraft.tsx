@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Sparkles,
   Copy,
@@ -16,6 +16,9 @@ import {
   Zap,
   HeartHandshake,
   Scale,
+  Star,
+  ArrowRight,
+  X,
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import {
@@ -65,6 +68,26 @@ export const StepDraft: React.FC<StepDraftProps> = ({
 }) => {
   const [copied, setCopied] = useState(false);
   const [copiedAndOpened, setCopiedAndOpened] = useState(false);
+  const [showGuideModal, setShowGuideModal] = useState(false);
+  const [redirectCountdown, setRedirectCountdown] = useState(3);
+
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+    if (showGuideModal && redirectCountdown > 0) {
+      timer = setTimeout(() => {
+        setRedirectCountdown((prev) => prev - 1);
+      }, 1000);
+    } else if (showGuideModal && redirectCountdown === 0) {
+      const reviewUrl =
+        config.googleReviewUrl && config.googleReviewUrl.trim().length > 0
+          ? config.googleReviewUrl.trim()
+          : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+              [config.name, config.location].filter(Boolean).join(' ') || 'restaurant'
+            )}`;
+      window.location.href = /^https?:\/\//i.test(reviewUrl) ? reviewUrl : `https://${reviewUrl}`;
+    }
+    return () => clearTimeout(timer);
+  }, [showGuideModal, redirectCountdown, config]);
 
   const triggerConfetti = () => {
     confetti({
@@ -189,12 +212,9 @@ export const StepDraft: React.FC<StepDraftProps> = ({
       } catch {}
     }
 
-    // 500ms delay to ensure mobile OS system clipboard buffer commits before browser navigates
-    setTimeout(() => {
-      window.location.href = reviewUrl;
-    }, 500);
-
-    setTimeout(() => setCopiedAndOpened(false), 6000);
+    // Launch instant tactile 2-step guide modal with auto-redirect countdown
+    setRedirectCountdown(3);
+    setShowGuideModal(true);
   };
 
   const toneOptions: { id: ReviewTone; label: string; desc: string; icon: React.ElementType }[] = [
@@ -502,6 +522,113 @@ export const StepDraft: React.FC<StepDraftProps> = ({
           <span>Back to edit dishes or ratings</span>
         </button>
       </div>
+
+      {/* 2-Step Mobile Paste Guidance Modal */}
+      {showGuideModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-fade-in">
+          <div className="w-full max-w-sm rounded-3xl border border-zinc-700/80 bg-[#121216] p-5 sm:p-6 space-y-4 shadow-2xl relative text-left">
+            <button
+              type="button"
+              onClick={() => setShowGuideModal(false)}
+              className="absolute top-4 right-4 text-zinc-400 hover:text-white p-1 rounded-lg"
+              title="Close"
+            >
+              <X className="h-5 w-5" />
+            </button>
+
+            {/* Header */}
+            <div className="flex items-center gap-3">
+              <div className="h-11 w-11 rounded-2xl bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400 shrink-0">
+                <Check className="h-6 w-6 stroke-[3]" />
+              </div>
+              <div>
+                <h3 className="text-base font-bold text-white leading-tight">
+                  Review Copied to Clipboard!
+                </h3>
+                <p className="text-xs text-emerald-400 font-medium mt-0.5">
+                  Ready to post for {config.name}
+                </p>
+              </div>
+            </div>
+
+            {/* 2-Step Instructions */}
+            <div className="rounded-2xl border border-zinc-800 bg-[#0A0A0C] p-3.5 space-y-3">
+              <div className="flex items-start gap-2.5">
+                <div className="h-6 w-6 rounded-full bg-amber-400/20 text-amber-400 border border-amber-400/30 flex items-center justify-center text-xs font-bold shrink-0 mt-0.5 font-mono">
+                  1
+                </div>
+                <div>
+                  <div className="flex items-center gap-1 text-xs font-bold text-white">
+                    <span>Select 5 Stars</span>
+                    <div className="flex text-amber-400 ml-1">
+                      <Star className="h-3 w-3 fill-amber-400" />
+                      <Star className="h-3 w-3 fill-amber-400" />
+                      <Star className="h-3 w-3 fill-amber-400" />
+                      <Star className="h-3 w-3 fill-amber-400" />
+                      <Star className="h-3 w-3 fill-amber-400" />
+                    </div>
+                  </div>
+                  <p className="text-[11px] text-zinc-400 mt-0.5">
+                    Tap the 5th star on Google to leave a top rating.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-2.5 pt-2 border-t border-zinc-800/80">
+                <div className="h-6 w-6 rounded-full bg-amber-400/20 text-amber-400 border border-amber-400/30 flex items-center justify-center text-xs font-bold shrink-0 mt-0.5 font-mono">
+                  2
+                </div>
+                <div>
+                  <div className="text-xs font-bold text-white flex items-center gap-1.5 flex-wrap">
+                    <span>Tap Box &amp; Tap &quot;Paste&quot;</span>
+                    <span className="text-[10px] bg-zinc-800 text-zinc-300 px-1.5 py-0.5 rounded font-mono">or keyboard chip</span>
+                  </div>
+                  <p className="text-[11px] text-zinc-400 mt-0.5 leading-relaxed">
+                    Google security policy blocks all external apps from auto-typing into reviews to prevent spam bots. Simply tap the text box and select <strong>Paste</strong>!
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="space-y-2 pt-1">
+              <button
+                type="button"
+                onClick={() => {
+                  const reviewUrl =
+                    config.googleReviewUrl && config.googleReviewUrl.trim().length > 0
+                      ? config.googleReviewUrl.trim()
+                      : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+                          [config.name, config.location].filter(Boolean).join(' ') || 'restaurant'
+                        )}`;
+                  window.location.href = /^https?:\/\//i.test(reviewUrl) ? reviewUrl : `https://${reviewUrl}`;
+                }}
+                className="w-full btn-gold rounded-xl py-3 px-4 text-xs sm:text-sm font-bold flex items-center justify-center gap-2 shadow-lg active:scale-95 transition"
+              >
+                <span>Open Google Reviews Now</span>
+                <ArrowRight className="h-4 w-4" />
+              </button>
+
+              <div className="flex items-center justify-between px-1 text-[11px] text-zinc-400">
+                <span>
+                  Redirecting in <strong className="text-white font-mono">{redirectCountdown}s</strong>...
+                </span>
+                <button
+                  type="button"
+                  onClick={async () => {
+                    await performRobustCopy(draftText);
+                    setCopied(true);
+                    setTimeout(() => setCopied(false), 2000);
+                  }}
+                  className="text-amber-400 hover:underline font-medium"
+                >
+                  {copied ? '✓ Copied Again!' : '📋 Copy Text Again'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
