@@ -430,7 +430,7 @@ function RestaurantAdminDashboardContent() {
               <div className="flex items-center gap-1.5 truncate">
                 <span className="text-[11px] font-semibold text-zinc-300 uppercase tracking-wider">Tap-Bro</span>
                 <span className="text-zinc-600">•</span>
-                <h1 className="text-sm font-bold text-white truncate">{name}</h1>
+                <h1 className="text-sm font-bold text-white truncate max-w-[220px]">{name}</h1>
               </div>
               <p className="text-[10px] text-zinc-400 truncate">
                 ID: <span className="font-mono text-zinc-300">{restaurant.id}</span>
@@ -443,29 +443,31 @@ function RestaurantAdminDashboardContent() {
               type="button"
               onClick={() => window.open(`/r/${slug}`, '_blank')}
               className="flex h-9 w-9 items-center justify-center rounded-xl border border-zinc-800 bg-[#121216] text-zinc-400 hover:text-white transition"
-              title="Preview Diner View"
+              title="Preview Diner Flow"
             >
               <Eye className="h-4 w-4" />
             </button>
-            <button
-              type="button"
-              onClick={() => handleSave()}
-              disabled={saving}
-              className={`flex items-center gap-1.5 rounded-xl px-4 py-2 text-xs font-semibold transition ${
-                savedSuccess
-                  ? 'bg-zinc-800 text-white border border-zinc-600'
-                  : 'btn-gold'
-              }`}
-            >
-              {savedSuccess ? <Check className="h-3.5 w-3.5" /> : <Save className="h-3.5 w-3.5" />}
-              <span>{savedSuccess ? 'Saved' : saving ? 'Saving' : 'Save'}</span>
-            </button>
+            {(activeTab === 'menu' || activeTab === 'profile') && (
+              <button
+                type="button"
+                onClick={() => handleSave()}
+                disabled={saving}
+                className={`flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-xs font-semibold transition ${
+                  savedSuccess
+                    ? 'bg-zinc-800 text-white border border-zinc-600'
+                    : 'btn-gold'
+                }`}
+              >
+                {savedSuccess ? <Check className="h-3.5 w-3.5" /> : <Save className="h-3.5 w-3.5" />}
+                <span>{savedSuccess ? 'Saved' : saving ? 'Saving' : `Save ${activeTab === 'menu' ? 'Menu' : 'Profile'}`}</span>
+              </button>
+            )}
           </div>
         </div>
       </header>
 
-      {/* Mobile Screen Content (Max Width 460px) */}
-      <main className="mx-auto w-full max-w-md px-4 pt-3 pb-24 relative z-10 space-y-4">
+      {/* Mobile Screen Content (Max Width 460px with pb-36 for thumb clearance) */}
+      <main className="mx-auto w-full max-w-md px-4 pt-3 pb-36 relative z-10 space-y-4">
         {/* Onboarding Alert for New Businesses */}
         {isNew && (
           <div className="rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-3.5 text-xs text-emerald-200 flex items-start gap-2.5 animate-fade-in">
@@ -775,24 +777,26 @@ function RestaurantAdminDashboardContent() {
                   </div>
                 ) : (
                   /* Clean Empty State */
-                  <div className="rounded-2xl border border-zinc-800 bg-[#121216] p-5 text-center space-y-3">
-                    <div className="h-10 w-10 mx-auto rounded-xl bg-zinc-800 border border-zinc-700 flex items-center justify-center text-zinc-400">
-                      <MessageSquare className="h-5 w-5" />
+                  <div className="rounded-2xl border border-zinc-800 bg-[#121216] p-6 text-center space-y-3.5 shadow-sm">
+                    <div className="h-12 w-12 mx-auto rounded-2xl bg-zinc-800 border border-zinc-700 flex items-center justify-center text-zinc-400">
+                      <MessageSquare className="h-6 w-6" />
                     </div>
                     <div>
-                      <h3 className="text-xs font-bold text-white">Live Review Stream Ready</h3>
-                      <p className="text-[11px] text-zinc-400 mt-1 leading-relaxed max-w-xs mx-auto">
+                      <h3 className="text-sm font-bold text-white">Live Review Stream Ready</h3>
+                      <p className="text-xs text-zinc-400 mt-1.5 leading-relaxed max-w-xs mx-auto">
                         When diners tap your table stand and complete a review, it will show up here instantly.
                       </p>
                     </div>
-                    <button
-                      type="button"
-                      onClick={handleRunSimulator}
-                      disabled={simulating}
-                      className="btn-gold rounded-xl px-4 py-2 text-xs font-semibold"
-                    >
-                      {simulating ? 'Generating...' : 'Simulate a Diner Review'}
-                    </button>
+                    <div className="pt-2">
+                      <button
+                        type="button"
+                        onClick={handleRunSimulator}
+                        disabled={simulating}
+                        className="btn-gold rounded-xl px-5 py-2.5 text-xs font-semibold shadow-md active:scale-95"
+                      >
+                        {simulating ? 'Generating...' : 'Simulate a Diner Review'}
+                      </button>
+                    </div>
                   </div>
                 )}
               </div>
@@ -880,7 +884,7 @@ function RestaurantAdminDashboardContent() {
               ))}
             </div>
 
-            <div className="sticky bottom-16 z-30 bg-[#0A0A0C]/90 backdrop-blur-xl border-t border-zinc-800/80 -mx-4 px-4 py-2.5">
+            <div className="pt-3">
               <button
                 type="button"
                 onClick={() => handleSave()}
@@ -1049,7 +1053,7 @@ function RestaurantAdminDashboardContent() {
                 )}
               </div>
 
-              <div className="sticky bottom-16 z-30 bg-[#0A0A0C]/90 backdrop-blur-xl border-t border-zinc-800/80 -mx-5 px-5 py-2.5">
+              <div className="pt-3">
                 <button
                   type="button"
                   onClick={() => handleSave()}
@@ -1087,7 +1091,7 @@ function RestaurantAdminDashboardContent() {
               {/* Station URL Bar */}
               <div className="rounded-xl bg-[#0A0A0C] p-3 border border-zinc-800 space-y-1.5">
                 <span className="text-[11px] text-zinc-400 font-medium block">
-                  Stand Diner Link:
+                  Stand Diner Link (Written into NFC Stand):
                 </span>
                 <div className="flex items-center gap-2">
                   <input
@@ -1104,6 +1108,65 @@ function RestaurantAdminDashboardContent() {
                     {copiedNfc ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
                     <span>{copiedNfc ? 'Copied' : 'Copy'}</span>
                   </button>
+                </div>
+              </div>
+
+              {/* Target Google Review URL (Direct 5-Star Review Form) */}
+              <div className="rounded-xl bg-[#0A0A0C] p-3.5 border border-zinc-800 space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-zinc-200 font-semibold flex items-center gap-1.5">
+                    <Star className="h-3.5 w-3.5 text-amber-400 fill-amber-400" />
+                    <span>Connected Google Review URL</span>
+                  </span>
+                  {googleReviewUrl && (googleReviewUrl.includes('writereview') || googleReviewUrl.includes('/review')) ? (
+                    <span className="text-[10px] font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-full">
+                      ✓ Direct 5-Star Form
+                    </span>
+                  ) : (
+                    <span className="text-[10px] font-bold text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded-full">
+                      Map Search Fallback
+                    </span>
+                  )}
+                </div>
+                <p className="text-[11px] text-zinc-400 leading-relaxed">
+                  When diners tap the stand and generate their review, they are redirected here to submit:
+                </p>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="url"
+                    value={googleReviewUrl}
+                    onChange={(e) => {
+                      const val = e.target.value.trim();
+                      if (/^ChIJ[a-zA-Z0-9_-]{20,}$/.test(val)) {
+                        setGoogleReviewUrl(`https://search.google.com/local/writereview?placeid=${val}`);
+                      } else {
+                        setGoogleReviewUrl(e.target.value);
+                      }
+                    }}
+                    placeholder="https://search.google.com/local/writereview?placeid=..."
+                    className="flex-1 rounded-lg border border-zinc-800 bg-[#121216] px-2.5 py-2 text-xs text-amber-400 font-mono truncate focus:border-amber-400 focus:outline-none"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => handleSave()}
+                    disabled={saving}
+                    className="btn-gold rounded-lg px-3 py-2 text-xs font-bold shrink-0"
+                  >
+                    {saving ? 'Saving...' : 'Save'}
+                  </button>
+                </div>
+                <div className="flex items-center justify-between pt-1">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (googleReviewUrl) window.open(googleReviewUrl, '_blank');
+                    }}
+                    className="text-xs text-amber-400 hover:text-amber-300 font-semibold inline-flex items-center gap-1.5"
+                  >
+                    <ExternalLink className="h-3.5 w-3.5" />
+                    <span>Test Review Form (Opens Google)</span>
+                  </button>
+                  <span className="text-[10px] text-zinc-500">Must open 5-star rating popup</span>
                 </div>
               </div>
 

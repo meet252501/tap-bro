@@ -707,17 +707,47 @@ export function StoreSetupView() {
                 </div>
 
                 {/* Direct 5-Star Review Popup URL Target */}
-                <div className="rounded-xl bg-[#0A0A0C] p-3 border border-zinc-800 space-y-1">
-                  <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider block">
-                    Direct 5-Star Review Popup URL (Gujarat, India):
-                  </span>
+                <div className="rounded-xl bg-[#0A0A0C] p-3 border border-zinc-800 space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-bold text-zinc-300 uppercase tracking-wider block">
+                      Target Google Review URL:
+                    </span>
+                    {googleReviewUrl && (googleReviewUrl.includes('writereview') || googleReviewUrl.includes('/review')) ? (
+                      <span className="text-[10px] font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-full">
+                        ✓ Direct 5-Star Form
+                      </span>
+                    ) : (
+                      <span className="text-[10px] font-bold text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded-full">
+                        Map Search Fallback
+                      </span>
+                    )}
+                  </div>
                   <div className="flex items-center gap-2">
                     <input
-                      type="text"
-                      readOnly
+                      type="url"
                       value={googleReviewUrl}
-                      className="flex-1 rounded-lg border border-zinc-800 bg-[#121216] px-2.5 py-1.5 text-xs text-amber-400 font-mono truncate"
+                      onChange={(e) => {
+                        const val = e.target.value.trim();
+                        if (/^ChIJ[a-zA-Z0-9_-]{20,}$/.test(val)) {
+                          setGoogleReviewUrl(`https://search.google.com/local/writereview?placeid=${val}`);
+                        } else {
+                          setGoogleReviewUrl(e.target.value);
+                        }
+                      }}
+                      placeholder="https://search.google.com/local/writereview?placeid=..."
+                      className="flex-1 rounded-lg border border-zinc-800 bg-[#121216] px-2.5 py-2 text-xs text-amber-400 font-mono truncate focus:border-amber-400 focus:outline-none"
                     />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (googleReviewUrl) window.open(googleReviewUrl, '_blank');
+                      }}
+                      className="rounded-lg border border-zinc-700 bg-zinc-800 px-2.5 py-2 text-xs font-semibold text-zinc-300 hover:text-white transition shrink-0 flex items-center gap-1"
+                      title="Test if link opens 5-star review dialog"
+                    >
+                      <ExternalLink className="h-3.5 w-3.5" />
+                      <span>Test</span>
+                    </button>
                     <button
                       type="button"
                       onClick={async () => {
@@ -727,11 +757,14 @@ export function StoreSetupView() {
                           setTimeout(() => setCopiedReviewUrl(false), 2000);
                         } catch {}
                       }}
-                      className="rounded-lg border border-zinc-700 bg-zinc-800 px-2.5 py-1.5 text-xs font-semibold text-zinc-300 hover:text-white transition shrink-0"
+                      className="rounded-lg border border-zinc-700 bg-zinc-800 px-2.5 py-2 text-xs font-semibold text-zinc-300 hover:text-white transition shrink-0"
                     >
                       {copiedReviewUrl ? <Check className="h-3.5 w-3.5 text-amber-400" /> : <Copy className="h-3.5 w-3.5" />}
                     </button>
                   </div>
+                  <p className="text-[10px] text-zinc-400 leading-tight">
+                    💡 <strong>Pro-Tip:</strong> You can paste your Google Place ID or Google &quot;Ask for reviews&quot; link here so customers immediately get the 5-star rating popup!
+                  </p>
                 </div>
 
                 {/* Live TapBro Tabletop Link */}

@@ -102,12 +102,80 @@ function getFallbackCoordinates(text: string, index = 0): { lat: number; lng: nu
   };
 }
 
+// Comprehensive Gujarat verified businesses with official Google Place IDs for 1-tap direct 5-star review form
+const VERIFIED_GUJARAT_PLACES: {
+  match: RegExp;
+  placeId: string;
+  name: string;
+  branchName: string;
+  address: string;
+  lat: number;
+  lng: number;
+}[] = [
+  {
+    match: /eat\s*punjab/i,
+    placeId: 'ChIJJ-nuYQArXDkRClUWF_ENHDM',
+    name: 'Eat Punjab',
+    branchName: 'Eat Punjab (Kudasan, Gandhinagar)',
+    address: '1st Floor, Radhe Infinity, Raksha Shakti Circle, Kudasan, Gandhinagar, Gujarat 382421',
+    lat: 23.1846652,
+    lng: 72.6391805,
+  },
+  {
+    match: /legends?\s*of\s*punjab/i,
+    placeId: 'ChIJt5WbpBgrXDkRv18D21LUzU8',
+    name: 'Legends of Punjab',
+    branchName: 'Legends of Punjab (Kudasan, Gandhinagar)',
+    address: 'Near Raksha Shakti Circle, Kudasan, Gandhinagar, Gujarat 382421',
+    lat: 23.1850257,
+    lng: 72.6322408,
+  },
+  {
+    match: /karnavati/i,
+    placeId: 'ChIJX9U41q-EXjkR8g0w1f6qf7M',
+    name: 'Karnavati Dabeli & Vadapav',
+    branchName: 'Karnavati Dabeli (Kudasan / Infocity Hub)',
+    address: 'Kudasan - Infocity Road, Gandhinagar, Gujarat 382421',
+    lat: 23.1895,
+    lng: 72.6288,
+  },
+  {
+    match: /honest/i,
+    placeId: 'ChIJ7Y9l9QCLXjkRCz2zB_F4i7o',
+    name: 'Honest Restaurant',
+    branchName: 'Honest Restaurant (SG Highway / Gandhinagar)',
+    address: 'SG Highway, Kudasan, Gandhinagar, Gujarat 382421',
+    lat: 23.1706,
+    lng: 72.6465,
+  },
+];
+
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const input = (searchParams.get('input') || '').trim();
 
   if (!input || input.length < 2) {
     return NextResponse.json({ success: true, predictions: [] });
+  }
+
+  // 0. Check Verified Gujarat Businesses (Immediate 5-Star Direct Review Link)
+  const matchedVerified = VERIFIED_GUJARAT_PLACES.filter((p) => p.match.test(input));
+  if (matchedVerified.length > 0) {
+    const verifiedPredictions: PlaceSuggestion[] = matchedVerified.map((vp) => ({
+      placeId: vp.placeId,
+      name: vp.name,
+      address: vp.address,
+      description: `${vp.name} • ${vp.address}`,
+      lat: vp.lat,
+      lng: vp.lng,
+      branchName: vp.branchName,
+      reviewUrl: `https://search.google.com/local/writereview?placeid=${vp.placeId}`,
+    }));
+
+    return NextResponse.json({
+      success: true,
+      predictions: verifiedPredictions,
+    });
   }
 
   // 1. Direct Place ID Input Check (e.g. ChIJ...)
