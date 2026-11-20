@@ -57,6 +57,8 @@ export default function RestaurantDinerPage() {
             cuisine: rest.cuisine,
             location: rest.location || '',
             googleReviewUrl: rest.googleReviewUrl,
+            placeId: rest.placeId,
+            cid: rest.cid,
             menuCategories: rest.menuCategories || [],
           };
           setRestaurant(config);

@@ -25,6 +25,8 @@ export interface Restaurant {
   email?: string; // Owner registered email
   adminPin: string; // 4-6 digit PIN or secret for this restaurant's admin
   googleReviewUrl: string; // Direct Google Business Review URL
+  placeId?: string; // Google Place ID
+  cid?: string; // Google Maps Customer ID (CID)
   menuCategories: DishCategory[];
   aiProvider: AIProviderType;
   customApiKey?: string;

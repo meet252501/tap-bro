@@ -52,5 +52,7 @@ export interface RestaurantConfig {
   cuisine: string;
   location: string;
   googleReviewUrl: string;
+  placeId?: string;
+  cid?: string;
   menuCategories: DishCategory[];
 }

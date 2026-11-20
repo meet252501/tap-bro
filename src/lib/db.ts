@@ -446,6 +446,8 @@ export async function createRestaurant(data: {
   location?: string;
   tableCount?: number;
   googleReviewUrl?: string;
+  placeId?: string;
+  cid?: string;
   customDishes?: string[];
 }): Promise<Restaurant> {
   const cleanName = data.name.trim();
@@ -509,6 +511,8 @@ export async function createRestaurant(data: {
     email: data.email?.trim() || undefined,
     adminPin: data.adminPin.trim() || '1234',
     googleReviewUrl: data.googleReviewUrl?.trim() || '',
+    placeId: data.placeId?.trim() || undefined,
+    cid: data.cid?.trim() || undefined,
     aiProvider: 'nvidia',
     totalReviewsGenerated: 0,
     tableCount: data.tableCount || 10,

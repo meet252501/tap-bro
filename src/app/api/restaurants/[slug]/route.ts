@@ -36,7 +36,7 @@ export async function PUT(
     }
 
     const body = await req.json();
-    const { adminPin, name, tagline, cuisine, location, googleReviewUrl, menuCategories, aiProvider, customApiKey } = body;
+    const { adminPin, name, tagline, cuisine, location, googleReviewUrl, placeId, cid, menuCategories, aiProvider, customApiKey } = body;
 
     // Verify PIN
     if (adminPin !== restaurant.adminPin && adminPin !== restaurant.id) {
@@ -48,6 +48,8 @@ export async function PUT(
     if (cuisine !== undefined) restaurant.cuisine = cuisine.trim();
     if (location !== undefined) restaurant.location = location.trim();
     if (googleReviewUrl) restaurant.googleReviewUrl = googleReviewUrl.trim();
+    if (placeId !== undefined) restaurant.placeId = placeId.trim();
+    if (cid !== undefined) restaurant.cid = cid.trim();
     if (menuCategories && Array.isArray(menuCategories)) restaurant.menuCategories = menuCategories;
     if (aiProvider && ['free-gemini', 'free-groq', 'zero-cost'].includes(aiProvider)) {
       restaurant.aiProvider = aiProvider;

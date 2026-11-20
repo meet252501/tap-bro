@@ -1,1 +1,229 @@
-[]
+[
+  {
+    "id": "REST_EATPUNJAB",
+    "cid": "3682833924407842058",
+    "name": "Eat Punjab",
+    "slug": "eat-punjab-gandhinagar-gujarat",
+    "email": "meetsutariya.2008@gmail.com",
+    "phone": "7016499300",
+    "cuisine": "North Indian & Punjabi Cuisine",
+    "placeId": "ChIJJ-nuYQArXDkRClUWF_ENHDM",
+    "tagline": "Authentic Punjabi Flavors & Hospitality",
+    "adminPin": "25012008",
+    "location": "Kudasan, Gandhinagar, Gujarat",
+    "createdAt": "2026-11-19T16:38:46.023Z",
+    "updatedAt": "2026-11-20T11:26:40.128Z",
+    "aiProvider": "nvidia",
+    "reviewsLog": [
+      {
+        "id": "REV_mwow8zk0wcsu",
+        "timestamp": "2026-11-20T11:26:40.128Z",
+        "overallRating": 5,
+        "ratings": {
+          "food": 5
+        },
+        "selectedDishes": [
+          "Crispy Veg Spring Roll",
+          "Dal Makhani",
+          "Paneer Butter Masala"
+        ],
+        "reviewDraft": "Visited Eat Punjab, but unfortunately the experience fell below expectations. We tried the Crispy Veg Spring Roll, Dal Makhani, Paneer Butter Masala, but the flavor and preparation were lacking. Sharing this feedback constructively so management can make necessary improvements.",
+        "tone": "flavorful",
+        "locale": "en",
+        "postedToGoogle": true
+      },
+      {
+        "id": "REV_mwow6vbxgjir",
+        "tone": "flavorful",
+        "locale": "en",
+        "ratings": {
+          "food": 5
+        },
+        "timestamp": "2026-11-20T11:25:01.341Z",
+        "reviewDraft": "Visited Eat Punjab, but unfortunately the experience fell below expectations. We tried the Crispy Veg Spring Roll, Dal Makhani, Paneer Butter Masala, but the flavor and preparation were lacking. Sharing this feedback constructively so management can make necessary improvements.",
+        "overallRating": 5,
+        "postedToGoogle": true,
+        "selectedDishes": [
+          "Crispy Veg Spring Roll",
+          "Dal Makhani",
+          "Paneer Butter Masala"
+        ]
+      },
+      {
+        "id": "REV_mwow68nme39d",
+        "tone": "flavorful",
+        "locale": "en",
+        "ratings": {
+          "food": 5
+        },
+        "timestamp": "2026-11-20T11:24:31.954Z",
+        "reviewDraft": "Visited Eat Punjab, but unfortunately the experience fell below expectations. We tried the Crispy Veg Spring Roll, Dal Makhani, Paneer Butter Masala, but the flavor and preparation were lacking. Sharing this feedback constructively so management can make necessary improvements.",
+        "overallRating": 5,
+        "postedToGoogle": true,
+        "selectedDishes": [
+          "Crispy Veg Spring Roll",
+          "Dal Makhani",
+          "Paneer Butter Masala"
+        ]
+      },
+      {
+        "id": "REV_mwow5vqmkp5f",
+        "tone": "flavorful",
+        "locale": "en",
+        "ratings": {
+          "food": 5
+        },
+        "timestamp": "2026-11-20T11:24:15.214Z",
+        "reviewDraft": "Visited Eat Punjab, but unfortunately the experience fell below expectations. We tried the Crispy Veg Spring Roll, Dal Makhani, Paneer Butter Masala, but the flavor and preparation were lacking. Sharing this feedback constructively so management can make necessary improvements.",
+        "overallRating": 5,
+        "postedToGoogle": true,
+        "selectedDishes": [
+          "Crispy Veg Spring Roll",
+          "Dal Makhani",
+          "Paneer Butter Masala"
+        ]
+      },
+      {
+        "id": "REV_mwow55b18li0",
+        "tone": "flavorful",
+        "locale": "en",
+        "ratings": {
+          "food": 5
+        },
+        "timestamp": "2026-11-20T11:23:40.957Z",
+        "reviewDraft": "Visited Eat Punjab, but unfortunately the experience fell below expectations. We tried the Crispy Veg Spring Roll, Dal Makhani, Paneer Butter Masala, but the flavor and preparation were lacking. Sharing this feedback constructively so management can make necessary improvements.",
+        "overallRating": 5,
+        "postedToGoogle": true,
+        "selectedDishes": [
+          "Crispy Veg Spring Roll",
+          "Dal Makhani",
+          "Paneer Butter Masala"
+        ]
+      },
+      {
+        "id": "REV_seed_eatpunjab",
+        "tone": "flavorful",
+        "locale": "en",
+        "ratings": {
+          "food": 5,
+          "overall": 5,
+          "service": 5,
+          "ambiance": 5
+        },
+        "timestamp": "2026-11-20T11:20:51.788Z",
+        "reviewDraft": "Outstanding Punjabi food at Eat Punjab Kudasan! The Dal Makhani and Paneer Butter Masala were rich, flavorful, and paired perfectly with hot garlic naan. Warm hospitality and quick service. Highly recommended!",
+        "overallRating": 5,
+        "postedToGoogle": true,
+        "selectedDishes": [
+          "Dal Makhani",
+          "Paneer Butter Masala"
+        ]
+      }
+    ],
+    "tableCount": 12,
+    "cycleStartDate": "2026-11-19T16:38:46.023Z",
+    "menuCategories": [
+      {
+        "icon": "🍲",
+        "name": "Starters & Chaat",
+        "items": [
+          "Crispy Veg Spring Roll",
+          "Paneer Tikka",
+          "Crispy Corn Chaat",
+          "Dahi Ke Kebab"
+        ]
+      },
+      {
+        "icon": "🍛",
+        "name": "Main Courses",
+        "items": [
+          "Dal Makhani",
+          "Paneer Butter Masala",
+          "Butter Garlic Naan",
+          "Amritsari Kulcha",
+          "Veg Biryani"
+        ]
+      },
+      {
+        "icon": "🍧",
+        "name": "Desserts & Beverages",
+        "items": [
+          "Hot Gulab Jamun",
+          "Masala Kulhad Chai",
+          "Fresh Mango Lassi",
+          "Punjabi Sweet Lassi"
+        ]
+      }
+    ],
+    "googleReviewUrl": "https://maps.google.com/?cid=3682833924407842058",
+    "totalReviewsGenerated": 6
+  },
+  {
+    "id": "REST_HONESTKUDASAN",
+    "cid": "15017142005634115862",
+    "name": "Honest Restaurant",
+    "slug": "honest-restaurant-kudasan",
+    "email": "meetsutariya.2008@gmail.com",
+    "phone": "7016499300",
+    "cuisine": "Fast Food & Multi-Cuisine",
+    "placeId": "ChIJA0fxfgApXDkRFilrAxebZ9A",
+    "tagline": "World Famous Bhaji Pav & North Indian",
+    "adminPin": "25012008",
+    "location": "Kudasan, Gandhinagar, Gujarat",
+    "createdAt": "2026-11-19T16:38:46.023Z",
+    "updatedAt": "2026-11-20T11:27:10.506Z",
+    "aiProvider": "nvidia",
+    "reviewsLog": [
+      {
+        "id": "REV_mwow9mzuzitq",
+        "timestamp": "2026-11-20T11:27:10.506Z",
+        "overallRating": 5,
+        "ratings": {
+          "food": 5
+        },
+        "selectedDishes": [
+          "Honest Special Bhaji Pav"
+        ],
+        "reviewDraft": "Visited Honest Restaurant, but unfortunately the experience fell below expectations. We tried the Honest Special Bhaji Pav, but the flavor and preparation were lacking. Sharing this feedback constructively so management can make necessary improvements.",
+        "tone": "flavorful",
+        "locale": "en",
+        "postedToGoogle": true
+      }
+    ],
+    "tableCount": 15,
+    "cycleStartDate": "2026-11-19T16:38:46.023Z",
+    "menuCategories": [
+      {
+        "icon": "🥪",
+        "name": "Famous Honest Specials",
+        "items": [
+          "Honest Special Bhaji Pav",
+          "Cheese Butter Pav Bhaji",
+          "Honest Special Pulao",
+          "Cheese Masala Dosa"
+        ]
+      },
+      {
+        "icon": "🍛",
+        "name": "Main Courses & Breads",
+        "items": [
+          "Paneer Toofani",
+          "Kaju Curry",
+          "Dal Fry Jeera Rice",
+          "Butter Roti"
+        ]
+      },
+      {
+        "icon": "🍧",
+        "name": "Beverages & Desserts",
+        "items": [
+          "Cold Coffee with Ice Cream",
+          "Fresh Lime Soda",
+          "Chocolate Milkshake"
+        ]
+      }
+    ],
+    "googleReviewUrl": "https://maps.google.com/?cid=15017142005634115862",
+    "totalReviewsGenerated": 2
+  }
+]

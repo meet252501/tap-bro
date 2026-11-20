@@ -50,45 +50,81 @@ interface StepDraftProps {
 
 export function resolveUniversalReviewUrls(config: RestaurantConfig) {
   const rawUrl = (config.googleReviewUrl || '').trim();
-  let placeId = '';
+  let placeId = (config.placeId || '').trim();
+  let cid = (config.cid || '').trim();
 
-  const placeIdMatch =
-    rawUrl.match(/placeid=([a-zA-Z0-9_-]+)/i) ||
-    rawUrl.match(/place_id[=:]\s*([a-zA-Z0-9_-]+)/i) ||
-    rawUrl.match(/query_place_id=([a-zA-Z0-9_-]+)/i);
-
-  if (placeIdMatch) {
-    placeId = placeIdMatch[1];
-  } else if (/^ChIJ[a-zA-Z0-9_-]{20,}$/.test(rawUrl)) {
-    placeId = rawUrl;
+  // 1. Extract CID if not explicitly set
+  if (!cid) {
+    const cidMatch =
+      rawUrl.match(/[?&]cid=([0-9]+)/i) ||
+      rawUrl.match(/\/cid\/([0-9]+)/i) ||
+      rawUrl.match(/cid:([0-9]+)/i);
+    if (cidMatch) {
+      cid = cidMatch[1];
+    } else if (/^[0-9]{15,}$/.test(rawUrl)) {
+      cid = rawUrl;
+    }
   }
 
-  // 1. Direct Official Google 5-Star Write-Review Dialog URL
-  // This is the EXACT Google Review page with 5 stars and text box ready!
-  let directReviewUrl = '';
-  if (placeId) {
-    directReviewUrl = `https://search.google.com/local/writereview?placeid=${placeId}`;
-  } else if (rawUrl.includes('g.page') || rawUrl.includes('writereview') || rawUrl.includes('/review')) {
-    directReviewUrl = rawUrl;
-  } else if (rawUrl && /^https?:\/\//i.test(rawUrl)) {
-    directReviewUrl = rawUrl;
-  } else {
-    // Fallback if no place ID is configured
-    const queryPart = encodeURIComponent(
-      [config.name, config.location, 'Gujarat'].filter(Boolean).join(' ') || 'restaurant'
-    );
-    directReviewUrl = `https://www.google.com/search?q=${queryPart}+write+a+review`;
+  // 2. Extract Place ID if not explicitly set
+  if (!placeId) {
+    const placeIdMatch =
+      rawUrl.match(/placeid=([a-zA-Z0-9_-]+)/i) ||
+      rawUrl.match(/place_id[=:]\s*([a-zA-Z0-9_-]+)/i) ||
+      rawUrl.match(/query_place_id=([a-zA-Z0-9_-]+)/i);
+
+    if (placeIdMatch) {
+      placeId = placeIdMatch[1];
+    } else if (/^ChIJ[a-zA-Z0-9_-]{20,}$/.test(rawUrl)) {
+      placeId = rawUrl;
+    }
   }
 
-  // 2. Maps App Search Fallback URL
   const queryPart = encodeURIComponent(
     [config.name, config.location].filter(Boolean).join(' ') || 'restaurant'
   );
+
+  // 3. Universal Google Maps App URL (Primary for mobile - opens native Google Maps app without login walls)
+  let universalMapsUrl = '';
+  if (cid) {
+    universalMapsUrl = `https://maps.google.com/?cid=${cid}`;
+  } else if (placeId) {
+    universalMapsUrl = `https://www.google.com/maps/search/?api=1&query=${queryPart}&query_place_id=${placeId}`;
+  } else if (rawUrl && /^https?:\/\//i.test(rawUrl) && !rawUrl.includes('search.google.com/local/writereview')) {
+    universalMapsUrl = rawUrl;
+  } else {
+    universalMapsUrl = `https://www.google.com/maps/search/?api=1&query=${queryPart}`;
+  }
+
+  // 4. Direct Google 5-Star Write-Review Web Dialog URL (search.google.com write review form)
+  let directReviewUrl = '';
+  if (placeId) {
+    directReviewUrl = `https://search.google.com/local/writereview?placeid=${placeId}`;
+  } else if (rawUrl.includes('writereview') || rawUrl.includes('g.page') || rawUrl.includes('/review')) {
+    directReviewUrl = rawUrl;
+  } else if (cid) {
+    directReviewUrl = `https://maps.google.com/?cid=${cid}`;
+  } else {
+    directReviewUrl = `https://www.google.com/search?q=${queryPart}+write+a+review`;
+  }
+
+  // 5. Maps Search Fallback URL
   const mapsSearchUrl = placeId
     ? `https://www.google.com/maps/search/?api=1&query=${queryPart}&query_place_id=${placeId}`
     : `https://www.google.com/maps/search/?api=1&query=${queryPart}`;
 
-  return { directReviewUrl, mapsSearchUrl, placeId };
+  // Primary mobile target: universalMapsUrl triggers native Google Maps app on iOS and Android
+  // without the 302 login redirects that break on Brave, Safari Private, and mobile Chrome.
+  const primaryReviewUrl = universalMapsUrl || directReviewUrl;
+
+  return {
+    primaryReviewUrl,
+    universalMapsUrl,
+    directReviewUrl,
+    mapsSearchUrl,
+    placeId,
+    cid,
+  };
 }
 
 export const StepDraft: React.FC<StepDraftProps> = ({
@@ -114,7 +150,7 @@ export const StepDraft: React.FC<StepDraftProps> = ({
   const [showGuideModal, setShowGuideModal] = useState(false);
   const [redirectCountdown, setRedirectCountdown] = useState(3);
 
-  const { directReviewUrl, mapsSearchUrl } = resolveUniversalReviewUrls(config);
+  const { primaryReviewUrl, universalMapsUrl, directReviewUrl, mapsSearchUrl } = resolveUniversalReviewUrls(config);
 
   useEffect(() => {
     let timer: NodeJS.Timeout;
@@ -123,11 +159,11 @@ export const StepDraft: React.FC<StepDraftProps> = ({
         setRedirectCountdown((prev) => prev - 1);
       }, 1000);
     } else if (showGuideModal && redirectCountdown === 0) {
-      // Auto-redirect directly to the official Google 5-Star Write-Review Dialog
-      window.location.href = directReviewUrl;
+      // Auto-redirect directly to the universal Google Maps destination
+      window.location.href = primaryReviewUrl;
     }
     return () => clearTimeout(timer);
-  }, [showGuideModal, redirectCountdown, directReviewUrl]);
+  }, [showGuideModal, redirectCountdown, primaryReviewUrl]);
 
   const triggerConfetti = () => {
     confetti({
@@ -205,19 +241,7 @@ export const StepDraft: React.FC<StepDraftProps> = ({
   };
 
   const handleCopyAndOpenGoogle = async () => {
-    // 1. Resolve effective Google Maps target (Direct 5-star review popup or search fallback)
-    let reviewUrl =
-      config.googleReviewUrl && config.googleReviewUrl.trim().length > 0
-        ? config.googleReviewUrl.trim()
-        : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
-            [config.name, config.location].filter(Boolean).join(' ') || 'restaurant'
-          )}`;
-
-    if (!/^https?:\/\//i.test(reviewUrl)) {
-      reviewUrl = `https://${reviewUrl}`;
-    }
-
-    // 2. Perform bulletproof synchronous + async copy before page navigation
+    // 1. Perform bulletproof synchronous + async copy before page navigation
     await performRobustCopy(draftText);
     triggerConfetti();
     setCopiedAndOpened(true);
@@ -497,14 +521,14 @@ export const StepDraft: React.FC<StepDraftProps> = ({
         {copiedAndOpened && (
           <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-2.5 text-center text-xs text-emerald-300 animate-fade-in flex items-center justify-center gap-2">
             <Check className="h-4 w-4 text-emerald-400 shrink-0" />
-            <span>Review copied! Redirecting to Google...</span>
+            <span>Review copied! Redirecting to Google Maps...</span>
           </div>
         )}
 
         {/* Fallback Toast & Visible Direct Link */}
         <div className="text-center pt-0.5 pb-1">
           <a
-            href={directReviewUrl}
+            href={primaryReviewUrl}
             className="text-[11px] text-zinc-400 hover:text-white underline underline-offset-2 transition inline-flex items-center gap-1"
           >
             <span>Didn&apos;t open automatically? Tap here</span>
@@ -512,7 +536,7 @@ export const StepDraft: React.FC<StepDraftProps> = ({
           </a>
         </div>
 
-        {/* Secondary: Copy Only & Open Google */}
+        {/* Secondary: Copy Only & Direct Review */}
         <div className="grid grid-cols-2 gap-2">
           <button
             type="button"
@@ -620,16 +644,28 @@ export const StepDraft: React.FC<StepDraftProps> = ({
 
             {/* Action Buttons */}
             <div className="space-y-2 pt-1">
-              {/* Primary: Official Direct Google 5-Star Review Form */}
+              {/* Primary: Universal Google Maps App / Place CTA */}
+              <button
+                type="button"
+                onClick={() => {
+                  window.location.href = universalMapsUrl;
+                }}
+                className="w-full btn-gold rounded-xl py-3.5 px-4 text-xs sm:text-sm font-bold flex items-center justify-center gap-2 shadow-lg active:scale-95 transition"
+              >
+                <span>🚀 Open Google Maps App (Instant Review)</span>
+                <ArrowRight className="h-4 w-4" />
+              </button>
+
+              {/* Direct Write-Review Dialog CTA (Web Form) */}
               <button
                 type="button"
                 onClick={() => {
                   window.location.href = directReviewUrl;
                 }}
-                className="w-full btn-gold rounded-xl py-3.5 px-4 text-xs sm:text-sm font-bold flex items-center justify-center gap-2 shadow-lg active:scale-95 transition"
+                className="w-full rounded-xl border border-zinc-700 bg-zinc-800/90 hover:bg-zinc-700 py-2.5 px-3 text-xs font-semibold text-zinc-300 hover:text-white flex items-center justify-center gap-1.5 transition active:scale-95"
               >
-                <span>🚀 Open Google Review Page (5-Star Form)</span>
-                <ArrowRight className="h-4 w-4" />
+                <ExternalLink className="h-3.5 w-3.5 text-amber-400" />
+                <span>✍️ Open Google Review Page (5-Star Form)</span>
               </button>
 
               {/* Secondary: Maps Search Fallback */}
@@ -638,7 +674,7 @@ export const StepDraft: React.FC<StepDraftProps> = ({
                 onClick={() => {
                   window.location.href = mapsSearchUrl;
                 }}
-                className="w-full rounded-xl border border-zinc-700 bg-zinc-800/80 hover:bg-zinc-700 py-2 px-3 text-[11px] font-semibold text-zinc-400 hover:text-white flex items-center justify-center gap-1.5 transition active:scale-95"
+                className="w-full rounded-xl border border-zinc-800 bg-[#0A0A0C] hover:bg-zinc-800 py-2 px-3 text-[11px] font-semibold text-zinc-400 hover:text-white flex items-center justify-center gap-1.5 transition active:scale-95"
               >
                 <ExternalLink className="h-3 w-3" />
                 <span>Google Maps Search (Fallback)</span>
