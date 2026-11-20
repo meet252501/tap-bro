@@ -9,48 +9,49 @@ interface StoreBranchMapInnerProps {
   branches: PlaceSuggestion[];
   selectedBranch: PlaceSuggestion | null;
   onSelectBranch: (branch: PlaceSuggestion) => void;
+  city?: 'gandhinagar' | 'ahmedabad';
 }
+
+const CITY_COORDINATES = {
+  gandhinagar: { lat: 23.1885, lng: 72.635, zoom: 14 }, // Centered on Kudasan / Infocity / Sargasan corridor
+  ahmedabad: { lat: 23.0285, lng: 72.528, zoom: 13.5 }, // Centered on SG Highway / Bodakdev / Vastrapur
+};
 
 export const StoreBranchMapInner: React.FC<StoreBranchMapInnerProps> = ({
   branches,
   selectedBranch,
   onSelectBranch,
+  city = 'gandhinagar',
 }) => {
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
   const markersRef = useRef<{ [key: string]: L.Marker }>({});
 
-  // Initialize Map
+  // Initialize Map with high-detail CartoDB Voyager tiles
   useEffect(() => {
     if (!mapContainerRef.current) return;
-    if (mapInstanceRef.current) return; // Prevent double initialization
+    if (mapInstanceRef.current) return;
 
-    const isIndiaCoord = (lat: number, lng: number) =>
-      !isNaN(lat) && !isNaN(lng) && lat >= 8.0 && lat <= 36.0 && lng >= 68.0 && lng <= 97.5;
-
-    // Center on first branch in Gujarat/India or Ahmedabad default hub
-    const firstBranch = branches.find((b) => isIndiaCoord(b.lat, b.lng));
-    const initialLat = firstBranch?.lat || 23.0225;
-    const initialLng = firstBranch?.lng || 72.5714;
+    const cityDefault = CITY_COORDINATES[city] || CITY_COORDINATES.gandhinagar;
 
     const map = L.map(mapContainerRef.current, {
-      center: [initialLat, initialLng],
-      zoom: branches.length > 0 ? 12 : 11,
+      center: [cityDefault.lat, cityDefault.lng],
+      zoom: cityDefault.zoom,
       zoomControl: true,
       attributionControl: false,
       scrollWheelZoom: true,
     });
 
-    // 100% Free OpenStreetMap Global Tiles (ZERO API keys, ZERO watermarks, full street names)
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      subdomains: ['a', 'b', 'c'],
-      maxZoom: 19,
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+    // High-Detail CartoDB Voyager Tiles (crisp road names, sectors, landmarks in Gandhinagar & Ahmedabad)
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+      subdomains: ['a', 'b', 'c', 'd'],
+      maxZoom: 20,
+      attribution:
+        '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
     }).addTo(map);
 
     mapInstanceRef.current = map;
 
-    // Invalidate size to guarantee map fills container immediately
     const t1 = setTimeout(() => map.invalidateSize(), 100);
     const t2 = setTimeout(() => map.invalidateSize(), 400);
 
@@ -66,7 +67,17 @@ export const StoreBranchMapInner: React.FC<StoreBranchMapInnerProps> = ({
     };
   }, []);
 
-  // Update Markers and Bounds when branches change
+  // Pan to selected city when city prop changes and no branch is selected
+  useEffect(() => {
+    const map = mapInstanceRef.current;
+    if (!map) return;
+    if (selectedBranch) return;
+
+    const cityCoords = CITY_COORDINATES[city] || CITY_COORDINATES.gandhinagar;
+    map.flyTo([cityCoords.lat, cityCoords.lng], cityCoords.zoom, { duration: 0.8 });
+  }, [city, selectedBranch]);
+
+  // Update Markers when branches change
   useEffect(() => {
     const map = mapInstanceRef.current;
     if (!map) return;
@@ -80,17 +91,16 @@ export const StoreBranchMapInner: React.FC<StoreBranchMapInnerProps> = ({
     }
 
     const bounds = L.latLngBounds([]);
-
     const isIndiaCoord = (lat: number, lng: number) =>
       !isNaN(lat) && !isNaN(lng) && lat >= 8.0 && lat <= 36.0 && lng >= 68.0 && lng <= 97.5;
 
     branches.forEach((branch, idx) => {
-      if (!isIndiaCoord(branch.lat, branch.lng)) return; // Strictly skip any non-India coordinate
+      if (!isIndiaCoord(branch.lat, branch.lng)) return;
 
       const isSelected =
         selectedBranch?.name === branch.name && selectedBranch?.address === branch.address;
 
-      // Custom high-contrast numbered pin
+      // Custom high-contrast gold pin with number
       const customIcon = L.divIcon({
         className: 'custom-map-pin-wrapper',
         html: `
@@ -98,34 +108,34 @@ export const StoreBranchMapInner: React.FC<StoreBranchMapInnerProps> = ({
             display: flex;
             align-items: center;
             justify-content: center;
-            width: 32px;
-            height: 32px;
+            width: ${isSelected ? '36px' : '30px'};
+            height: ${isSelected ? '36px' : '30px'};
             border-radius: 50%;
-            background: ${isSelected ? '#FFFFFF' : '#E5A93C'};
+            background: ${isSelected ? '#FFFFFF' : '#F5C84C'};
             color: #000000;
             font-weight: 800;
-            font-size: 13px;
-            border: 2.5px solid ${isSelected ? '#E5A93C' : '#FFFFFF'};
-            box-shadow: 0 4px 12px rgba(0,0,0,0.35);
+            font-size: ${isSelected ? '14px' : '12px'};
+            border: 2.5px solid ${isSelected ? '#F5C84C' : '#121216'};
+            box-shadow: 0 4px 14px rgba(0,0,0,0.45);
             cursor: pointer;
-            transition: transform 0.2s ease;
-            ${isSelected ? 'transform: scale(1.2);' : ''}
+            transition: all 0.2s ease;
           ">
             <span>${idx + 1}</span>
           </div>
         `,
-        iconSize: [32, 32],
-        iconAnchor: [16, 16],
+        iconSize: [36, 36],
+        iconAnchor: [18, 18],
       });
 
       const marker = L.marker([branch.lat, branch.lng], { icon: customIcon }).addTo(map);
 
-      // Popup Content
+      // Rich Popup with verified Place ID info
       const popupDiv = document.createElement('div');
-      popupDiv.style.cssText = 'padding: 4px; font-family: system-ui, sans-serif; color: #111;';
+      popupDiv.style.cssText = 'padding: 4px; font-family: system-ui, sans-serif; color: #111; max-width: 220px;';
       popupDiv.innerHTML = `
-        <div style="font-size: 10px; font-weight: 700; color: #B45309; text-transform: uppercase;">
-          📍 Branch #${idx + 1}
+        <div style="font-size: 10px; font-weight: 700; color: #B45309; text-transform: uppercase; display: flex; align-items: center; gap: 4px;">
+          <span>📍 Branch #${idx + 1}</span>
+          ${branch.placeId ? '<span style="background: #10B981; color: white; padding: 1px 4px; border-radius: 4px; font-size: 9px;">✓ Place ID</span>' : ''}
         </div>
         <div style="font-size: 13px; font-weight: 800; color: #000; margin-top: 2px;">
           ${branch.branchName || branch.name}
@@ -136,16 +146,16 @@ export const StoreBranchMapInner: React.FC<StoreBranchMapInnerProps> = ({
         <button style="
           margin-top: 8px;
           width: 100%;
-          padding: 6px 10px;
+          padding: 7px 10px;
           border-radius: 8px;
-          background: #E5A93C;
+          background: #F5C84C;
           color: #000;
-          font-weight: 700;
+          font-weight: 800;
           font-size: 11px;
           border: none;
           cursor: pointer;
         ">
-          Select & Lock This Store
+          Lock This Store Branch ➔
         </button>
       `;
 
@@ -167,8 +177,8 @@ export const StoreBranchMapInner: React.FC<StoreBranchMapInnerProps> = ({
     });
 
     if (branches.length === 1) {
-      map.setView([branches[0].lat, branches[0].lng], 14);
-    } else if (branches.length > 1) {
+      map.setView([branches[0].lat, branches[0].lng], 15);
+    } else if (branches.length > 1 && !selectedBranch) {
       map.fitBounds(bounds, { padding: [40, 40], maxZoom: 15 });
     }
 
@@ -180,7 +190,7 @@ export const StoreBranchMapInner: React.FC<StoreBranchMapInnerProps> = ({
     const map = mapInstanceRef.current;
     if (!map || !selectedBranch) return;
 
-    map.flyTo([selectedBranch.lat, selectedBranch.lng], 15, {
+    map.flyTo([selectedBranch.lat, selectedBranch.lng], 15.5, {
       duration: 0.6,
     });
   }, [selectedBranch]);
@@ -188,9 +198,10 @@ export const StoreBranchMapInner: React.FC<StoreBranchMapInnerProps> = ({
   return (
     <div
       ref={mapContainerRef}
-      style={{ width: '100%', height: '100%', minHeight: '300px' }}
+      style={{ width: '100%', height: '100%', minHeight: '320px' }}
       className="relative z-0"
     />
   );
 };
+
 export default StoreBranchMapInner;

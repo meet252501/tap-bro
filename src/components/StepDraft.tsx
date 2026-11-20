@@ -63,23 +63,32 @@ export function resolveUniversalReviewUrls(config: RestaurantConfig) {
     placeId = rawUrl;
   }
 
+  // 1. Direct Official Google 5-Star Write-Review Dialog URL
+  // This is the EXACT Google Review page with 5 stars and text box ready!
+  let directReviewUrl = '';
+  if (placeId) {
+    directReviewUrl = `https://search.google.com/local/writereview?placeid=${placeId}`;
+  } else if (rawUrl.includes('g.page') || rawUrl.includes('writereview') || rawUrl.includes('/review')) {
+    directReviewUrl = rawUrl;
+  } else if (rawUrl && /^https?:\/\//i.test(rawUrl)) {
+    directReviewUrl = rawUrl;
+  } else {
+    // Fallback if no place ID is configured
+    const queryPart = encodeURIComponent(
+      [config.name, config.location, 'Gujarat'].filter(Boolean).join(' ') || 'restaurant'
+    );
+    directReviewUrl = `https://www.google.com/search?q=${queryPart}+write+a+review`;
+  }
+
+  // 2. Maps App Search Fallback URL
   const queryPart = encodeURIComponent(
     [config.name, config.location].filter(Boolean).join(' ') || 'restaurant'
   );
-
-  // 1. Universal Google Maps deep link (100% works in Brave, Chrome, Safari, Firefox).
-  // Deep-links to Google Maps app on Android and iOS where user is already logged in.
-  // Never throws Google's 404 in Brave or privacy browsers!
-  const mapsAppUrl = placeId
+  const mapsSearchUrl = placeId
     ? `https://www.google.com/maps/search/?api=1&query=${queryPart}&query_place_id=${placeId}`
     : `https://www.google.com/maps/search/?api=1&query=${queryPart}`;
 
-  // 2. Direct web write-review dialog (only works when browser allows Google session cookies)
-  const webDialogUrl = placeId
-    ? `https://search.google.com/local/writereview?placeid=${placeId}`
-    : mapsAppUrl;
-
-  return { mapsAppUrl, webDialogUrl, placeId };
+  return { directReviewUrl, mapsSearchUrl, placeId };
 }
 
 export const StepDraft: React.FC<StepDraftProps> = ({
@@ -105,7 +114,7 @@ export const StepDraft: React.FC<StepDraftProps> = ({
   const [showGuideModal, setShowGuideModal] = useState(false);
   const [redirectCountdown, setRedirectCountdown] = useState(3);
 
-  const { mapsAppUrl, webDialogUrl } = resolveUniversalReviewUrls(config);
+  const { directReviewUrl, mapsSearchUrl } = resolveUniversalReviewUrls(config);
 
   useEffect(() => {
     let timer: NodeJS.Timeout;
@@ -114,11 +123,11 @@ export const StepDraft: React.FC<StepDraftProps> = ({
         setRedirectCountdown((prev) => prev - 1);
       }, 1000);
     } else if (showGuideModal && redirectCountdown === 0) {
-      // Auto-redirect to universal mapsAppUrl (guaranteed to work in Brave & all mobile browsers without 404!)
-      window.location.href = mapsAppUrl;
+      // Auto-redirect directly to the official Google 5-Star Write-Review Dialog
+      window.location.href = directReviewUrl;
     }
     return () => clearTimeout(timer);
-  }, [showGuideModal, redirectCountdown, mapsAppUrl]);
+  }, [showGuideModal, redirectCountdown, directReviewUrl]);
 
   const triggerConfetti = () => {
     confetti({
@@ -495,7 +504,7 @@ export const StepDraft: React.FC<StepDraftProps> = ({
         {/* Fallback Toast & Visible Direct Link */}
         <div className="text-center pt-0.5 pb-1">
           <a
-            href={mapsAppUrl}
+            href={directReviewUrl}
             className="text-[11px] text-zinc-400 hover:text-white underline underline-offset-2 transition inline-flex items-center gap-1"
           >
             <span>Didn&apos;t open automatically? Tap here</span>
@@ -522,12 +531,12 @@ export const StepDraft: React.FC<StepDraftProps> = ({
           <button
             type="button"
             onClick={() => {
-              window.location.href = mapsAppUrl;
+              window.location.href = directReviewUrl;
             }}
             className="flex items-center justify-center gap-1.5 rounded-xl border border-zinc-800 bg-[#18181B] py-2.5 px-3 text-xs font-semibold text-zinc-300 hover:text-white hover:border-zinc-700 transition active:scale-95"
           >
-            <ExternalLink className="h-3.5 w-3.5 text-zinc-400" />
-            <span>Open Google Maps</span>
+            <ExternalLink className="h-3.5 w-3.5 text-amber-400" />
+            <span>Open Google Review Page</span>
           </button>
         </div>
 
@@ -611,33 +620,33 @@ export const StepDraft: React.FC<StepDraftProps> = ({
 
             {/* Action Buttons */}
             <div className="space-y-2 pt-1">
-              {/* Primary: Google Maps App (100% Works in Brave, Chrome, Safari - Never 404s) */}
+              {/* Primary: Official Direct Google 5-Star Review Form */}
               <button
                 type="button"
                 onClick={() => {
-                  window.location.href = mapsAppUrl;
+                  window.location.href = directReviewUrl;
                 }}
                 className="w-full btn-gold rounded-xl py-3.5 px-4 text-xs sm:text-sm font-bold flex items-center justify-center gap-2 shadow-lg active:scale-95 transition"
               >
-                <span>🚀 Open Google Maps App (Works in Brave &amp; All Browsers)</span>
+                <span>🚀 Open Google Review Page (5-Star Form)</span>
                 <ArrowRight className="h-4 w-4" />
               </button>
 
-              {/* Secondary: Direct Web Form (for standard desktop browsers) */}
+              {/* Secondary: Maps Search Fallback */}
               <button
                 type="button"
                 onClick={() => {
-                  window.location.href = webDialogUrl;
+                  window.location.href = mapsSearchUrl;
                 }}
-                className="w-full rounded-xl border border-zinc-700 bg-zinc-800/80 hover:bg-zinc-700 py-2.5 px-3 text-xs font-semibold text-zinc-300 hover:text-white flex items-center justify-center gap-1.5 transition active:scale-95"
+                className="w-full rounded-xl border border-zinc-700 bg-zinc-800/80 hover:bg-zinc-700 py-2 px-3 text-[11px] font-semibold text-zinc-400 hover:text-white flex items-center justify-center gap-1.5 transition active:scale-95"
               >
-                <ExternalLink className="h-3.5 w-3.5" />
-                <span>Open in Web Browser (Direct Form)</span>
+                <ExternalLink className="h-3 w-3" />
+                <span>Google Maps Search (Fallback)</span>
               </button>
 
               <div className="flex items-center justify-between px-1 text-[11px] text-zinc-400 pt-1">
                 <span>
-                  Redirecting in <strong className="text-white font-mono">{redirectCountdown}s</strong>...
+                  Opening review page in <strong className="text-white font-mono">{redirectCountdown}s</strong>...
                 </span>
                 <button
                   type="button"

@@ -67,6 +67,14 @@ export function StoreSetupView() {
   const [infoError, setInfoError] = useState<string | null>(null);
 
   // STEP 3: Store Branch Map for Google Review & Station Activation
+  const [city, setCity] = useState<'gandhinagar' | 'ahmedabad'>('gandhinagar');
+  const [setupMode, setSetupMode] = useState<'map' | 'direct_id'>('map');
+  const [customStoreName, setCustomStoreName] = useState('');
+  const [customPlaceIdInput, setCustomPlaceIdInput] = useState('');
+  const [customLocation, setCustomLocation] = useState('');
+  const [resolvingPlaceId, setResolvingPlaceId] = useState(false);
+  const [directIdError, setDirectIdError] = useState<string | null>(null);
+
   const [searchInput, setSearchInput] = useState('');
   const [predictions, setPredictions] = useState<PlaceSuggestion[]>([]);
   const [selectedBranch, setSelectedBranch] = useState<PlaceSuggestion | null>(null);
@@ -181,13 +189,37 @@ export function StoreSetupView() {
     setStep('map'); // Advance to Step 3: Map & Review Setup
   };
 
-  // STEP 3 Handler: Search query with Gujarat / India bias
+  // Load default verified places for active city (Gandhinagar or Ahmedabad)
+  useEffect(() => {
+    if (step !== 'map' || isLocked || searchInput.trim().length >= 2) return;
+
+    let isCurrent = true;
+    setIsSearching(true);
+    fetch(`/api/places/autocomplete?city=${city}`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (isCurrent && data.success && Array.isArray(data.predictions)) {
+          setPredictions(data.predictions);
+          if (data.predictions.length > 0) {
+            setSelectedBranch(data.predictions[0]);
+          }
+        }
+      })
+      .catch((e) => console.warn('Could not load city places:', e))
+      .finally(() => {
+        if (isCurrent) setIsSearching(false);
+      });
+
+    return () => {
+      isCurrent = false;
+    };
+  }, [step, isLocked, city, searchInput]);
+
+  // STEP 3 Handler: Search query with Gandhinagar & Ahmedabad bias
   useEffect(() => {
     if (step !== 'map' || isLocked) return;
 
     if (!searchInput.trim() || searchInput.trim().length < 2) {
-      setPredictions([]);
-      setSelectedBranch(null);
       return;
     }
 
@@ -196,7 +228,9 @@ export function StoreSetupView() {
     searchDebounceRef.current = setTimeout(async () => {
       setIsSearching(true);
       try {
-        const res = await fetch(`/api/places/autocomplete?input=${encodeURIComponent(searchInput.trim())}`);
+        const res = await fetch(
+          `/api/places/autocomplete?input=${encodeURIComponent(searchInput.trim())}&city=${city}`
+        );
         const data = await res.json();
         if (data.success && Array.isArray(data.predictions)) {
           setPredictions(data.predictions);
@@ -214,7 +248,82 @@ export function StoreSetupView() {
     return () => {
       if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
     };
-  }, [searchInput, isLocked, step]);
+  }, [searchInput, isLocked, step, city]);
+
+  // Direct Place ID / Google Link Lock Handler
+  const handleLockWithDirectPlaceId = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setDirectIdError(null);
+
+    const rawInput = customPlaceIdInput.trim();
+    const sName = customStoreName.trim();
+    if (!sName) {
+      setDirectIdError('Please enter your business or restaurant name.');
+      return;
+    }
+    if (!rawInput) {
+      setDirectIdError('Please enter a Google Place ID or Google Maps link.');
+      return;
+    }
+
+    setResolvingPlaceId(true);
+    try {
+      let finalPlaceId = '';
+      let finalReviewUrl = '';
+
+      if (/^ChIJ[a-zA-Z0-9_-]{20,}$/.test(rawInput)) {
+        finalPlaceId = rawInput;
+        finalReviewUrl = `https://search.google.com/local/writereview?placeid=${finalPlaceId}`;
+      } else if (rawInput.includes('placeid=')) {
+        const match = rawInput.match(/placeid=([a-zA-Z0-9_-]+)/);
+        if (match) {
+          finalPlaceId = match[1];
+          finalReviewUrl = `https://search.google.com/local/writereview?placeid=${finalPlaceId}`;
+        }
+      } else if (rawInput.includes('g.page') || rawInput.includes('writereview')) {
+        finalReviewUrl = rawInput;
+      } else {
+        const res = await fetch(`/api/places/autocomplete?input=${encodeURIComponent(rawInput)}`);
+        const data = await res.json();
+        if (data.success && data.predictions && data.predictions.length > 0) {
+          const first = data.predictions[0];
+          finalPlaceId = first.placeId;
+          finalReviewUrl = first.reviewUrl;
+        } else {
+          finalReviewUrl = rawInput.startsWith('http') ? rawInput : `https://${rawInput}`;
+        }
+      }
+
+      if (!finalReviewUrl) {
+        finalReviewUrl = finalPlaceId
+          ? `https://search.google.com/local/writereview?placeid=${finalPlaceId}`
+          : formatGujaratReviewQuery(
+              sName,
+              customLocation.trim() || `${city === 'gandhinagar' ? 'Gandhinagar' : 'Ahmedabad'}, Gujarat`
+            );
+      }
+
+      const loc =
+        customLocation.trim() ||
+        `${city === 'gandhinagar' ? 'Gandhinagar' : 'Ahmedabad'}, Gujarat, India`;
+      const generatedSlug = generateSlug(sName, loc);
+      const origin =
+        typeof window !== 'undefined' ? window.location.origin : 'https://tapbro.vercel.app';
+
+      setRestaurantName(sName);
+      setLocation(loc);
+      setPlaceId(finalPlaceId);
+      setGoogleReviewUrl(finalReviewUrl);
+      setSlug(generatedSlug);
+      setLiveTapBroLink(`${origin}/r/${generatedSlug}`);
+      setIsLocked(true);
+      setSubmitError(null);
+    } catch (err: any) {
+      setDirectIdError(err.message || 'Could not verify Place ID. Please check the format.');
+    } finally {
+      setResolvingPlaceId(false);
+    }
+  };
 
   // Lock branch when owner selects a branch on map or card
   const handleSelectPlace = (place: PlaceSuggestion) => {
@@ -551,130 +660,322 @@ export function StoreSetupView() {
 
           {!isLocked ? (
             <>
-              {/* Search Box */}
-              <div className="rounded-2xl border border-zinc-800 bg-[#121216] p-4 sm:p-5 space-y-3 shadow-xl">
-                <label className="block text-xs font-bold text-white uppercase tracking-wider flex items-center justify-between">
-                  <span className="flex items-center gap-1.5">
-                    <Search className="h-4 w-4 text-amber-400" />
-                    <span>Search Restaurant or Chain Name</span>
-                  </span>
-                  <span className="text-[10px] text-zinc-400 font-mono">
-                    Gujarat &amp; India • Map View
-                  </span>
-                </label>
-                <div className="relative">
-                  <Search className="h-4 w-4 text-zinc-500 absolute left-3.5 top-3.5" />
-                  <input
-                    type="text"
-                    autoFocus
-                    autoComplete="off"
-                    value={searchInput}
-                    onChange={(e) => setSearchInput(e.target.value)}
-                    placeholder='e.g. "Karnavati", "Eat Punjab", "Honest", "Tea Post"...'
-                    className="w-full rounded-xl border border-zinc-800 bg-[#0A0A0C] pl-10 pr-10 py-3 text-sm text-white placeholder-zinc-500 focus:border-amber-400 focus:outline-none transition"
-                  />
-                  {isSearching && (
-                    <RefreshCw className="h-4 w-4 text-amber-400 absolute right-3.5 top-3.5 animate-spin" />
-                  )}
-                </div>
+              {/* Mode Switcher: Detailed Map vs Direct Place ID */}
+              <div className="grid grid-cols-2 gap-2 bg-[#0A0A0C] p-1 rounded-2xl border border-zinc-800 text-xs font-semibold">
+                <button
+                  type="button"
+                  onClick={() => setSetupMode('map')}
+                  className={`py-2 px-3 rounded-xl transition flex items-center justify-center gap-1.5 ${
+                    setupMode === 'map'
+                      ? 'bg-amber-400 text-black font-bold shadow'
+                      : 'text-zinc-400 hover:text-white'
+                  }`}
+                >
+                  <MapPin className="h-3.5 w-3.5" />
+                  <span>Detailed City Map</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSetupMode('direct_id')}
+                  className={`py-2 px-3 rounded-xl transition flex items-center justify-center gap-1.5 ${
+                    setupMode === 'direct_id'
+                      ? 'bg-amber-400 text-black font-bold shadow'
+                      : 'text-zinc-400 hover:text-white'
+                  }`}
+                >
+                  <Sparkles className="h-3.5 w-3.5" />
+                  <span>Enter Place ID Directly</span>
+                </button>
               </div>
 
-              {/* Interactive Store Branch Map */}
-              <StoreBranchMap
-                branches={predictions}
-                selectedBranch={selectedBranch}
-                onSelectBranch={handleSelectPlace}
-                isLoading={isSearching}
-              />
+              {setupMode === 'map' ? (
+                <>
+                  {/* City Selector Pills */}
+                  <div className="flex items-center justify-between px-1">
+                    <div className="flex items-center gap-1.5">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setCity('gandhinagar');
+                          setSearchInput('');
+                        }}
+                        className={`px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 ${
+                          city === 'gandhinagar'
+                            ? 'bg-amber-400 text-black shadow-md'
+                            : 'border border-zinc-800 bg-[#121216] text-zinc-400 hover:text-white'
+                        }`}
+                      >
+                        <MapPin className="h-3 w-3" />
+                        <span>Gandhinagar</span>
+                      </button>
 
-              {/* Branch Store Cards (Tappable Pins / Cards) */}
-              <div className="space-y-2.5">
-                <div className="flex items-center justify-between px-1">
-                  <h3 className="text-xs font-bold text-zinc-300 uppercase tracking-wider flex items-center gap-1.5">
-                    <Building2 className="h-3.5 w-3.5 text-amber-400" />
-                    <span>
-                      {predictions.length > 0
-                        ? `Discovered Branches (${predictions.length} locations in Gujarat)`
-                        : 'Search a brand above to view branches on map'}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setCity('ahmedabad');
+                          setSearchInput('');
+                        }}
+                        className={`px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 ${
+                          city === 'ahmedabad'
+                            ? 'bg-amber-400 text-black shadow-md'
+                            : 'border border-zinc-800 bg-[#121216] text-zinc-400 hover:text-white'
+                        }`}
+                      >
+                        <Navigation className="h-3 w-3" />
+                        <span>Ahmedabad</span>
+                      </button>
+                    </div>
+
+                    <span className="text-[10px] text-zinc-400 font-mono hidden sm:inline">
+                      {city === 'gandhinagar' ? 'Kudasan • Infocity • Sargasan' : 'SG Hwy • Bodakdev • Vastrapur'}
                     </span>
-                  </h3>
-                  <span className="text-[10px] text-zinc-500">Tap pin or card to lock</span>
-                </div>
+                  </div>
 
-                {predictions.length > 0 ? (
-                  <div className="grid grid-cols-1 gap-2.5 max-h-80 overflow-y-auto pr-1">
-                    {predictions.map((p, idx) => {
-                      const isCurrent =
-                        selectedBranch?.name === p.name && selectedBranch?.address === p.address;
-                      return (
-                        <div
-                          key={idx}
-                          onClick={() => handleSelectPlace(p)}
-                          className={`p-3.5 rounded-xl border text-left transition-all duration-150 cursor-pointer active:scale-[0.99] flex items-center justify-between gap-3 ${
-                            isCurrent
-                              ? 'bg-[#18181E] border-amber-400/90 shadow-[0_0_15px_rgba(245,200,76,0.15)]'
-                              : 'bg-[#121216] border-zinc-800 hover:border-zinc-700 hover:bg-zinc-850'
-                          }`}
+                  {/* Search Box */}
+                  <div className="rounded-2xl border border-zinc-800 bg-[#121216] p-4 sm:p-5 space-y-3 shadow-xl">
+                    <label className="block text-xs font-bold text-white uppercase tracking-wider flex items-center justify-between">
+                      <span className="flex items-center gap-1.5">
+                        <Search className="h-4 w-4 text-amber-400" />
+                        <span>Search in {city === 'gandhinagar' ? 'Gandhinagar' : 'Ahmedabad'}</span>
+                      </span>
+                      <span className="text-[10px] text-emerald-400 font-mono">
+                        ✓ Verified Google Place IDs
+                      </span>
+                    </label>
+                    <div className="relative">
+                      <Search className="h-4 w-4 text-zinc-500 absolute left-3.5 top-3.5" />
+                      <input
+                        type="text"
+                        autoFocus
+                        autoComplete="off"
+                        value={searchInput}
+                        onChange={(e) => setSearchInput(e.target.value)}
+                        placeholder={`e.g. ${city === 'gandhinagar' ? '"Honest", "Eat Punjab", "Karnavati", "Gwalia"...' : '"Honest", "Hocco", "Jassi De Parathe"...'}`}
+                        className="w-full rounded-xl border border-zinc-800 bg-[#0A0A0C] pl-10 pr-10 py-3 text-sm text-white placeholder-zinc-500 focus:border-amber-400 focus:outline-none transition"
+                      />
+                      {isSearching && (
+                        <RefreshCw className="h-4 w-4 text-amber-400 absolute right-3.5 top-3.5 animate-spin" />
+                      )}
+                    </div>
+
+                    {/* Quick brand pills */}
+                    <div className="flex items-center gap-1.5 overflow-x-auto pb-1 text-[11px] scrollbar-none pt-1">
+                      <span className="text-zinc-500 shrink-0 font-medium">Quick:</span>
+                      {(city === 'gandhinagar'
+                        ? ['Honest', 'Eat Punjab', 'Karnavati', 'Gwalia', 'Havmor', "La Pino'z", 'Tea Post', 'Sankalp', 'Marutinandan']
+                        : ['Honest', 'Hocco Kitchen', 'Iscon Gathiya', 'Manek Chowk', 'Jassi De Parathe', 'Four Points']
+                      ).map((brand) => (
+                        <button
+                          key={brand}
+                          type="button"
+                          onClick={() => setSearchInput(brand)}
+                          className="px-2.5 py-1 rounded-full border border-zinc-800 bg-[#0A0A0C] text-zinc-300 hover:text-white hover:border-amber-400/50 shrink-0 transition text-[11px]"
                         >
-                          <div className="flex items-start gap-3 min-w-0">
-                            {/* Numbered Pin Badge */}
+                          {brand}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Interactive Store Branch Map */}
+                  <StoreBranchMap
+                    branches={predictions}
+                    selectedBranch={selectedBranch}
+                    onSelectBranch={handleSelectPlace}
+                    isLoading={isSearching}
+                    city={city}
+                    onCityChange={setCity}
+                  />
+
+                  {/* Branch Store Cards (Tappable Pins / Cards) */}
+                  <div className="space-y-2.5">
+                    <div className="flex items-center justify-between px-1">
+                      <h3 className="text-xs font-bold text-zinc-300 uppercase tracking-wider flex items-center gap-1.5">
+                        <Building2 className="h-3.5 w-3.5 text-amber-400" />
+                        <span>
+                          {predictions.length > 0
+                            ? `${city === 'gandhinagar' ? 'Gandhinagar' : 'Ahmedabad'} Locations (${predictions.length})`
+                            : 'Select a brand above to view branches'}
+                        </span>
+                      </h3>
+                      <span className="text-[10px] text-zinc-500">Tap card to lock</span>
+                    </div>
+
+                    {predictions.length > 0 ? (
+                      <div className="grid grid-cols-1 gap-2.5 max-h-80 overflow-y-auto pr-1">
+                        {predictions.map((p, idx) => {
+                          const isCurrent =
+                            selectedBranch?.name === p.name && selectedBranch?.address === p.address;
+                          return (
                             <div
-                              className={`w-7 h-7 rounded-full flex items-center justify-center font-bold text-xs shrink-0 mt-0.5 ${
+                              key={idx}
+                              onClick={() => handleSelectPlace(p)}
+                              className={`p-3.5 rounded-xl border text-left transition-all duration-150 cursor-pointer active:scale-[0.99] flex items-center justify-between gap-3 ${
                                 isCurrent
-                                  ? 'bg-amber-400 text-black shadow-md'
-                                  : 'bg-zinc-800 text-zinc-300 border border-zinc-700'
+                                  ? 'bg-[#18181E] border-amber-400/90 shadow-[0_0_15px_rgba(245,200,76,0.15)]'
+                                  : 'bg-[#121216] border-zinc-800 hover:border-zinc-700 hover:bg-zinc-850'
                               }`}
                             >
-                              {idx + 1}
+                              <div className="flex items-start gap-3 min-w-0">
+                                {/* Numbered Pin Badge */}
+                                <div
+                                  className={`w-7 h-7 rounded-full flex items-center justify-center font-bold text-xs shrink-0 mt-0.5 ${
+                                    isCurrent
+                                      ? 'bg-amber-400 text-black shadow-md'
+                                      : 'bg-zinc-800 text-zinc-300 border border-zinc-700'
+                                  }`}
+                                >
+                                  {idx + 1}
+                                </div>
+
+                                <div className="min-w-0">
+                                  <div className="flex items-center gap-2">
+                                    <p className="text-xs sm:text-sm font-bold text-white truncate">
+                                      {p.branchName || p.name}
+                                    </p>
+                                    {p.placeId && p.placeId.startsWith('ChIJ') && (
+                                      <span className="text-[9px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 px-1.5 py-0.2 rounded font-mono shrink-0">
+                                        ✓ Place ID
+                                      </span>
+                                    )}
+                                  </div>
+                                  <p className="text-[11px] text-zinc-400 truncate mt-0.5 flex items-center gap-1">
+                                    <MapPin className="h-3 w-3 shrink-0 text-zinc-500" />
+                                    <span>{p.address}</span>
+                                  </p>
+                                </div>
+                              </div>
+
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleSelectPlace(p);
+                                }}
+                                className={`px-3 py-1.5 rounded-lg text-xs font-bold shrink-0 transition ${
+                                  isCurrent
+                                    ? 'bg-amber-400 text-black'
+                                    : 'bg-zinc-800 text-zinc-200 hover:bg-zinc-700'
+                                }`}
+                              >
+                                Lock Branch ➔
+                              </button>
                             </div>
+                          );
+                        })}
+                      </div>
+                    ) : (
+                      <div className="rounded-xl border border-dashed border-zinc-800 p-6 text-center text-xs text-zinc-500">
+                        Type your restaurant name above to plot branch locations on the map.
+                      </div>
+                    )}
 
-                            <div className="min-w-0">
-                              <p className="text-xs sm:text-sm font-bold text-white truncate">
-                                {p.branchName || p.name}
-                              </p>
-                              <p className="text-[11px] text-zinc-400 truncate mt-0.5 flex items-center gap-1">
-                                <MapPin className="h-3 w-3 shrink-0 text-zinc-500" />
-                                <span>{p.address}</span>
-                              </p>
-                            </div>
-                          </div>
-
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleSelectPlace(p);
-                            }}
-                            className={`px-3 py-1.5 rounded-lg text-xs font-bold shrink-0 transition ${
-                              isCurrent
-                                ? 'bg-amber-400 text-black'
-                                : 'bg-zinc-800 text-zinc-200 hover:bg-zinc-700'
-                            }`}
-                          >
-                            Lock Branch ➔
-                          </button>
-                        </div>
-                      );
-                    })}
+                    {/* Manual fallback button */}
+                    {searchInput.trim().length >= 2 && (
+                      <button
+                        type="button"
+                        onClick={handleManualLock}
+                        className="w-full rounded-xl border border-zinc-800 bg-[#121216] py-2.5 px-3 text-xs font-semibold text-zinc-400 hover:text-white transition flex items-center justify-center gap-1.5"
+                      >
+                        <span>Branch not in list? Lock &quot;{searchInput.trim()}&quot; in {city === 'gandhinagar' ? 'Gandhinagar' : 'Ahmedabad'}</span>
+                        <ArrowRight className="h-3.5 w-3.5" />
+                      </button>
+                    )}
                   </div>
-                ) : (
-                  <div className="rounded-xl border border-dashed border-zinc-800 p-6 text-center text-xs text-zinc-500">
-                    Type your restaurant name above to plot all branch locations on the map.
+                </>
+              ) : (
+                /* OPTION 2: Enter Place ID Directly */
+                <form onSubmit={handleLockWithDirectPlaceId} className="rounded-2xl border border-zinc-800 bg-[#121216] p-5 space-y-4 shadow-xl">
+                  <div className="flex items-center justify-between pb-2 border-b border-zinc-800">
+                    <span className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
+                      <Sparkles className="h-4 w-4 text-amber-400" />
+                      <span>Direct Google Place ID Connection</span>
+                    </span>
+                    <span className="text-[10px] text-emerald-400 font-mono">
+                      100% 5-Star Dialog Popup
+                    </span>
                   </div>
-                )}
 
-                {/* Manual fallback button */}
-                {searchInput.trim().length >= 2 && (
+                  {directIdError && (
+                    <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-xs text-red-400">
+                      {directIdError}
+                    </div>
+                  )}
+
+                  <div className="space-y-1.5">
+                    <label className="block text-xs font-bold text-zinc-300">
+                      Restaurant / Business Name:
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={customStoreName}
+                      onChange={(e) => setCustomStoreName(e.target.value)}
+                      placeholder='e.g. "Honest Restaurant", "Eat Punjab"'
+                      className="w-full rounded-xl border border-zinc-800 bg-[#0A0A0C] px-3.5 py-2.5 text-sm text-white placeholder-zinc-500 focus:border-amber-400 focus:outline-none transition"
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="block text-xs font-bold text-zinc-300">
+                      Area / City:
+                    </label>
+                    <input
+                      type="text"
+                      value={customLocation}
+                      onChange={(e) => setCustomLocation(e.target.value)}
+                      placeholder='e.g. "Kudasan, Gandhinagar" or "SG Highway, Ahmedabad"'
+                      className="w-full rounded-xl border border-zinc-800 bg-[#0A0A0C] px-3.5 py-2.5 text-sm text-white placeholder-zinc-500 focus:border-amber-400 focus:outline-none transition"
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <div className="flex items-center justify-between">
+                      <label className="block text-xs font-bold text-zinc-300">
+                        Google Place ID or Review Link:
+                      </label>
+                      <a
+                        href="https://developers.google.com/maps/documentation/places/web-service/place-id"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-[10px] text-amber-400 hover:underline flex items-center gap-0.5 font-medium"
+                      >
+                        <span>🔍 Find My Place ID on Google Tool</span>
+                        <ExternalLink className="h-2.5 w-2.5" />
+                      </a>
+                    </div>
+                    <input
+                      type="text"
+                      required
+                      value={customPlaceIdInput}
+                      onChange={(e) => setCustomPlaceIdInput(e.target.value)}
+                      placeholder='e.g. "ChIJJ-nuYQArXDkRClUWF_ENHDM" or "https://g.page/r/..."'
+                      className="w-full rounded-xl border border-zinc-800 bg-[#0A0A0C] px-3.5 py-2.5 text-xs text-white placeholder-zinc-500 focus:border-amber-400 focus:outline-none transition font-mono"
+                    />
+                    <p className="text-[11px] text-zinc-400 leading-relaxed pt-1">
+                      💡 <strong>How to find your Place ID in 10 seconds:</strong> Click the &quot;Find My Place ID&quot; link above, search your business name on Google&apos;s official tool, and copy the code starting with <code>ChIJ...</code>.
+                    </p>
+                  </div>
+
                   <button
-                    type="button"
-                    onClick={handleManualLock}
-                    className="w-full rounded-xl border border-zinc-800 bg-[#121216] py-2.5 px-3 text-xs font-semibold text-zinc-400 hover:text-white transition flex items-center justify-center gap-1.5"
+                    type="submit"
+                    disabled={resolvingPlaceId}
+                    className="btn-gold w-full flex items-center justify-center gap-2 rounded-xl py-3 font-bold text-xs sm:text-sm shadow-xl active:scale-95 transition disabled:opacity-50"
                   >
-                    <span>Branch not on map? Lock &quot;{searchInput.trim()}&quot; in Gujarat directly</span>
-                    <ArrowRight className="h-3.5 w-3.5" />
+                    {resolvingPlaceId ? (
+                      <>
+                        <RefreshCw className="h-4 w-4 animate-spin" />
+                        <span>Verifying Place ID...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="h-4 w-4 fill-current" />
+                        <span>Lock &amp; Connect Direct Review Link ➔</span>
+                      </>
+                    )}
                   </button>
-                )}
-              </div>
+                </form>
+              )}
             </>
           ) : (
             /* LOCKED BRANCH: Review Target Details & Station Activation */

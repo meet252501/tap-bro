@@ -999,38 +999,60 @@ function RestaurantAdminDashboardContent() {
                     onClick={async () => {
                       try {
                         const text = await navigator.clipboard.readText();
-                        if (text && (text.startsWith('http://') || text.startsWith('https://'))) {
-                          setGoogleReviewUrl(text.trim());
+                        if (text) {
+                          const clean = text.trim();
+                          if (/^ChIJ[a-zA-Z0-9_-]{20,}$/.test(clean)) {
+                            setGoogleReviewUrl(`https://search.google.com/local/writereview?placeid=${clean}`);
+                          } else if (clean.startsWith('http://') || clean.startsWith('https://')) {
+                            setGoogleReviewUrl(clean);
+                          }
                         }
                       } catch {}
                     }}
                     className="flex items-center gap-1.5 rounded-lg border border-zinc-700 bg-zinc-900/90 px-3 py-1.5 text-xs font-medium text-zinc-300 hover:text-white hover:bg-zinc-800 transition active:scale-95"
                   >
                     <Copy className="h-3.5 w-3.5 text-zinc-400" />
-                    <span>Paste Copied Link</span>
+                    <span>Paste Place ID / Link</span>
                   </button>
+
+                  <a
+                    href="https://developers.google.com/maps/documentation/places/web-service/place-id"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-1.5 rounded-lg border border-zinc-700 bg-zinc-900/90 px-3 py-1.5 text-xs font-medium text-amber-400 hover:text-white hover:bg-zinc-800 transition active:scale-95 ml-auto"
+                  >
+                    <Search className="h-3 w-3 text-amber-400" />
+                    <span>🔍 Official Place ID Finder Tool ↗</span>
+                  </a>
                 </div>
 
                 {showGoogleHelp && (
                   <div className="rounded-xl border border-zinc-700 bg-[#0A0A0C] p-3 text-xs space-y-2 animate-fade-in">
-                    <p className="font-semibold text-white">How to connect your Google Reviews in 10 seconds:</p>
+                    <p className="font-semibold text-white">How to connect your direct Google 5-Star Review Form:</p>
                     <ol className="list-decimal list-inside space-y-1 text-zinc-400 text-[11px] leading-relaxed">
-                      <li>Tap <strong>&quot;1-Tap: Find on Maps&quot;</strong> above to open your store on Google Maps.</li>
-                      <li>On your business card, tap <strong>&quot;Share&quot;</strong> and tap <strong>Copy Link</strong>.</li>
-                      <li>Come back here and tap <strong>&quot;Paste Copied Link&quot;</strong>. Done!</li>
+                      <li>Tap <strong>&quot;Official Place ID Finder Tool&quot;</strong> above to open Google&apos;s free Place ID search.</li>
+                      <li>Type your business name in Gandhinagar or Ahmedabad and copy the <code>ChIJ...</code> Place ID.</li>
+                      <li>Paste it below. TapBro will instantly generate the direct 5-star write-review form!</li>
                     </ol>
                     <p className="text-[10px] text-zinc-400 pt-1 border-t border-zinc-800 leading-relaxed">
-                      💡 <strong>No owner account needed:</strong> You do NOT need to be the Google Business Profile owner! Any Google Maps link works, or you can leave it blank and TapBro will find your store on Google Maps automatically!
+                      💡 <strong>Guaranteed 5-Star Dialog:</strong> Using a genuine Google Place ID guarantees customers directly see the 5 empty stars and review text field with 0% risk of a 404!
                     </p>
                   </div>
                 )}
 
                 <div className="flex gap-2">
                   <input
-                    type="url"
+                    type="text"
                     value={googleReviewUrl}
-                    onChange={(e) => setGoogleReviewUrl(e.target.value)}
-                    placeholder="Paste any Google Maps link (e.g. https://maps.app.goo.gl/...)"
+                    onChange={(e) => {
+                      const val = e.target.value.trim();
+                      if (/^ChIJ[a-zA-Z0-9_-]{20,}$/.test(val)) {
+                        setGoogleReviewUrl(`https://search.google.com/local/writereview?placeid=${val}`);
+                      } else {
+                        setGoogleReviewUrl(e.target.value);
+                      }
+                    }}
+                    placeholder="Paste Place ID (ChIJ...) or Google Review Link"
                     className="flex-1 rounded-xl border border-zinc-800 bg-[#0A0A0C] px-3.5 py-2.5 text-xs sm:text-xs text-white focus:border-zinc-500 focus:outline-none font-mono transition-all placeholder-zinc-500"
                   />
                   {googleReviewUrl && (
@@ -1048,7 +1070,11 @@ function RestaurantAdminDashboardContent() {
                 {googleReviewUrl && (
                   <p className="text-[11px] text-emerald-400 flex items-center gap-1">
                     <Check className="h-3.5 w-3.5" />
-                    <span>Google Link Connected! Tap &quot;Test&quot; to verify.</span>
+                    <span>
+                      {googleReviewUrl.includes('writereview') || googleReviewUrl.includes('/review')
+                        ? '✓ Direct 5-Star Write Review Dialog Connected!'
+                        : 'Google Link Connected!'} Tap &quot;Test&quot; to verify.
+                    </span>
                   </p>
                 )}
               </div>

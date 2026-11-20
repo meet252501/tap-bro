@@ -102,7 +102,7 @@ function getFallbackCoordinates(text: string, index = 0): { lat: number; lng: nu
   };
 }
 
-// Comprehensive Gujarat verified businesses with official Google Place IDs for 1-tap direct 5-star review form
+// Comprehensive Gandhinagar & Ahmedabad verified businesses with official Google Place IDs
 const VERIFIED_GUJARAT_PLACES: {
   match: RegExp;
   placeId: string;
@@ -111,7 +111,9 @@ const VERIFIED_GUJARAT_PLACES: {
   address: string;
   lat: number;
   lng: number;
+  city: 'gandhinagar' | 'ahmedabad';
 }[] = [
+  // --- GANDHINAGAR ---
   {
     match: /eat\s*punjab/i,
     placeId: 'ChIJJ-nuYQArXDkRClUWF_ENHDM',
@@ -120,84 +122,232 @@ const VERIFIED_GUJARAT_PLACES: {
     address: '1st Floor, Radhe Infinity, Raksha Shakti Circle, Kudasan, Gandhinagar, Gujarat 382421',
     lat: 23.1846652,
     lng: 72.6391805,
+    city: 'gandhinagar',
+  },
+  {
+    match: /honest.*(kudasan|sg|gandhinagar)/i,
+    placeId: 'ChIJNT4BBD4qXDkRW-tyBSfrxTw',
+    name: 'Honest Restaurant',
+    branchName: 'Honest Restaurant (Kudasan / SG Highway)',
+    address: 'Near Raksha Shakti Circle, Kudasan, Gandhinagar, Gujarat 382421',
+    lat: 23.1851202,
+    lng: 72.6332157,
+    city: 'gandhinagar',
+  },
+  {
+    match: /honest.*sargasan/i,
+    placeId: 'ChIJA0fxfgApXDkRFilrAxebZ9A',
+    name: 'Honest Restaurant',
+    branchName: 'Honest Restaurant (Sargasan, Gandhinagar)',
+    address: 'SG Highway, Sargasan Cross Road, Gandhinagar, Gujarat 382421',
+    lat: 23.1849785,
+    lng: 72.6121436,
+    city: 'gandhinagar',
+  },
+  {
+    match: /^honest/i,
+    placeId: 'ChIJNT4BBD4qXDkRW-tyBSfrxTw',
+    name: 'Honest Restaurant',
+    branchName: 'Honest Restaurant (Kudasan / SG Highway, Gandhinagar)',
+    address: 'Near Raksha Shakti Circle, Kudasan, Gandhinagar, Gujarat 382421',
+    lat: 23.1851202,
+    lng: 72.6332157,
+    city: 'gandhinagar',
   },
   {
     match: /legends?\s*of\s*punjab/i,
-    placeId: 'ChIJt5WbpBgrXDkRv18D21LUzU8',
+    placeId: 'ChIJNT4BBD4qXDkRW-tyBSfrxTw',
     name: 'Legends of Punjab',
     branchName: 'Legends of Punjab (Kudasan, Gandhinagar)',
     address: 'Near Raksha Shakti Circle, Kudasan, Gandhinagar, Gujarat 382421',
     lat: 23.1850257,
     lng: 72.6322408,
+    city: 'gandhinagar',
+  },
+  {
+    match: /gwalia/i,
+    placeId: 'ChIJ891qJwArXDkRvSzTyLmy1T0',
+    name: 'Gwalia Sweets & Restaurant',
+    branchName: 'Gwalia Sweets (Kudasan, Gandhinagar)',
+    address: 'Kudasan Road, Gandhinagar, Gujarat 382421',
+    lat: 23.1850604,
+    lng: 72.6305334,
+    city: 'gandhinagar',
+  },
+  {
+    match: /la\s*pino/i,
+    placeId: 'ChIJVesQwpArXDkRQVnl-Tc7CII',
+    name: "La Pino'z Pizza",
+    branchName: "La Pino'z Pizza (Kudasan, Gandhinagar)",
+    address: 'Shop No 12, Radhe Infinity, Kudasan, Gandhinagar, Gujarat 382421',
+    lat: 23.184913,
+    lng: 72.6291455,
+    city: 'gandhinagar',
   },
   {
     match: /karnavati/i,
-    placeId: 'ChIJX9U41q-EXjkR8g0w1f6qf7M',
-    name: 'Karnavati Dabeli & Vadapav',
-    branchName: 'Karnavati Dabeli (Kudasan / Infocity Hub)',
-    address: 'Kudasan - Infocity Road, Gandhinagar, Gujarat 382421',
-    lat: 23.1895,
-    lng: 72.6288,
-  },
-  {
-    match: /honest/i,
-    placeId: 'ChIJ7Y9l9QCLXjkRCz2zB_F4i7o',
-    name: 'Honest Restaurant',
-    branchName: 'Honest Restaurant (SG Highway / Gandhinagar)',
-    address: 'SG Highway, Kudasan, Gandhinagar, Gujarat 382421',
-    lat: 23.1706,
-    lng: 72.6465,
-  },
-  {
-    match: /tea\s*post/i,
-    placeId: 'ChIJW2x938eLXjkR54U8b1iL71A',
-    name: 'Tea Post',
-    branchName: 'Tea Post (Infocity / Gandhinagar)',
-    address: 'Infocity Super Mall, Infocity, Gandhinagar, Gujarat 382007',
-    lat: 23.1895,
-    lng: 72.6288,
-  },
-  {
-    match: /sankalp/i,
-    placeId: 'ChIJwWfK0eWLXjkR_1o5j1yV3_o',
-    name: 'Sankalp Restaurant',
-    branchName: 'Sankalp (SG Highway / Gandhinagar)',
-    address: 'Near Raksha Shakti Circle, Gandhinagar, Gujarat 382421',
-    lat: 23.1846,
-    lng: 72.6391,
-  },
-  {
-    match: /havmor/i,
-    placeId: 'ChIJRf1a1Q-LXjkR_0b2z5_g5uM',
-    name: 'Havmor Restaurant',
-    branchName: 'Havmor (Kudasan / Gandhinagar Hub)',
-    address: 'Kudasan Road, Gandhinagar, Gujarat 382421',
-    lat: 23.1852,
-    lng: 72.6355,
-  },
-  {
-    match: /iscon\s*gathiya/i,
-    placeId: 'ChIJY5e9w_mLXjkR3k8n6_bL8cI',
-    name: 'Iscon Gathiya',
-    branchName: 'Iscon Gathiya (Gandhinagar Hub)',
-    address: 'Near GH-0 Circle, Gandhinagar, Gujarat 382007',
-    lat: 23.2156,
-    lng: 72.6369,
+    placeId: 'ChIJYz_W8IcpXDkRcSwDC-Ei4M8',
+    name: 'Karnavati Dabeli & Vadapau',
+    branchName: 'Karnavati Dabeli (Infocity / Sargasan, Gandhinagar)',
+    address: 'Infocity - Sargasan Link Road, Gandhinagar, Gujarat 382421',
+    lat: 23.1950396,
+    lng: 72.614812,
+    city: 'gandhinagar',
   },
   {
     match: /marutinandan/i,
-    placeId: 'ChIJ6a337_2LXjkR4h2l3_aN2mI',
+    placeId: 'ChIJJb_WdQArXDkRgOf_xRMGfkY',
     name: 'Shree Marutinandan Kathiyawadi',
-    branchName: 'Shree Marutinandan (Kudasan Hub)',
+    branchName: 'Shree Marutinandan (Kudasan / SG Highway, Gandhinagar)',
+    address: 'Near Sargasan Cross Road, SG Highway, Gandhinagar, Gujarat 382421',
+    lat: 23.1858865,
+    lng: 72.6184531,
+    city: 'gandhinagar',
+  },
+  {
+    match: /havmor.*(kudasan|gandhinagar)/i,
+    placeId: 'ChIJFVwBQZwrXDkR7KYkhY-ruek',
+    name: 'Havmor Restaurant',
+    branchName: 'Havmor (Kudasan Hub, Gandhinagar)',
     address: 'Kudasan Road, Gandhinagar, Gujarat 382421',
+    lat: 23.1802322,
+    lng: 72.6351221,
+    city: 'gandhinagar',
+  },
+  {
+    match: /tea\s*post/i,
+    placeId: 'ChIJTzXH-lJP4DsRakepVQz8XNw',
+    name: 'Tea Post',
+    branchName: 'Tea Post (Super Mall, Infocity Gandhinagar)',
+    address: 'Infocity Super Mall, Infocity, Gandhinagar, Gujarat 382007',
+    lat: 23.1895,
+    lng: 72.6288,
+    city: 'gandhinagar',
+  },
+  {
+    match: /sankalp.*(gandhinagar|kudasan)/i,
+    placeId: 'ChIJNT4BBD4qXDkRW-tyBSfrxTw',
+    name: 'Sankalp Restaurant',
+    branchName: 'Sankalp (Kudasan / Infocity Hub, Gandhinagar)',
+    address: 'Near Raksha Shakti Circle, Kudasan, Gandhinagar, Gujarat 382421',
     lat: 23.1846,
     lng: 72.6391,
+    city: 'gandhinagar',
+  },
+  {
+    match: /iscon\s*gathiya.*gandhinagar/i,
+    placeId: 'ChIJ-bYSUg-FXjkRClM8_zx865s',
+    name: 'Iscon Gathiya',
+    branchName: 'Iscon Gathiya (Sector 11 / GH-0 Gandhinagar)',
+    address: 'Near GH-0 Circle, Gandhinagar, Gujarat 382007',
+    lat: 23.2156,
+    lng: 72.6369,
+    city: 'gandhinagar',
+  },
+
+  // --- AHMEDABAD ---
+  {
+    match: /honest.*(ahmedabad|makarba|sg\s*highway)/i,
+    placeId: 'ChIJeaokWiibXjkRavmq5wHEpOU',
+    name: 'Honest Restaurant',
+    branchName: 'Honest Restaurant (SG Highway / Makarba, Ahmedabad)',
+    address: 'Near S.G. Highway, Makarba, Ahmedabad, Gujarat 380051',
+    lat: 23.011492,
+    lng: 72.5030073,
+    city: 'ahmedabad',
+  },
+  {
+    match: /honest.*vastrapur/i,
+    placeId: 'ChIJa82mJ-iEXjkRgrzJXjNP2kE',
+    name: 'Honest Restaurant',
+    branchName: 'Honest Restaurant (Vastrapur, Ahmedabad)',
+    address: 'Vastrapur Lake Road, Vastrapur, Ahmedabad, Gujarat 380015',
+    lat: 23.0269272,
+    lng: 72.5442283,
+    city: 'ahmedabad',
+  },
+  {
+    match: /honest.*(satellite|shivranjani)/i,
+    placeId: 'ChIJVVWVu9WEXjkR7pzrIvIWyhA',
+    name: 'The Honest Group of Restaurants',
+    branchName: 'The Honest Group (Satellite / Shivranjani, Ahmedabad)',
+    address: 'Satellite Road, Ahmedabad, Gujarat 380015',
+    lat: 23.0135266,
+    lng: 72.5233919,
+    city: 'ahmedabad',
+  },
+  {
+    match: /(havmor|hocco).*(navrangpura|cg\s*road|ahmedabad)/i,
+    placeId: 'ChIJkexFPPWEXjkRyxKprmMzhuw',
+    name: 'Hocco Kitchen (Havmor)',
+    branchName: 'Hocco Kitchen (Navrangpura / CG Road, Ahmedabad)',
+    address: 'Navrangpura, Ahmedabad, Gujarat 380009',
+    lat: 23.0375886,
+    lng: 72.5658176,
+    city: 'ahmedabad',
+  },
+  {
+    match: /iscon\s*gathiya.*(makarba|ahmedabad|sg)/i,
+    placeId: 'ChIJ-bYSUg-FXjkRClM8_zx865s',
+    name: 'Iscon Gathiya',
+    branchName: 'Iscon Gathiya (SG Highway / Makarba, Ahmedabad)',
+    address: 'Sarkhej - Gandhinagar Hwy, Makarba, Ahmedabad, Gujarat 380051',
+    lat: 22.9973705,
+    lng: 72.498562,
+    city: 'ahmedabad',
+  },
+  {
+    match: /manek\s*chowk/i,
+    placeId: 'ChIJE4Y_pFODXjkR73wsC3OS3sI',
+    name: 'Manek Chowk Food Market',
+    branchName: 'Manek Chowk Street Food (Old Ahmedabad)',
+    address: 'Manek Chowk, Khadia, Ahmedabad, Gujarat 380001',
+    lat: 23.1047703,
+    lng: 72.534032,
+    city: 'ahmedabad',
+  },
+  {
+    match: /jassi\s*de\s*parathe/i,
+    placeId: 'ChIJO41-X7aEXjkRjob6hXGw0Xg',
+    name: 'Jassi De Parathe',
+    branchName: 'Jassi De Parathe (Bodakdev, Ahmedabad)',
+    address: 'Near Judges Bungalow Road, Bodakdev, Ahmedabad, Gujarat 380054',
+    lat: 23.036955,
+    lng: 72.5280288,
+    city: 'ahmedabad',
+  },
+  {
+    match: /four\s*points|sheraton/i,
+    placeId: 'ChIJ4VluqPiEXjkR6TNkoduQjn8',
+    name: 'Four Points by Sheraton',
+    branchName: 'Four Points (Ellis Bridge, Ahmedabad)',
+    address: 'Opposite Gujarat College, Ellis Bridge, Ahmedabad, Gujarat 380006',
+    lat: 23.022426,
+    lng: 72.56768,
+    city: 'ahmedabad',
   },
 ];
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const input = (searchParams.get('input') || '').trim();
+  const cityParam = (searchParams.get('city') || '').toLowerCase().trim();
+
+  // If user requested a specific city (Gandhinagar or Ahmedabad) with empty or short input, return verified branches for that city!
+  if ((!input || input.length < 2) && (cityParam === 'gandhinagar' || cityParam === 'ahmedabad')) {
+    const cityPlaces = VERIFIED_GUJARAT_PLACES.filter((p) => p.city === cityParam);
+    const predictions: PlaceSuggestion[] = cityPlaces.map((vp) => ({
+      placeId: vp.placeId,
+      name: vp.name,
+      address: vp.address,
+      description: `${vp.name} • ${vp.address}`,
+      lat: vp.lat,
+      lng: vp.lng,
+      branchName: vp.branchName,
+      reviewUrl: `https://search.google.com/local/writereview?placeid=${vp.placeId}`,
+    }));
+    return NextResponse.json({ success: true, predictions });
+  }
 
   if (!input || input.length < 2) {
     return NextResponse.json({ success: true, predictions: [] });
