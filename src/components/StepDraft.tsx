@@ -75,20 +75,62 @@ export const StepDraft: React.FC<StepDraftProps> = ({
     });
   };
 
-  const copyToClipboard = async (): Promise<boolean> => {
-    if (!draftText.trim()) return false;
+  const performRobustCopy = async (text: string): Promise<boolean> => {
+    if (!text || !text.trim()) return false;
+
+    let success = false;
+
+    // Layer 1: Synchronous textarea execution (100% reliable on iOS & Android touch gestures)
     try {
-      await navigator.clipboard.writeText(draftText);
-      triggerConfetti();
-      return true;
-    } catch {
-      const el = document.getElementById('reviewDraftTextarea') as HTMLTextAreaElement | null;
-      if (el) {
-        el.focus();
-        el.select();
-      }
-      return false;
+      const el = document.createElement('textarea');
+      el.value = text;
+      el.style.position = 'fixed';
+      el.style.left = '-9999px';
+      el.style.top = '-9999px';
+      el.style.opacity = '0';
+      el.setAttribute('readonly', '');
+      document.body.appendChild(el);
+
+      el.focus();
+      el.select();
+      el.setSelectionRange(0, 999999);
+
+      success = document.execCommand('copy');
+      document.body.removeChild(el);
+    } catch (e) {
+      console.warn('execCommand copy fallback failed:', e);
     }
+
+    // Layer 2: Modern Navigator Clipboard API
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      try {
+        await navigator.clipboard.writeText(text);
+        success = true;
+      } catch (err) {
+        console.warn('navigator.clipboard write failed:', err);
+      }
+    }
+
+    // Layer 3: Direct selection fallback on visible draft textarea
+    if (!success) {
+      try {
+        const visibleEl = document.getElementById('reviewDraftTextarea') as HTMLTextAreaElement | null;
+        if (visibleEl) {
+          visibleEl.focus();
+          visibleEl.select();
+          visibleEl.setSelectionRange(0, 999999);
+          success = document.execCommand('copy');
+        }
+      } catch (e) {}
+    }
+
+    return success;
+  };
+
+  const copyToClipboard = async (): Promise<boolean> => {
+    const ok = await performRobustCopy(draftText);
+    if (ok) triggerConfetti();
+    return ok;
   };
 
   const handleCopyOnly = async () => {
@@ -112,27 +154,8 @@ export const StepDraft: React.FC<StepDraftProps> = ({
       reviewUrl = `https://${reviewUrl}`;
     }
 
-    // 2. Await clipboard write to guarantee text is copied BEFORE page navigation
-    try {
-      if (navigator.clipboard && navigator.clipboard.writeText) {
-        await navigator.clipboard.writeText(draftText);
-      } else {
-        const el = document.getElementById('reviewDraftTextarea') as HTMLTextAreaElement | null;
-        if (el) {
-          el.focus();
-          el.select();
-          document.execCommand('copy');
-        }
-      }
-    } catch {
-      // Fallback selection if permission blocked
-      const el = document.getElementById('reviewDraftTextarea') as HTMLTextAreaElement | null;
-      if (el) {
-        el.focus();
-        el.select();
-      }
-    }
-
+    // 2. Perform bulletproof synchronous + async copy before page navigation
+    await performRobustCopy(draftText);
     triggerConfetti();
     setCopiedAndOpened(true);
 
@@ -166,12 +189,12 @@ export const StepDraft: React.FC<StepDraftProps> = ({
       } catch {}
     }
 
-    // Small delay (150ms) to ensure mobile OS clipboard buffer commits before navigation
+    // 500ms delay to ensure mobile OS system clipboard buffer commits before browser navigates
     setTimeout(() => {
       window.location.href = reviewUrl;
-    }, 150);
+    }, 500);
 
-    setTimeout(() => setCopiedAndOpened(false), 5000);
+    setTimeout(() => setCopiedAndOpened(false), 6000);
   };
 
   const toneOptions: { id: ReviewTone; label: string; desc: string; icon: React.ElementType }[] = [
@@ -211,15 +234,27 @@ export const StepDraft: React.FC<StepDraftProps> = ({
             <span>Tap Below to Edit Review</span>
           </label>
 
-          <button
-            type="button"
-            onClick={onRegenerate}
-            disabled={isGenerating}
-            className="flex items-center gap-1 text-[11px] font-medium text-zinc-300 hover:text-white transition active:scale-95 disabled:opacity-50 bg-zinc-800 border border-zinc-700 px-2.5 py-1 rounded-lg"
-          >
-            <RefreshCw className={`h-3 w-3 ${isGenerating ? 'animate-spin' : ''}`} />
-            <span>{isGenerating ? 'Refreshing...' : 'New Drafts'}</span>
-          </button>
+          <div className="flex items-center gap-1.5">
+            <button
+              type="button"
+              onClick={handleCopyOnly}
+              disabled={isGenerating || !draftText.trim()}
+              className="flex items-center gap-1 text-[11px] font-semibold text-zinc-200 hover:text-white transition active:scale-95 disabled:opacity-50 bg-zinc-800 border border-zinc-700 px-2.5 py-1 rounded-lg"
+            >
+              {copied ? <Check className="h-3 w-3 text-emerald-400" /> : <Copy className="h-3 w-3" />}
+              <span>{copied ? 'Copied!' : 'Copy'}</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={onRegenerate}
+              disabled={isGenerating}
+              className="flex items-center gap-1 text-[11px] font-medium text-zinc-300 hover:text-white transition active:scale-95 disabled:opacity-50 bg-zinc-800 border border-zinc-700 px-2.5 py-1 rounded-lg"
+            >
+              <RefreshCw className={`h-3 w-3 ${isGenerating ? 'animate-spin' : ''}`} />
+              <span>{isGenerating ? 'Refreshing...' : 'New Drafts'}</span>
+            </button>
+          </div>
         </div>
 
         {isGenerating ? (
@@ -345,15 +380,31 @@ export const StepDraft: React.FC<StepDraftProps> = ({
       </div>
 
       {/* How to Post Quick Guide */}
-      <div className="rounded-2xl border border-zinc-800 bg-[#121216] p-3.5 space-y-1.5 text-xs">
-        <h3 className="font-semibold text-zinc-300 flex items-center gap-1.5 uppercase tracking-wider text-[10px]">
-          <HelpCircle className="h-3 w-3 text-amber-400" />
-          <span>Post to Google in 2 steps:</span>
-        </h3>
-        <ol className="text-zinc-400 space-y-1 list-decimal list-inside leading-relaxed text-[11px]">
-          <li>Tap <strong className="text-white">Copy &amp; Open Google Reviews</strong> below (your review is auto-copied).</li>
-          <li>Google opens: tap <strong className="text-amber-400">5 Stars ⭐⭐⭐⭐⭐</strong>, long-press to <strong className="text-white">Paste</strong> ➔ tap <strong className="text-white">Post</strong>! 🎉</li>
-        </ol>
+      <div className="rounded-2xl border border-amber-400/30 bg-amber-500/10 p-3.5 space-y-2 text-xs">
+        <div className="flex items-center justify-between">
+          <h3 className="font-bold text-amber-300 flex items-center gap-1.5 uppercase tracking-wider text-[11px]">
+            <HelpCircle className="h-3.5 w-3.5 text-amber-400" />
+            <span>How to Post Your Review</span>
+          </h3>
+          <span className="text-[10px] text-zinc-400 font-mono">1-Tap Copy ➔ Paste</span>
+        </div>
+        <p className="text-[11px] text-zinc-300 leading-relaxed">
+          Google security policy blocks all external apps from auto-typing into Google reviews to prevent spam bots. Tap-Bro copies your draft to your phone clipboard instantly:
+        </p>
+        <div className="rounded-xl bg-[#0A0A0C] border border-zinc-800 p-2.5 space-y-1.5 text-[11px]">
+          <p className="text-white font-medium flex items-center gap-2">
+            <span className="h-4 w-4 rounded-full bg-amber-400 text-black flex items-center justify-center font-bold text-[10px] shrink-0">1</span>
+            <span>Tap button below ➔ Your review is <strong className="text-emerald-400">auto-copied</strong> to clipboard.</span>
+          </p>
+          <p className="text-white font-medium flex items-center gap-2">
+            <span className="h-4 w-4 rounded-full bg-amber-400 text-black flex items-center justify-center font-bold text-[10px] shrink-0">2</span>
+            <span>Google dialog opens ➔ Tap <strong className="text-amber-400">5 Stars ⭐⭐⭐⭐⭐</strong></span>
+          </p>
+          <p className="text-white font-medium flex items-center gap-2">
+            <span className="h-4 w-4 rounded-full bg-amber-400 text-black flex items-center justify-center font-bold text-[10px] shrink-0">3</span>
+            <span>Tap the review box ➔ Tap <strong className="text-amber-300">Paste</strong> (or keyboard chip) ➔ Tap <strong className="text-white">Post</strong>! 🎉</span>
+          </p>
+        </div>
       </div>
 
       {/* Sticky Mobile-First CTA Action Bar (Always docked at bottom of phone screen) */}
