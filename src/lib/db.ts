@@ -748,8 +748,8 @@ export async function getInviteStatusByEmailAndTempPass(
   // 1. Check if this exact pass was already used / completed (strictly single-use)
   const completedMatch = list.find(
     (inv) =>
-      inv.email.toLowerCase() === cleanEmail &&
-      inv.tempPass.toUpperCase() === cleanPass &&
+      (inv.email || '').toLowerCase() === cleanEmail &&
+      (inv.tempPass || '').toUpperCase() === cleanPass &&
       inv.status === 'completed'
   );
 
@@ -765,8 +765,8 @@ export async function getInviteStatusByEmailAndTempPass(
   // 2. Check for active pending invite
   const pendingMatch = list.find(
     (inv) =>
-      inv.email.toLowerCase() === cleanEmail &&
-      inv.tempPass.toUpperCase() === cleanPass &&
+      (inv.email || '').toLowerCase() === cleanEmail &&
+      (inv.tempPass || '').toUpperCase() === cleanPass &&
       inv.status === 'pending'
   );
 

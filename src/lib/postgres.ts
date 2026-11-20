@@ -248,8 +248,21 @@ export async function pgGetAllInvites(): Promise<BusinessInvite[]> {
   if (!pool) return [];
 
   try {
-    const res = await pool.query('SELECT data FROM tapbro_invites ORDER BY created_at DESC');
-    return res.rows.map((row) => row.data as BusinessInvite);
+    const res = await pool.query(
+      'SELECT id, email, temp_pass, status, data, created_at, completed_at FROM tapbro_invites ORDER BY created_at DESC'
+    );
+    return res.rows.map((row) => {
+      const parsedData = (row.data && typeof row.data === 'object') ? row.data : {};
+      return {
+        ...parsedData,
+        id: row.id,
+        email: row.email || parsedData.email || '',
+        tempPass: row.temp_pass || parsedData.tempPass || '',
+        status: row.status || parsedData.status || 'pending',
+        createdAt: row.created_at ? new Date(row.created_at).toISOString() : parsedData.createdAt || new Date().toISOString(),
+        completedAt: row.completed_at ? new Date(row.completed_at).toISOString() : parsedData.completedAt,
+      } as BusinessInvite;
+    });
   } catch (err) {
     console.error('[TapBro Postgres] pgGetAllInvites error:', err);
     return [];
