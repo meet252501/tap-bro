@@ -148,6 +148,51 @@ const VERIFIED_GUJARAT_PLACES: {
     lat: 23.1706,
     lng: 72.6465,
   },
+  {
+    match: /tea\s*post/i,
+    placeId: 'ChIJW2x938eLXjkR54U8b1iL71A',
+    name: 'Tea Post',
+    branchName: 'Tea Post (Infocity / Gandhinagar)',
+    address: 'Infocity Super Mall, Infocity, Gandhinagar, Gujarat 382007',
+    lat: 23.1895,
+    lng: 72.6288,
+  },
+  {
+    match: /sankalp/i,
+    placeId: 'ChIJwWfK0eWLXjkR_1o5j1yV3_o',
+    name: 'Sankalp Restaurant',
+    branchName: 'Sankalp (SG Highway / Gandhinagar)',
+    address: 'Near Raksha Shakti Circle, Gandhinagar, Gujarat 382421',
+    lat: 23.1846,
+    lng: 72.6391,
+  },
+  {
+    match: /havmor/i,
+    placeId: 'ChIJRf1a1Q-LXjkR_0b2z5_g5uM',
+    name: 'Havmor Restaurant',
+    branchName: 'Havmor (Kudasan / Gandhinagar Hub)',
+    address: 'Kudasan Road, Gandhinagar, Gujarat 382421',
+    lat: 23.1852,
+    lng: 72.6355,
+  },
+  {
+    match: /iscon\s*gathiya/i,
+    placeId: 'ChIJY5e9w_mLXjkR3k8n6_bL8cI',
+    name: 'Iscon Gathiya',
+    branchName: 'Iscon Gathiya (Gandhinagar Hub)',
+    address: 'Near GH-0 Circle, Gandhinagar, Gujarat 382007',
+    lat: 23.2156,
+    lng: 72.6369,
+  },
+  {
+    match: /marutinandan/i,
+    placeId: 'ChIJ6a337_2LXjkR4h2l3_aN2mI',
+    name: 'Shree Marutinandan Kathiyawadi',
+    branchName: 'Shree Marutinandan (Kudasan Hub)',
+    address: 'Kudasan Road, Gandhinagar, Gujarat 382421',
+    lat: 23.1846,
+    lng: 72.6391,
+  },
 ];
 
 export async function GET(req: NextRequest) {
@@ -194,6 +239,62 @@ export async function GET(req: NextRequest) {
         },
       ],
     });
+  }
+
+  // 1.5. Direct Google Business Short Link (g.page/r/.../review)
+  if (input.includes('g.page')) {
+    const cleanUrl = input.trim();
+    const reviewUrl = cleanUrl.includes('/review') ? cleanUrl : `${cleanUrl.replace(/\/+$/, '')}/review`;
+    return NextResponse.json({
+      success: true,
+      predictions: [
+        {
+          placeId: 'google_shortlink',
+          name: 'Google Business Profile (Direct Review Form)',
+          address: 'Google Review Shortlink Connected',
+          description: reviewUrl,
+          lat: 23.0225,
+          lng: 72.5714,
+          reviewUrl,
+        },
+      ],
+    });
+  }
+
+  // 1.6. Official Google Places API (Universal search for ANY restaurant in the world)
+  const googleApiKey = process.env.GOOGLE_PLACES_API_KEY || process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
+  if (googleApiKey) {
+    try {
+      const q = /gujarat|ahmedabad|gandhinagar|surat|vadodara|rajkot|india/i.test(input)
+        ? input
+        : `${input} Gujarat India`;
+
+      const gRes = await fetch(
+        `https://maps.googleapis.com/maps/api/place/textsearch/json?query=${encodeURIComponent(
+          q
+        )}&region=in&location=23.0225,72.5714&radius=50000&key=${googleApiKey}`
+      );
+
+      if (gRes.ok) {
+        const gData = await gRes.json();
+        if (gData.results && gData.results.length > 0) {
+          const predictions: PlaceSuggestion[] = gData.results.slice(0, 8).map((p: any) => ({
+            placeId: p.place_id,
+            name: p.name,
+            address: p.formatted_address || '',
+            description: `${p.name} • ${p.formatted_address || ''}`,
+            lat: p.geometry?.location?.lat || 23.0225,
+            lng: p.geometry?.location?.lng || 72.5714,
+            branchName: p.name,
+            reviewUrl: `https://search.google.com/local/writereview?placeid=${p.place_id}`,
+          }));
+
+          return NextResponse.json({ success: true, predictions });
+        }
+      }
+    } catch (e) {
+      console.warn('[places] Google Places API query error:', e);
+    }
   }
 
   // 2. Direct Google Maps URL Input Check
