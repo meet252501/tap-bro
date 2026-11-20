@@ -69,7 +69,7 @@ export default function LandingPage() {
           {/* Quick Action Links */}
           <div className="pt-2 space-y-2">
             <Link
-              href="/r/panjabi-dhaba"
+              href="/r/eat-punjab-gandhinagar-gujarat"
               className="flex w-full items-center justify-center gap-2 rounded-xl btn-gold py-3.5 px-5 font-semibold text-sm transition-all duration-150 active:scale-[0.98] shadow-lg"
             >
               <Smartphone className="h-4 w-4" />
