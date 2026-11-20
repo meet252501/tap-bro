@@ -1,93 +1,38 @@
 [
   {
-    "id": "REST_5RVLBX",
-    "slug": "eat-panjab",
-    "name": "Eat Panjab",
-    "tagline": "Delightful Dining & Hospitality",
+    "id": "REST_M1AMX2",
+    "name": "eat punjab gandhinagar gujarat",
+    "slug": "eat-punjab-gandhinagar-gujarat",
+    "email": "meetsutariya.2008@gmail.com",
+    "phone": "7016499300",
     "cuisine": "Restaurant & Cafe",
-    "location": "Kudasan, Gandhinagar, Gujarat",
-    "phone": "9876543210",
-    "email": "owner@eatpanjab.com",
-    "adminPin": "1234",
-    "googleReviewUrl": "https://search.google.com/local/writereview?placeid=ChIJEatPanjabGandhinagar77",
+    "tagline": "Delightful Dining & Hospitality",
+    "adminPin": "25012008",
+    "location": "Gujarat, India",
+    "createdAt": "2026-11-19T16:38:46.023Z",
+    "updatedAt": "2026-11-20T05:02:06.852Z",
     "aiProvider": "nvidia",
-    "totalReviewsGenerated": 1,
-    "tableCount": 10,
-    "createdAt": "2026-11-19T14:26:52.747Z",
-    "updatedAt": "2026-11-19T14:34:31.427Z",
-    "menuCategories": [
-      {
-        "name": "Starters & Chaat",
-        "icon": "🍲",
-        "items": [
-          "Crispy Veg Spring Roll",
-          "Paneer Tikka",
-          "Crispy Corn Chaat"
-        ]
-      },
-      {
-        "name": "Main Courses",
-        "icon": "🍛",
-        "items": [
-          "Dal Makhani",
-          "Paneer Butter Masala",
-          "Butter Garlic Naan"
-        ]
-      },
-      {
-        "name": "Desserts & Beverages",
-        "icon": "🍧",
-        "items": [
-          "Hot Gulab Jamun",
-          "Masala Kulhad Chai",
-          "Fresh Mango Lassi"
-        ]
-      }
-    ],
     "reviewsLog": [
       {
-        "id": "REV_mwnnipvnczu5",
-        "timestamp": "2026-11-19T14:34:31.427Z",
+        "id": "REV_mwoiig3nwokz",
+        "timestamp": "2026-11-20T05:02:06.851Z",
         "overallRating": 5,
-        "ratings": {
-          "food": 5,
-          "service": 5,
-          "ambiance": 5,
-          "overall": 5
-        },
+        "ratings": {},
         "selectedDishes": [
-          "Dal Makhani",
-          "Paneer Butter Masala",
-          "Butter Garlic Naan"
+          "Crispy Veg Spring Roll"
         ],
-        "reviewDraft": "Eat Panjab me khana khane ka experience sach me shandar raha. Dal Makhani, Paneer Butter Masala, Butter Garlic Naan ka flavor aur freshness bohot pasand aayi. Staff ka behavior polite tha aur service bhi time par mili. Overall family aur friends ke sath aane ke liye best jagah hai.",
+        "reviewDraft": "Had a great meal with family at eat punjab gandhinagar gujarat. Tried the Crispy Veg Spring Roll; everything tasted fresh and well-seasoned. Looking forward to visiting again.",
         "tone": "flavorful",
-        "locale": "hinglish",
+        "locale": "en",
         "postedToGoogle": true
       }
     ],
-    "cycleStartDate": "2026-11-19T14:26:52.747Z"
-  },
-  {
-    "id": "REST_EUPHYA",
-    "slug": "karnavati-main-branch",
-    "name": "Karnavati (Main Branch)",
-    "tagline": "Delightful Dining & Hospitality",
-    "cuisine": "Restaurant & Cafe",
-    "location": "Gujarat, India",
-    "phone": "9825012345",
-    "email": "gujaratowner_1795104774552@restaurant.com",
-    "adminPin": "4321",
-    "googleReviewUrl": "https://www.google.com/maps/search/?api=1&query=Karnavati%20Gujarat%2C%20India",
-    "aiProvider": "nvidia",
-    "totalReviewsGenerated": 0,
     "tableCount": 10,
-    "createdAt": "2026-11-19T16:13:09.984Z",
-    "updatedAt": "2026-11-19T16:13:09.984Z",
+    "cycleStartDate": "2026-11-19T17:29:01.426Z",
     "menuCategories": [
       {
-        "name": "Starters & Chaat",
         "icon": "🍲",
+        "name": "Starters & Chaat",
         "items": [
           "Crispy Veg Spring Roll",
           "Paneer Tikka",
@@ -95,8 +40,8 @@
         ]
       },
       {
-        "name": "Main Courses",
         "icon": "🍛",
+        "name": "Main Courses",
         "items": [
           "Dal Makhani",
           "Paneer Butter Masala",
@@ -104,152 +49,18 @@
         ]
       },
       {
-        "name": "Desserts & Beverages",
         "icon": "🍧",
+        "name": "Desserts & Beverages",
         "items": [
           "Hot Gulab Jamun",
           "Masala Kulhad Chai",
           "Fresh Mango Lassi"
         ]
       }
-    ]
-  },
-  {
-    "id": "REST_XP5UUI",
-    "slug": "karnavati-main-branch-1",
-    "name": "Karnavati (Main Branch)",
-    "tagline": "Delightful Dining & Hospitality",
-    "cuisine": "Restaurant & Cafe",
-    "location": "Gujarat, India",
-    "phone": "9825012345",
-    "email": "gujaratowner_1795104820925@restaurant.com",
-    "adminPin": "4321",
-    "googleReviewUrl": "https://www.google.com/maps/search/?api=1&query=Karnavati%20Gujarat%2C%20India",
-    "aiProvider": "nvidia",
-    "totalReviewsGenerated": 0,
-    "tableCount": 10,
-    "createdAt": "2026-11-19T16:13:51.418Z",
-    "updatedAt": "2026-11-19T16:13:51.419Z",
-    "menuCategories": [
-      {
-        "name": "Starters & Chaat",
-        "icon": "🍲",
-        "items": [
-          "Crispy Veg Spring Roll",
-          "Paneer Tikka",
-          "Crispy Corn Chaat"
-        ]
-      },
-      {
-        "name": "Main Courses",
-        "icon": "🍛",
-        "items": [
-          "Dal Makhani",
-          "Paneer Butter Masala",
-          "Butter Garlic Naan"
-        ]
-      },
-      {
-        "name": "Desserts & Beverages",
-        "icon": "🍧",
-        "items": [
-          "Hot Gulab Jamun",
-          "Masala Kulhad Chai",
-          "Fresh Mango Lassi"
-        ]
-      }
-    ]
-  },
-  {
-    "id": "REST_B7NUAF",
-    "slug": "karnavati-club",
-    "name": "Karnavati Club",
-    "tagline": "Delightful Dining & Hospitality",
-    "cuisine": "Restaurant & Cafe",
-    "location": "Sarkhej, Ahmedabad, Gujarat",
-    "phone": "9825012345",
-    "email": "test_node_complete@restaurant.com",
-    "adminPin": "4321",
-    "googleReviewUrl": "https://www.google.com/maps/search/?api=1&query=Karnavati%20Gujarat",
-    "aiProvider": "nvidia",
-    "totalReviewsGenerated": 0,
-    "tableCount": 10,
-    "createdAt": "2026-11-19T16:14:47.697Z",
-    "updatedAt": "2026-11-19T16:14:47.697Z",
-    "menuCategories": [
-      {
-        "name": "Starters & Chaat",
-        "icon": "🍲",
-        "items": [
-          "Crispy Veg Spring Roll",
-          "Paneer Tikka",
-          "Crispy Corn Chaat"
-        ]
-      },
-      {
-        "name": "Main Courses",
-        "icon": "🍛",
-        "items": [
-          "Dal Makhani",
-          "Paneer Butter Masala",
-          "Butter Garlic Naan"
-        ]
-      },
-      {
-        "name": "Desserts & Beverages",
-        "icon": "🍧",
-        "items": [
-          "Hot Gulab Jamun",
-          "Masala Kulhad Chai",
-          "Fresh Mango Lassi"
-        ]
-      }
-    ]
-  },
-  {
-    "id": "REST_4PDENX",
-    "slug": "karnavati-main-branch-2",
-    "name": "Karnavati (Main Branch)",
-    "tagline": "Delightful Dining & Hospitality",
-    "cuisine": "Restaurant & Cafe",
-    "location": "Gujarat, India",
-    "phone": "9825012345",
-    "email": "gujaratowner_1795104986970@restaurant.com",
-    "adminPin": "4321",
-    "googleReviewUrl": "https://www.google.com/maps/search/?api=1&query=Karnavati%20Gujarat%2C%20India",
-    "aiProvider": "nvidia",
-    "totalReviewsGenerated": 0,
-    "tableCount": 10,
-    "createdAt": "2026-11-19T16:16:45.109Z",
-    "updatedAt": "2026-11-19T16:16:45.109Z",
-    "menuCategories": [
-      {
-        "name": "Starters & Chaat",
-        "icon": "🍲",
-        "items": [
-          "Crispy Veg Spring Roll",
-          "Paneer Tikka",
-          "Crispy Corn Chaat"
-        ]
-      },
-      {
-        "name": "Main Courses",
-        "icon": "🍛",
-        "items": [
-          "Dal Makhani",
-          "Paneer Butter Masala",
-          "Butter Garlic Naan"
-        ]
-      },
-      {
-        "name": "Desserts & Beverages",
-        "icon": "🍧",
-        "items": [
-          "Hot Gulab Jamun",
-          "Masala Kulhad Chai",
-          "Fresh Mango Lassi"
-        ]
-      }
-    ]
+    ],
+    "googleReviewUrl": "https://search.google.com/local/writereview?placeid=ChIJJ-nuYQArXDkRClUWF_ENHDM",
+    "monthlyArchivedCount": 1,
+    "totalReviewsGenerated": 1,
+    "lastMonthlyReportSentAt": "2026-11-19T17:29:01.426Z"
   }
 ]
